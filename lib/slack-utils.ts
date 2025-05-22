@@ -1,14 +1,18 @@
-import { WebhookChatMessage, WebhookNotification } from '@/types';
-import { CoreMessage } from 'ai'
-import crypto from 'crypto'
-import DiscourseAPI from 'discourse2-chat';
+import type { WebhookChatMessage, WebhookNotification } from '../types';
+import type { CoreMessage } from 'ai'
+import * as crypto from 'node:crypto'
+import { client } from '../client/client.gen';
+import { postMessage, editMessage, getMessages, getSession } from '../client/sdk.gen';
 
 const signingSecret = process.env.DISCOURSE_SIGNING_SECRET!
 const url = process.env.DISCOURSE_URL!;
 
-export const client = new DiscourseAPI(url, {
-  'Api-Key': process.env.DISCOURSE_BOT_TOKEN!
-})
+client.setConfig({
+  baseUrl: url,
+  headers: {
+    'Api-Key': process.env.DISCOURSE_BOT_TOKEN!,
+  }
+});
 
 // See https://api.slack.com/authentication/verifying-requests-from-slack
 export function isValidDiscourseRequest({
@@ -59,20 +63,33 @@ export const updateStatusUtil = async (
   initialStatus: string,
   event: WebhookChatMessage,
 ) => {
-  const initialMessage = await client.postMessage({
-    channel_id: event.channel?.id,
+  const res = await postMessage({
+    path: {
+      channel_id: event.channel?.id,
+    },
     // thread_ts: event.thread_ts ?? event.ts,
-    message: initialStatus,
+    body: {
+      message: initialStatus,
+    }
   });
 
+  if (!res?.data) throw new Error("Failed to post initial message");
+  const initialMessage = res.data;
+
+  // @ts-expect-error the types for this are broken
   if (!initialMessage || !initialMessage.message_id)
     throw new Error("Failed to post initial message");
 
   const updateMessage = async (status: string) => {
-    await client.editMessage({
-      channel_id: event.channel?.id,
-      message_id: initialMessage.message_id!,
-      message: status,
+    await editMessage({
+      path: {
+        channel_id: event.channel?.id,
+        // @ts-expect-error the types for this are broken
+        message_id: initialMessage.message_id!,
+      },
+      body: {
+        message: status,
+      },
     });
   };
   return updateMessage;
@@ -83,14 +100,17 @@ export async function getThread(
   // thread_ts: string,
   botUserId: number,
 ): Promise<CoreMessage[]> {
-  const { messages } = await client.getMessages({
-    channel_id,
-    page_size: 50,
+  const res = await getMessages({
+    path: {
+      channel_id,
+    },
+    query: {
+      page_size: 50,
+    }
   });
 
-  // Ensure we have messages
-
-  if (!messages) throw new Error("No messages found in thread");
+  if (!res?.data?.messages) throw new Error("No messages found in thread");
+  const { messages } = res.data;
 
   const result = messages
     .map((message) => {
@@ -117,12 +137,18 @@ export async function getThread(
 
 export const getBotId = async (): Promise<number> => {
   // const { user_id: botUserId } = await client.auth.test();
-  const session = await client.getSession();
-  const id = session?.current_user?.id;
+  const res = await getSession();
+
+  if (!res?.data?.current_user) {
+    throw new Error("Session is undefined");
+  }
+
+  const { current_user: user } = res.data;
+  const id = user?.id;
 
   if (!id) {
     throw new Error("botUserId is undefined");
   }
-  
+
   return id;
 };

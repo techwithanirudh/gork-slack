@@ -1,5 +1,5 @@
-import { BasicChatMessage } from "./chat";
-import { BasicUser, Uploads } from "./discourse";
+import type { BasicChatMessage } from "./chat";
+import type { BasicUser, Uploads } from "./discourse";
 
 export interface WebhookPost {
     id: number;

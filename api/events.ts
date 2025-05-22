@@ -5,7 +5,7 @@ import {
 import { waitUntil } from "@vercel/functions";
 import { handleNewAppMention } from "../lib/handle-app-mention";
 import { verifyRequest, getBotId } from "../lib/slack-utils";
-import type { WebhookChatMessage, WebhookNotification } from "@/types";
+import type { WebhookChatMessage, WebhookNotification } from "../types";
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
