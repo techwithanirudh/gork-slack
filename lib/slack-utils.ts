@@ -43,21 +43,19 @@ export function isValidDiscourseRequest({
 }
 
 export const verifyRequest = async ({
-  requestType,
   request,
   rawBody,
 }: {
-  requestType: string;
   request: Request;
   rawBody: string;
 }) => {
   const validRequest = await isValidDiscourseRequest({ request, rawBody });
-  if (!validRequest || requestType !== "event_callback") {
+  if (!validRequest) {
     return new Response("Invalid request", { status: 400 });
   }
 };
 
-export const updateStatusUtil = (channel: string, thread_ts: string) => {
+export const updateStatusUtil = (channel: number) => {
   return async (status: string) => {
     // await client.assistant.threads.setStatus({
     //   channel_id: channel,
@@ -69,8 +67,8 @@ export const updateStatusUtil = (channel: string, thread_ts: string) => {
 
 export async function getThread(
   channel_id: number,
-  thread_ts: string,
-  botUserId: string,
+  // thread_ts: string,
+  botUserId: number,
 ): Promise<CoreMessage[]> {
   const { messages } = await client.getMessages({
     channel_id,
@@ -83,7 +81,9 @@ export async function getThread(
 
   const result = messages
     .map((message) => {
-      const isBot = message.user?.username === botUserId;
+      console.log(message.user)
+      // todo: use id
+      const isBot = message.user?.username === botUserId as any;
       if (!message.message) return null;
 
       // For app mentions, remove the mention prefix
@@ -103,12 +103,14 @@ export async function getThread(
   return result;
 }
 
-export const getBotId = async () => {
+export const getBotId = async (): Promise<number> => {
   // const { user_id: botUserId } = await client.auth.test();
-  const botUserId = 'gpt';
+  const session = await client.getSession();
+  const id = session?.current_user?.id;
 
-  if (!botUserId) {
+  if (!id) {
     throw new Error("botUserId is undefined");
   }
-  return botUserId;
+  
+  return id;
 };

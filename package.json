@@ -15,7 +15,7 @@
     "@slack/web-api": "^7.0.2",
     "@vercel/functions": "^2.0.0",
     "ai": "^4.1.46",
-    "discourse2-chat": "^1.1.1",
+    "discourse2-chat": "^1.1.5",
     "exa-js": "^1.4.10",
     "zod": "^3.24.2"
   },

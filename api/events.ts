@@ -1,4 +1,4 @@
-import type { SlackEvent } from "@slack/web-api";
+import type { AppMentionEvent, SlackEvent } from "@slack/web-api";
 import {
   assistantThreadMessage,
   handleNewAssistantMessage,
@@ -6,42 +6,42 @@ import {
 import { waitUntil } from "@vercel/functions";
 import { handleNewAppMention } from "../lib/handle-app-mention";
 import { verifyRequest, getBotId } from "../lib/slack-utils";
+import type { WebhookChatMessage, WebhookNotification } from "@/types";
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
   const payload = JSON.parse(rawBody);
-  const requestType = payload.type as "url_verification" | "event_callback";
 
-  // // See https://api.slack.com/events/url_verification
-  // if (requestType === "url_verification") {
-  //   return new Response(payload.challenge, { status: 200 });
-  // }
-
-  await verifyRequest({ requestType, request, rawBody });
-  console.log('verified');
+  await verifyRequest({ request, rawBody });
 
   try {
     const botUserId = await getBotId();
 
-    const event = payload.event as SlackEvent;
+    const event = {
+      type: request.headers.get('X-Discourse-Event-Type'),
+      id: request.headers.get('X-Discourse-Event-Id')
+    };
 
-    if (event.type === "app_mention") {
-      waitUntil(handleNewAppMention(event, botUserId));
+    console.log('got request', event.type)
+    
+    if (event.type === "notification" && payload.notification_type === 29) {
+      waitUntil(handleNewAppMention(payload?.notification as WebhookNotification, botUserId));
     }
 
-    if (event.type === "assistant_thread_started") {
-      waitUntil(assistantThreadMessage(event));
-    }
+    // if (event.type === "assistant_thread_started") {
+    //   waitUntil(assistantThreadMessage(event));
+    // }
 
     if (
-      event.type === "message" &&
-      !event.subtype &&
-      event.channel_type === "im" &&
-      !event.bot_id &&
-      !event.bot_profile &&
-      event.bot_id !== botUserId
+      event.type === "chat_message"
+      // !event.subtype &&
+      // event.channel_type === "im" &&
+      // !event.bot_id &&
+      // !event.bot_profile &&
+      // event.bot_id !== botUserId
     ) {
-      waitUntil(handleNewAssistantMessage(event, botUserId));
+      console.log('cmsg')
+      waitUntil(handleNewAssistantMessage(payload?.chat_message as WebhookChatMessage, botUserId));
     }
 
     return new Response("Success!", { status: 200 });

@@ -4,6 +4,7 @@ import type {
 } from "@slack/web-api";
 import { client, getThread, updateStatusUtil } from "./slack-utils";
 import { generateResponse } from "./generate-response";
+import { WebhookChatMessage } from "@/types";
 
 export async function assistantThreadMessage(
   event: AssistantThreadStartedEvent,
@@ -13,9 +14,9 @@ export async function assistantThreadMessage(
   console.log(JSON.stringify(event));
 
   await client.postMessage({
-    channel_id: channel_id,
+    channel_id: channel_id as any,
     // thread_ts: thread_ts,
-    text: "Hello, I'm an AI assistant built with the AI SDK by Vercel!",
+    message: "Hello, I'm an AI assistant built with the AI SDK by Vercel!",
   });
 
   // await client.assistant.threads.setSuggestedPrompts({
@@ -35,26 +36,25 @@ export async function assistantThreadMessage(
 }
 
 export async function handleNewAssistantMessage(
-  event: GenericMessageEvent,
-  botUserId: string,
+  event: WebhookChatMessage,
+  botUserId: number,
 ) {
+  console.log(event)
   if (
-    event.bot_id ||
-    event.bot_id === botUserId ||
-    event.bot_profile ||
-    !event.thread_ts
+    event.message.user.id === botUserId
   )
     return;
 
-  const { thread_ts, channel } = event;
-  const updateStatus = updateStatusUtil(channel, thread_ts);
+  const { channel } = event;
+
+  const updateStatus = updateStatusUtil(channel.id);
   await updateStatus("is thinking...");
 
-  const messages = await getThread(channel, thread_ts, botUserId);
+  const messages = await getThread(channel.id, botUserId);
   const result = await generateResponse(messages, updateStatus);
 
   await client.postMessage({
-    channel_id: channel,
+    channel_id: channel.id,
     // thread_ts: thread_ts,
     message: result,
     // unfurl_links: false,
