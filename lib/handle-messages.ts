@@ -39,7 +39,6 @@ export async function handleNewAssistantMessage(
   event: WebhookChatMessage,
   botUserId: number,
 ) {
-  console.log(event)
   if (
     event.message.user.id === botUserId
   )

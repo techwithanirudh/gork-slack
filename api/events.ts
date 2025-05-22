@@ -33,14 +33,9 @@ export async function POST(request: Request) {
     // }
 
     if (
-      event.type === "chat_message"
-      // !event.subtype &&
-      // event.channel_type === "im" &&
-      // !event.bot_id &&
-      // !event.bot_profile &&
-      // event.bot_id !== botUserId
+      event.type === "chat_message" &&
+      payload?.chat_message.message.user.id !== botUserId
     ) {
-      console.log('cmsg')
       waitUntil(handleNewAssistantMessage(payload?.chat_message as WebhookChatMessage, botUserId));
     }
 

@@ -80,13 +80,12 @@ export async function getThread(
 
   const result = messages
     .map((message) => {
-      console.log(message.user)
-      // todo: use id
-      const isBot = message.user?.username === botUserId as any;
+      // @ts-expect-error the types for this are broken
+      const isBot = message.user?.id === botUserId as any;
       if (!message.message) return null;
 
       // For app mentions, remove the mention prefix
-      // For IM messages, keep the full text
+      // For DM messages, keep the full text
       let content = message.message;
       if (!isBot && content.includes(`<@${botUserId}>`)) {
         content = content.replace(`<@${botUserId}> `, "");
