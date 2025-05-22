@@ -2,13 +2,20 @@ import { openai } from "@ai-sdk/openai";
 import { CoreMessage, generateText, tool } from "ai";
 import { z } from "zod";
 import { exa } from "./utils";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+
+const hackclub = createOpenAICompatible({
+  name: "hackclub",
+  apiKey: process.env.HACKCLUB_API_KEY!,
+  baseURL: "https://ai.hackclub.com",
+});
 
 export const generateResponse = async (
   messages: CoreMessage[],
   updateStatus?: (status: string) => void,
 ) => {
   const { text } = await generateText({
-    model: openai("gpt-4o"),
+    model: hackclub("llama-3.3-70b-versatile"),
     system: `You are a Slack bot assistant Keep your responses concise and to the point.
     - Do not tag users.
     - Current date is: ${new Date().toISOString().split("T")[0]}

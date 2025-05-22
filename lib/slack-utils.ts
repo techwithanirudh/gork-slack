@@ -1,4 +1,3 @@
-import { WebClient } from '@slack/web-api';
 import { CoreMessage } from 'ai'
 import crypto from 'crypto'
 import DiscourseAPI from 'discourse2-chat';
