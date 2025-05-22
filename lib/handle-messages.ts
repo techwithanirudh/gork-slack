@@ -7,8 +7,6 @@ import { generateResponse } from "./generate-response";
 import type { WebhookChatMessage } from "../types";
 import { sendMessage } from "../client/sdk.gen";
 import { keywords } from "../config";
-import { zGetSessionResponse } from '../client/zod.gen';
-import { z } from 'zod';
 import { GetSessionData, GetSessionResponse } from "../client/types.gen";
 
 export async function assistantThreadMessage(

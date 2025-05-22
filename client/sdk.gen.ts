@@ -2,7 +2,6 @@
 
 import { type Options as ClientOptions, type TDataShape, type Client, formDataBodySerializer, urlSearchParamsBodySerializer } from '@hey-api/client-fetch';
 import type { GetBackupsData, GetBackupsResponse, CreateBackupData, CreateBackupResponse, DownloadBackupData, SendDownloadBackupEmailData, AdminListBadgesData, AdminListBadgesResponse, CreateBadgeData, CreateBadgeResponse, DeleteBadgeData, UpdateBadgeData, UpdateBadgeResponse, ListCategoriesData, ListCategoriesResponse, CreateCategoryData, CreateCategoryResponse, UpdateCategoryData, UpdateCategoryResponse, ListCategoryTopicsData, ListCategoryTopicsResponse, GetCategoryData, GetCategoryResponse, CreateGroupData, CreateGroupResponse, DeleteGroupData, DeleteGroupResponse, GetGroupData, GetGroupResponse, UpdateGroupData, UpdateGroupResponse, RemoveGroupMembersData, RemoveGroupMembersResponse, ListGroupMembersData, ListGroupMembersResponse, AddGroupMembersData, AddGroupMembersResponse, ListGroupsData, ListGroupsResponse, CreateInviteData, CreateInviteResponse, CreateMultipleInvitesData, CreateMultipleInvitesResponse, GetNotificationsData, GetNotificationsResponse, MarkNotificationsAsReadData, MarkNotificationsAsReadResponse, ListPostsData, ListPostsResponse, CreateTopicPostPmData, CreateTopicPostPmResponse, DeletePostData, GetPostData, GetPostResponse, UpdatePostData, UpdatePostResponse, PostRepliesData, PostRepliesResponse, LockPostData, LockPostResponse, PerformPostActionData, PerformPostActionResponse, ListUserPrivateMessagesData, ListUserPrivateMessagesResponse, GetUserSentPrivateMessagesData, GetUserSentPrivateMessagesResponse, SearchData, SearchResponse, GetSiteData, GetSiteResponse, GetSiteBasicInfoData, GetSiteBasicInfoResponse, ListTagGroupsData, ListTagGroupsResponse, CreateTagGroupData, CreateTagGroupResponse, GetTagGroupData, GetTagGroupResponse, UpdateTagGroupData, UpdateTagGroupResponse, ListTagsData, ListTagsResponse, GetTagData, GetTagResponse, GetSpecificPostsFromTopicData, GetSpecificPostsFromTopicResponse, RemoveTopicData, GetTopicData, GetTopicResponse, UpdateTopicData, UpdateTopicResponse, InviteToTopicData, InviteToTopicResponse, InviteGroupToTopicData, InviteGroupToTopicResponse, BookmarkTopicData, UpdateTopicStatusData, UpdateTopicStatusResponse, ListLatestTopicsData, ListLatestTopicsResponse, ListTopTopicsData, ListTopTopicsResponse, SetNotificationLevelData, SetNotificationLevelResponse, UpdateTopicTimestampData, UpdateTopicTimestampResponse, CreateTopicTimerData, CreateTopicTimerResponse, GetTopicByExternalIdData, CreateUploadData, CreateUploadResponse, GeneratePresignedPutData, GeneratePresignedPutResponse, CompleteExternalUploadData, CompleteExternalUploadResponse, CreateMultipartUploadData, CreateMultipartUploadResponse, BatchPresignMultipartPartsData, BatchPresignMultipartPartsResponse, AbortMultipartData, AbortMultipartResponse, CompleteMultipartData, CompleteMultipartResponse, ListUserBadgesData, ListUserBadgesResponse, CreateUserData, CreateUserResponse, GetUserData, GetUserResponse, UpdateUserData, UpdateUserResponse, GetUserExternalIdData, GetUserExternalIdResponse, GetUserIdentiyProviderExternalIdData, GetUserIdentiyProviderExternalIdResponse, UpdateAvatarData, UpdateAvatarResponse, UpdateEmailData, UpdateUsernameData, ListUsersPublicData, ListUsersPublicResponse, DeleteUserData, DeleteUserResponse, AdminGetUserData, AdminGetUserResponse, ActivateUserData, ActivateUserResponse, DeactivateUserData, DeactivateUserResponse, SuspendUserData, SuspendUserResponse, SilenceUserData, SilenceUserResponse, AnonymizeUserData, AnonymizeUserResponse, LogOutUserData, LogOutUserResponse, RefreshGravatarData, RefreshGravatarResponse, AdminListUsersData, AdminListUsersResponse, ListUserActionsData, ListUserActionsResponse, SendPasswordResetEmailData, SendPasswordResetEmailResponse, ChangePasswordData, GetUserEmailsData, GetUserEmailsResponse, SendMessageData, SendMessageResponse, EditMessageData, EditMessageResponse, GetMessagesData, GetMessagesResponse, ReactToMessageData, ReactToMessageResponse, GetUserCardData, GetUserCardResponse, GetSessionData, GetSessionResponse } from './types.gen';
-import { zGetBackupsResponse, zCreateBackupResponse, zAdminListBadgesResponse, zCreateBadgeResponse, zUpdateBadgeResponse, zListCategoriesResponse, zCreateCategoryResponse, zUpdateCategoryResponse, zListCategoryTopicsResponse, zGetCategoryResponse, zCreateGroupResponse, zDeleteGroupResponse, zGetGroupResponse, zUpdateGroupResponse, zRemoveGroupMembersResponse, zListGroupMembersResponse, zAddGroupMembersResponse, zListGroupsResponse, zCreateInviteResponse, zCreateMultipleInvitesResponse, zGetNotificationsResponse, zMarkNotificationsAsReadResponse, zListPostsResponse, zCreateTopicPostPmResponse, zGetPostResponse, zUpdatePostResponse, zPostRepliesResponse, zLockPostResponse, zPerformPostActionResponse, zListUserPrivateMessagesResponse, zGetUserSentPrivateMessagesResponse, zSearchResponse, zGetSiteResponse, zGetSiteBasicInfoResponse, zListTagGroupsResponse, zCreateTagGroupResponse, zGetTagGroupResponse, zUpdateTagGroupResponse, zListTagsResponse, zGetTagResponse, zGetSpecificPostsFromTopicResponse, zGetTopicResponse, zUpdateTopicResponse, zInviteToTopicResponse, zInviteGroupToTopicResponse, zUpdateTopicStatusResponse, zListLatestTopicsResponse, zListTopTopicsResponse, zSetNotificationLevelResponse, zUpdateTopicTimestampResponse, zCreateTopicTimerResponse, zCreateUploadResponse, zGeneratePresignedPutResponse, zCompleteExternalUploadResponse, zCreateMultipartUploadResponse, zBatchPresignMultipartPartsResponse, zAbortMultipartResponse, zCompleteMultipartResponse, zListUserBadgesResponse, zCreateUserResponse, zGetUserResponse, zUpdateUserResponse, zGetUserExternalIdResponse, zGetUserIdentiyProviderExternalIdResponse, zUpdateAvatarResponse, zListUsersPublicResponse, zDeleteUserResponse, zAdminGetUserResponse, zActivateUserResponse, zDeactivateUserResponse, zSuspendUserResponse, zSilenceUserResponse, zAnonymizeUserResponse, zLogOutUserResponse, zRefreshGravatarResponse, zAdminListUsersResponse, zListUserActionsResponse, zSendPasswordResetEmailResponse, zGetUserEmailsResponse, zSendMessageResponse, zEditMessageResponse, zGetMessagesResponse, zReactToMessageResponse, zGetUserCardResponse, zGetSessionResponse } from './zod.gen';
 import { client as _heyApiClient } from './client.gen';
 import { getMessagesResponseTransformer } from './transformers.gen';
 
@@ -25,9 +24,6 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  */
 export const getBackups = <ThrowOnError extends boolean = false>(options?: Options<GetBackupsData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetBackupsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetBackupsResponse.parseAsync(data);
-        },
         url: '/admin/backups.json',
         ...options
     });
@@ -38,9 +34,6 @@ export const getBackups = <ThrowOnError extends boolean = false>(options?: Optio
  */
 export const createBackup = <ThrowOnError extends boolean = false>(options?: Options<CreateBackupData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<CreateBackupResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateBackupResponse.parseAsync(data);
-        },
         url: '/admin/backups.json',
         ...options,
         headers: {
@@ -75,9 +68,6 @@ export const sendDownloadBackupEmail = <ThrowOnError extends boolean = false>(op
  */
 export const adminListBadges = <ThrowOnError extends boolean = false>(options?: Options<AdminListBadgesData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<AdminListBadgesResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zAdminListBadgesResponse.parseAsync(data);
-        },
         url: '/admin/badges.json',
         ...options
     });
@@ -88,9 +78,6 @@ export const adminListBadges = <ThrowOnError extends boolean = false>(options?: 
  */
 export const createBadge = <ThrowOnError extends boolean = false>(options?: Options<CreateBadgeData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<CreateBadgeResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateBadgeResponse.parseAsync(data);
-        },
         url: '/admin/badges.json',
         ...options,
         headers: {
@@ -115,9 +102,6 @@ export const deleteBadge = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const updateBadge = <ThrowOnError extends boolean = false>(options: Options<UpdateBadgeData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<UpdateBadgeResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zUpdateBadgeResponse.parseAsync(data);
-        },
         url: '/admin/badges/{id}.json',
         ...options,
         headers: {
@@ -132,9 +116,6 @@ export const updateBadge = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const listCategories = <ThrowOnError extends boolean = false>(options?: Options<ListCategoriesData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<ListCategoriesResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListCategoriesResponse.parseAsync(data);
-        },
         url: '/categories.json',
         ...options
     });
@@ -145,9 +126,6 @@ export const listCategories = <ThrowOnError extends boolean = false>(options?: O
  */
 export const createCategory = <ThrowOnError extends boolean = false>(options?: Options<CreateCategoryData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<CreateCategoryResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateCategoryResponse.parseAsync(data);
-        },
         url: '/categories.json',
         ...options,
         headers: {
@@ -162,9 +140,6 @@ export const createCategory = <ThrowOnError extends boolean = false>(options?: O
  */
 export const updateCategory = <ThrowOnError extends boolean = false>(options: Options<UpdateCategoryData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<UpdateCategoryResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zUpdateCategoryResponse.parseAsync(data);
-        },
         url: '/categories/{id}.json',
         ...options,
         headers: {
@@ -179,9 +154,6 @@ export const updateCategory = <ThrowOnError extends boolean = false>(options: Op
  */
 export const listCategoryTopics = <ThrowOnError extends boolean = false>(options: Options<ListCategoryTopicsData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<ListCategoryTopicsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListCategoryTopicsResponse.parseAsync(data);
-        },
         url: '/c/{slug}/{id}.json',
         ...options
     });
@@ -192,9 +164,6 @@ export const listCategoryTopics = <ThrowOnError extends boolean = false>(options
  */
 export const getCategory = <ThrowOnError extends boolean = false>(options: Options<GetCategoryData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetCategoryResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetCategoryResponse.parseAsync(data);
-        },
         url: '/c/{id}/show.json',
         ...options
     });
@@ -205,9 +174,6 @@ export const getCategory = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const createGroup = <ThrowOnError extends boolean = false>(options?: Options<CreateGroupData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<CreateGroupResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateGroupResponse.parseAsync(data);
-        },
         url: '/admin/groups.json',
         ...options,
         headers: {
@@ -222,9 +188,6 @@ export const createGroup = <ThrowOnError extends boolean = false>(options?: Opti
  */
 export const deleteGroup = <ThrowOnError extends boolean = false>(options: Options<DeleteGroupData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).delete<DeleteGroupResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zDeleteGroupResponse.parseAsync(data);
-        },
         url: '/admin/groups/{id}.json',
         ...options
     });
@@ -235,9 +198,6 @@ export const deleteGroup = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const getGroup = <ThrowOnError extends boolean = false>(options: Options<GetGroupData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetGroupResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetGroupResponse.parseAsync(data);
-        },
         url: '/groups/{id}.json',
         ...options
     });
@@ -248,9 +208,6 @@ export const getGroup = <ThrowOnError extends boolean = false>(options: Options<
  */
 export const updateGroup = <ThrowOnError extends boolean = false>(options: Options<UpdateGroupData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<UpdateGroupResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zUpdateGroupResponse.parseAsync(data);
-        },
         url: '/groups/{id}.json',
         ...options,
         headers: {
@@ -265,9 +222,6 @@ export const updateGroup = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const removeGroupMembers = <ThrowOnError extends boolean = false>(options: Options<RemoveGroupMembersData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).delete<RemoveGroupMembersResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zRemoveGroupMembersResponse.parseAsync(data);
-        },
         url: '/groups/{id}/members.json',
         ...options,
         headers: {
@@ -282,9 +236,6 @@ export const removeGroupMembers = <ThrowOnError extends boolean = false>(options
  */
 export const listGroupMembers = <ThrowOnError extends boolean = false>(options: Options<ListGroupMembersData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<ListGroupMembersResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListGroupMembersResponse.parseAsync(data);
-        },
         url: '/groups/{id}/members.json',
         ...options
     });
@@ -295,9 +246,6 @@ export const listGroupMembers = <ThrowOnError extends boolean = false>(options: 
  */
 export const addGroupMembers = <ThrowOnError extends boolean = false>(options: Options<AddGroupMembersData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<AddGroupMembersResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zAddGroupMembersResponse.parseAsync(data);
-        },
         url: '/groups/{id}/members.json',
         ...options,
         headers: {
@@ -312,9 +260,6 @@ export const addGroupMembers = <ThrowOnError extends boolean = false>(options: O
  */
 export const listGroups = <ThrowOnError extends boolean = false>(options?: Options<ListGroupsData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<ListGroupsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListGroupsResponse.parseAsync(data);
-        },
         url: '/groups.json',
         ...options
     });
@@ -325,9 +270,6 @@ export const listGroups = <ThrowOnError extends boolean = false>(options?: Optio
  */
 export const createInvite = <ThrowOnError extends boolean = false>(options: Options<CreateInviteData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<CreateInviteResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateInviteResponse.parseAsync(data);
-        },
         url: '/invites.json',
         ...options,
         headers: {
@@ -342,9 +284,6 @@ export const createInvite = <ThrowOnError extends boolean = false>(options: Opti
  */
 export const createMultipleInvites = <ThrowOnError extends boolean = false>(options: Options<CreateMultipleInvitesData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<CreateMultipleInvitesResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateMultipleInvitesResponse.parseAsync(data);
-        },
         url: '/invites/create-multiple.json',
         ...options,
         headers: {
@@ -359,9 +298,6 @@ export const createMultipleInvites = <ThrowOnError extends boolean = false>(opti
  */
 export const getNotifications = <ThrowOnError extends boolean = false>(options?: Options<GetNotificationsData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetNotificationsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetNotificationsResponse.parseAsync(data);
-        },
         url: '/notifications.json',
         ...options
     });
@@ -372,9 +308,6 @@ export const getNotifications = <ThrowOnError extends boolean = false>(options?:
  */
 export const markNotificationsAsRead = <ThrowOnError extends boolean = false>(options?: Options<MarkNotificationsAsReadData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).put<MarkNotificationsAsReadResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zMarkNotificationsAsReadResponse.parseAsync(data);
-        },
         url: '/notifications/mark-read.json',
         ...options,
         headers: {
@@ -389,9 +322,6 @@ export const markNotificationsAsRead = <ThrowOnError extends boolean = false>(op
  */
 export const listPosts = <ThrowOnError extends boolean = false>(options: Options<ListPostsData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<ListPostsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListPostsResponse.parseAsync(data);
-        },
         url: '/posts.json',
         ...options
     });
@@ -402,9 +332,6 @@ export const listPosts = <ThrowOnError extends boolean = false>(options: Options
  */
 export const createTopicPostPm = <ThrowOnError extends boolean = false>(options?: Options<CreateTopicPostPmData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<CreateTopicPostPmResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateTopicPostPmResponse.parseAsync(data);
-        },
         url: '/posts.json',
         ...options,
         headers: {
@@ -439,9 +366,6 @@ export const deletePost = <ThrowOnError extends boolean = false>(options: Option
  */
 export const getPost = <ThrowOnError extends boolean = false>(options: Options<GetPostData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetPostResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetPostResponse.parseAsync(data);
-        },
         url: '/posts/{id}.json',
         ...options
     });
@@ -452,9 +376,6 @@ export const getPost = <ThrowOnError extends boolean = false>(options: Options<G
  */
 export const updatePost = <ThrowOnError extends boolean = false>(options: Options<UpdatePostData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<UpdatePostResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zUpdatePostResponse.parseAsync(data);
-        },
         url: '/posts/{id}.json',
         ...options,
         headers: {
@@ -469,9 +390,6 @@ export const updatePost = <ThrowOnError extends boolean = false>(options: Option
  */
 export const postReplies = <ThrowOnError extends boolean = false>(options: Options<PostRepliesData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<PostRepliesResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zPostRepliesResponse.parseAsync(data);
-        },
         url: '/posts/{id}/replies.json',
         ...options
     });
@@ -482,9 +400,6 @@ export const postReplies = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const lockPost = <ThrowOnError extends boolean = false>(options: Options<LockPostData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<LockPostResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zLockPostResponse.parseAsync(data);
-        },
         url: '/posts/{id}/locked.json',
         ...options,
         headers: {
@@ -499,9 +414,6 @@ export const lockPost = <ThrowOnError extends boolean = false>(options: Options<
  */
 export const performPostAction = <ThrowOnError extends boolean = false>(options: Options<PerformPostActionData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<PerformPostActionResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zPerformPostActionResponse.parseAsync(data);
-        },
         url: '/post_actions.json',
         ...options,
         headers: {
@@ -516,9 +428,6 @@ export const performPostAction = <ThrowOnError extends boolean = false>(options:
  */
 export const listUserPrivateMessages = <ThrowOnError extends boolean = false>(options: Options<ListUserPrivateMessagesData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<ListUserPrivateMessagesResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListUserPrivateMessagesResponse.parseAsync(data);
-        },
         url: '/topics/private-messages/{username}.json',
         ...options
     });
@@ -529,9 +438,6 @@ export const listUserPrivateMessages = <ThrowOnError extends boolean = false>(op
  */
 export const getUserSentPrivateMessages = <ThrowOnError extends boolean = false>(options: Options<GetUserSentPrivateMessagesData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetUserSentPrivateMessagesResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetUserSentPrivateMessagesResponse.parseAsync(data);
-        },
         url: '/topics/private-messages-sent/{username}.json',
         ...options
     });
@@ -542,9 +448,6 @@ export const getUserSentPrivateMessages = <ThrowOnError extends boolean = false>
  */
 export const search = <ThrowOnError extends boolean = false>(options?: Options<SearchData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<SearchResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zSearchResponse.parseAsync(data);
-        },
         url: '/search.json',
         ...options
     });
@@ -556,9 +459,6 @@ export const search = <ThrowOnError extends boolean = false>(options?: Options<S
  */
 export const getSite = <ThrowOnError extends boolean = false>(options?: Options<GetSiteData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetSiteResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetSiteResponse.parseAsync(data);
-        },
         url: '/site.json',
         ...options
     });
@@ -570,9 +470,6 @@ export const getSite = <ThrowOnError extends boolean = false>(options?: Options<
  */
 export const getSiteBasicInfo = <ThrowOnError extends boolean = false>(options?: Options<GetSiteBasicInfoData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetSiteBasicInfoResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetSiteBasicInfoResponse.parseAsync(data);
-        },
         url: '/site/basic-info.json',
         ...options
     });
@@ -583,9 +480,6 @@ export const getSiteBasicInfo = <ThrowOnError extends boolean = false>(options?:
  */
 export const listTagGroups = <ThrowOnError extends boolean = false>(options?: Options<ListTagGroupsData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<ListTagGroupsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListTagGroupsResponse.parseAsync(data);
-        },
         url: '/tag_groups.json',
         ...options
     });
@@ -596,9 +490,6 @@ export const listTagGroups = <ThrowOnError extends boolean = false>(options?: Op
  */
 export const createTagGroup = <ThrowOnError extends boolean = false>(options?: Options<CreateTagGroupData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<CreateTagGroupResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateTagGroupResponse.parseAsync(data);
-        },
         url: '/tag_groups.json',
         ...options,
         headers: {
@@ -613,9 +504,6 @@ export const createTagGroup = <ThrowOnError extends boolean = false>(options?: O
  */
 export const getTagGroup = <ThrowOnError extends boolean = false>(options: Options<GetTagGroupData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetTagGroupResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetTagGroupResponse.parseAsync(data);
-        },
         url: '/tag_groups/{id}.json',
         ...options
     });
@@ -626,9 +514,6 @@ export const getTagGroup = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const updateTagGroup = <ThrowOnError extends boolean = false>(options: Options<UpdateTagGroupData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<UpdateTagGroupResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zUpdateTagGroupResponse.parseAsync(data);
-        },
         url: '/tag_groups/{id}.json',
         ...options,
         headers: {
@@ -643,9 +528,6 @@ export const updateTagGroup = <ThrowOnError extends boolean = false>(options: Op
  */
 export const listTags = <ThrowOnError extends boolean = false>(options?: Options<ListTagsData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<ListTagsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListTagsResponse.parseAsync(data);
-        },
         url: '/tags.json',
         ...options
     });
@@ -656,9 +538,6 @@ export const listTags = <ThrowOnError extends boolean = false>(options?: Options
  */
 export const getTag = <ThrowOnError extends boolean = false>(options: Options<GetTagData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetTagResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetTagResponse.parseAsync(data);
-        },
         url: '/tag/{name}.json',
         ...options
     });
@@ -669,9 +548,6 @@ export const getTag = <ThrowOnError extends boolean = false>(options: Options<Ge
  */
 export const getSpecificPostsFromTopic = <ThrowOnError extends boolean = false>(options: Options<GetSpecificPostsFromTopicData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetSpecificPostsFromTopicResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetSpecificPostsFromTopicResponse.parseAsync(data);
-        },
         url: '/t/{id}/posts.json',
         ...options,
         headers: {
@@ -696,9 +572,6 @@ export const removeTopic = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const getTopic = <ThrowOnError extends boolean = false>(options: Options<GetTopicData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetTopicResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetTopicResponse.parseAsync(data);
-        },
         url: '/t/{id}.json',
         ...options
     });
@@ -709,9 +582,6 @@ export const getTopic = <ThrowOnError extends boolean = false>(options: Options<
  */
 export const updateTopic = <ThrowOnError extends boolean = false>(options: Options<UpdateTopicData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<UpdateTopicResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zUpdateTopicResponse.parseAsync(data);
-        },
         url: '/t/-/{id}.json',
         ...options,
         headers: {
@@ -726,9 +596,6 @@ export const updateTopic = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const inviteToTopic = <ThrowOnError extends boolean = false>(options: Options<InviteToTopicData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<InviteToTopicResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zInviteToTopicResponse.parseAsync(data);
-        },
         url: '/t/{id}/invite.json',
         ...options,
         headers: {
@@ -743,9 +610,6 @@ export const inviteToTopic = <ThrowOnError extends boolean = false>(options: Opt
  */
 export const inviteGroupToTopic = <ThrowOnError extends boolean = false>(options: Options<InviteGroupToTopicData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<InviteGroupToTopicResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zInviteGroupToTopicResponse.parseAsync(data);
-        },
         url: '/t/{id}/invite-group.json',
         ...options,
         headers: {
@@ -770,9 +634,6 @@ export const bookmarkTopic = <ThrowOnError extends boolean = false>(options: Opt
  */
 export const updateTopicStatus = <ThrowOnError extends boolean = false>(options: Options<UpdateTopicStatusData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<UpdateTopicStatusResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zUpdateTopicStatusResponse.parseAsync(data);
-        },
         url: '/t/{id}/status.json',
         ...options,
         headers: {
@@ -787,9 +648,6 @@ export const updateTopicStatus = <ThrowOnError extends boolean = false>(options:
  */
 export const listLatestTopics = <ThrowOnError extends boolean = false>(options: Options<ListLatestTopicsData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<ListLatestTopicsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListLatestTopicsResponse.parseAsync(data);
-        },
         url: '/latest.json',
         ...options
     });
@@ -800,9 +658,6 @@ export const listLatestTopics = <ThrowOnError extends boolean = false>(options: 
  */
 export const listTopTopics = <ThrowOnError extends boolean = false>(options: Options<ListTopTopicsData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<ListTopTopicsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListTopTopicsResponse.parseAsync(data);
-        },
         url: '/top.json',
         ...options
     });
@@ -813,9 +668,6 @@ export const listTopTopics = <ThrowOnError extends boolean = false>(options: Opt
  */
 export const setNotificationLevel = <ThrowOnError extends boolean = false>(options: Options<SetNotificationLevelData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<SetNotificationLevelResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zSetNotificationLevelResponse.parseAsync(data);
-        },
         url: '/t/{id}/notifications.json',
         ...options,
         headers: {
@@ -830,9 +682,6 @@ export const setNotificationLevel = <ThrowOnError extends boolean = false>(optio
  */
 export const updateTopicTimestamp = <ThrowOnError extends boolean = false>(options: Options<UpdateTopicTimestampData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<UpdateTopicTimestampResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zUpdateTopicTimestampResponse.parseAsync(data);
-        },
         url: '/t/{id}/change-timestamp.json',
         ...options,
         headers: {
@@ -847,9 +696,6 @@ export const updateTopicTimestamp = <ThrowOnError extends boolean = false>(optio
  */
 export const createTopicTimer = <ThrowOnError extends boolean = false>(options: Options<CreateTopicTimerData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<CreateTopicTimerResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateTopicTimerResponse.parseAsync(data);
-        },
         url: '/t/{id}/timer.json',
         ...options,
         headers: {
@@ -875,9 +721,6 @@ export const getTopicByExternalId = <ThrowOnError extends boolean = false>(optio
 export const createUpload = <ThrowOnError extends boolean = false>(options?: Options<CreateUploadData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<CreateUploadResponse, unknown, ThrowOnError>({
         ...formDataBodySerializer,
-        responseValidator: async (data) => {
-            return await zCreateUploadResponse.parseAsync(data);
-        },
         url: '/uploads.json',
         ...options,
         headers: {
@@ -913,9 +756,6 @@ export const createUpload = <ThrowOnError extends boolean = false>(options?: Opt
  */
 export const generatePresignedPut = <ThrowOnError extends boolean = false>(options?: Options<GeneratePresignedPutData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<GeneratePresignedPutResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGeneratePresignedPutResponse.parseAsync(data);
-        },
         url: '/uploads/generate-presigned-put.json',
         ...options,
         headers: {
@@ -948,9 +788,6 @@ export const generatePresignedPut = <ThrowOnError extends boolean = false>(optio
  */
 export const completeExternalUpload = <ThrowOnError extends boolean = false>(options?: Options<CompleteExternalUploadData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<CompleteExternalUploadResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCompleteExternalUploadResponse.parseAsync(data);
-        },
         url: '/uploads/complete-external-upload.json',
         ...options,
         headers: {
@@ -977,9 +814,6 @@ export const completeExternalUpload = <ThrowOnError extends boolean = false>(opt
  */
 export const createMultipartUpload = <ThrowOnError extends boolean = false>(options?: Options<CreateMultipartUploadData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<CreateMultipartUploadResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateMultipartUploadResponse.parseAsync(data);
-        },
         url: '/uploads/create-multipart.json',
         ...options,
         headers: {
@@ -1016,9 +850,6 @@ export const createMultipartUpload = <ThrowOnError extends boolean = false>(opti
  */
 export const batchPresignMultipartParts = <ThrowOnError extends boolean = false>(options?: Options<BatchPresignMultipartPartsData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<BatchPresignMultipartPartsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zBatchPresignMultipartPartsResponse.parseAsync(data);
-        },
         url: '/uploads/batch-presign-multipart-parts.json',
         ...options,
         headers: {
@@ -1046,9 +877,6 @@ export const batchPresignMultipartParts = <ThrowOnError extends boolean = false>
  */
 export const abortMultipart = <ThrowOnError extends boolean = false>(options?: Options<AbortMultipartData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<AbortMultipartResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zAbortMultipartResponse.parseAsync(data);
-        },
         url: '/uploads/abort-multipart.json',
         ...options,
         headers: {
@@ -1078,9 +906,6 @@ export const abortMultipart = <ThrowOnError extends boolean = false>(options?: O
  */
 export const completeMultipart = <ThrowOnError extends boolean = false>(options?: Options<CompleteMultipartData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<CompleteMultipartResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCompleteMultipartResponse.parseAsync(data);
-        },
         url: '/uploads/complete-multipart.json',
         ...options,
         headers: {
@@ -1095,9 +920,6 @@ export const completeMultipart = <ThrowOnError extends boolean = false>(options?
  */
 export const listUserBadges = <ThrowOnError extends boolean = false>(options: Options<ListUserBadgesData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<ListUserBadgesResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListUserBadgesResponse.parseAsync(data);
-        },
         url: '/user-badges/{username}.json',
         ...options
     });
@@ -1108,9 +930,6 @@ export const listUserBadges = <ThrowOnError extends boolean = false>(options: Op
  */
 export const createUser = <ThrowOnError extends boolean = false>(options: Options<CreateUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<CreateUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zCreateUserResponse.parseAsync(data);
-        },
         url: '/users.json',
         ...options,
         headers: {
@@ -1125,9 +944,6 @@ export const createUser = <ThrowOnError extends boolean = false>(options: Option
  */
 export const getUser = <ThrowOnError extends boolean = false>(options: Options<GetUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetUserResponse.parseAsync(data);
-        },
         url: '/u/{username}.json',
         ...options
     });
@@ -1138,9 +954,6 @@ export const getUser = <ThrowOnError extends boolean = false>(options: Options<G
  */
 export const updateUser = <ThrowOnError extends boolean = false>(options: Options<UpdateUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<UpdateUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zUpdateUserResponse.parseAsync(data);
-        },
         url: '/u/{username}.json',
         ...options,
         headers: {
@@ -1155,9 +968,6 @@ export const updateUser = <ThrowOnError extends boolean = false>(options: Option
  */
 export const getUserExternalId = <ThrowOnError extends boolean = false>(options: Options<GetUserExternalIdData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetUserExternalIdResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetUserExternalIdResponse.parseAsync(data);
-        },
         url: '/u/by-external/{external_id}.json',
         ...options
     });
@@ -1168,9 +978,6 @@ export const getUserExternalId = <ThrowOnError extends boolean = false>(options:
  */
 export const getUserIdentiyProviderExternalId = <ThrowOnError extends boolean = false>(options: Options<GetUserIdentiyProviderExternalIdData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetUserIdentiyProviderExternalIdResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetUserIdentiyProviderExternalIdResponse.parseAsync(data);
-        },
         url: '/u/by-external/{provider}/{external_id}.json',
         ...options
     });
@@ -1181,9 +988,6 @@ export const getUserIdentiyProviderExternalId = <ThrowOnError extends boolean = 
  */
 export const updateAvatar = <ThrowOnError extends boolean = false>(options: Options<UpdateAvatarData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<UpdateAvatarResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zUpdateAvatarResponse.parseAsync(data);
-        },
         url: '/u/{username}/preferences/avatar/pick.json',
         ...options,
         headers: {
@@ -1226,9 +1030,6 @@ export const updateUsername = <ThrowOnError extends boolean = false>(options: Op
  */
 export const listUsersPublic = <ThrowOnError extends boolean = false>(options: Options<ListUsersPublicData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<ListUsersPublicResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListUsersPublicResponse.parseAsync(data);
-        },
         url: '/directory_items.json',
         ...options
     });
@@ -1239,9 +1040,6 @@ export const listUsersPublic = <ThrowOnError extends boolean = false>(options: O
  */
 export const deleteUser = <ThrowOnError extends boolean = false>(options: Options<DeleteUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).delete<DeleteUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zDeleteUserResponse.parseAsync(data);
-        },
         url: '/admin/users/{id}.json',
         ...options,
         headers: {
@@ -1256,9 +1054,6 @@ export const deleteUser = <ThrowOnError extends boolean = false>(options: Option
  */
 export const adminGetUser = <ThrowOnError extends boolean = false>(options: Options<AdminGetUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<AdminGetUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zAdminGetUserResponse.parseAsync(data);
-        },
         url: '/admin/users/{id}.json',
         ...options
     });
@@ -1269,9 +1064,6 @@ export const adminGetUser = <ThrowOnError extends boolean = false>(options: Opti
  */
 export const activateUser = <ThrowOnError extends boolean = false>(options: Options<ActivateUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<ActivateUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zActivateUserResponse.parseAsync(data);
-        },
         url: '/admin/users/{id}/activate.json',
         ...options
     });
@@ -1282,9 +1074,6 @@ export const activateUser = <ThrowOnError extends boolean = false>(options: Opti
  */
 export const deactivateUser = <ThrowOnError extends boolean = false>(options: Options<DeactivateUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<DeactivateUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zDeactivateUserResponse.parseAsync(data);
-        },
         url: '/admin/users/{id}/deactivate.json',
         ...options
     });
@@ -1295,9 +1084,6 @@ export const deactivateUser = <ThrowOnError extends boolean = false>(options: Op
  */
 export const suspendUser = <ThrowOnError extends boolean = false>(options: Options<SuspendUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<SuspendUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zSuspendUserResponse.parseAsync(data);
-        },
         url: '/admin/users/{id}/suspend.json',
         ...options,
         headers: {
@@ -1312,9 +1098,6 @@ export const suspendUser = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const silenceUser = <ThrowOnError extends boolean = false>(options: Options<SilenceUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<SilenceUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zSilenceUserResponse.parseAsync(data);
-        },
         url: '/admin/users/{id}/silence.json',
         ...options,
         headers: {
@@ -1329,9 +1112,6 @@ export const silenceUser = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const anonymizeUser = <ThrowOnError extends boolean = false>(options: Options<AnonymizeUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<AnonymizeUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zAnonymizeUserResponse.parseAsync(data);
-        },
         url: '/admin/users/{id}/anonymize.json',
         ...options
     });
@@ -1342,9 +1122,6 @@ export const anonymizeUser = <ThrowOnError extends boolean = false>(options: Opt
  */
 export const logOutUser = <ThrowOnError extends boolean = false>(options: Options<LogOutUserData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<LogOutUserResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zLogOutUserResponse.parseAsync(data);
-        },
         url: '/admin/users/{id}/log_out.json',
         ...options
     });
@@ -1355,9 +1132,6 @@ export const logOutUser = <ThrowOnError extends boolean = false>(options: Option
  */
 export const refreshGravatar = <ThrowOnError extends boolean = false>(options: Options<RefreshGravatarData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<RefreshGravatarResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zRefreshGravatarResponse.parseAsync(data);
-        },
         url: '/user_avatar/{username}/refresh_gravatar.json',
         ...options
     });
@@ -1368,9 +1142,6 @@ export const refreshGravatar = <ThrowOnError extends boolean = false>(options: O
  */
 export const adminListUsers = <ThrowOnError extends boolean = false>(options: Options<AdminListUsersData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<AdminListUsersResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zAdminListUsersResponse.parseAsync(data);
-        },
         url: '/admin/users/list/{flag}.json',
         ...options
     });
@@ -1381,9 +1152,6 @@ export const adminListUsers = <ThrowOnError extends boolean = false>(options: Op
  */
 export const listUserActions = <ThrowOnError extends boolean = false>(options: Options<ListUserActionsData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<ListUserActionsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zListUserActionsResponse.parseAsync(data);
-        },
         url: '/user_actions.json',
         ...options
     });
@@ -1394,9 +1162,6 @@ export const listUserActions = <ThrowOnError extends boolean = false>(options: O
  */
 export const sendPasswordResetEmail = <ThrowOnError extends boolean = false>(options?: Options<SendPasswordResetEmailData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).post<SendPasswordResetEmailResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zSendPasswordResetEmailResponse.parseAsync(data);
-        },
         url: '/session/forgot_password.json',
         ...options,
         headers: {
@@ -1425,9 +1190,6 @@ export const changePassword = <ThrowOnError extends boolean = false>(options: Op
  */
 export const getUserEmails = <ThrowOnError extends boolean = false>(options: Options<GetUserEmailsData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetUserEmailsResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetUserEmailsResponse.parseAsync(data);
-        },
         url: '/u/{username}/emails.json',
         ...options
     });
@@ -1439,9 +1201,6 @@ export const getUserEmails = <ThrowOnError extends boolean = false>(options: Opt
 export const sendMessage = <ThrowOnError extends boolean = false>(options: Options<SendMessageData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<SendMessageResponse, unknown, ThrowOnError>({
         ...urlSearchParamsBodySerializer,
-        responseValidator: async (data) => {
-            return await zSendMessageResponse.parseAsync(data);
-        },
         url: '/chat/{channel_id}',
         ...options,
         headers: {
@@ -1457,9 +1216,6 @@ export const sendMessage = <ThrowOnError extends boolean = false>(options: Optio
 export const editMessage = <ThrowOnError extends boolean = false>(options: Options<EditMessageData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<EditMessageResponse, unknown, ThrowOnError>({
         ...urlSearchParamsBodySerializer,
-        responseValidator: async (data) => {
-            return await zEditMessageResponse.parseAsync(data);
-        },
         url: '/chat/api/channels/{channel_id}/messages/{message_id}',
         ...options,
         headers: {
@@ -1475,9 +1231,6 @@ export const editMessage = <ThrowOnError extends boolean = false>(options: Optio
 export const getMessages = <ThrowOnError extends boolean = false>(options: Options<GetMessagesData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetMessagesResponse, unknown, ThrowOnError>({
         responseTransformer: getMessagesResponseTransformer,
-        responseValidator: async (data) => {
-            return await zGetMessagesResponse.parseAsync(data);
-        },
         url: '/chat/api/channels/{channel_id}/messages',
         ...options
     });
@@ -1489,9 +1242,6 @@ export const getMessages = <ThrowOnError extends boolean = false>(options: Optio
 export const reactToMessage = <ThrowOnError extends boolean = false>(options: Options<ReactToMessageData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).put<ReactToMessageResponse, unknown, ThrowOnError>({
         ...urlSearchParamsBodySerializer,
-        responseValidator: async (data) => {
-            return await zReactToMessageResponse.parseAsync(data);
-        },
         url: '/chat/{channel_id}/react/{message_id}',
         ...options,
         headers: {
@@ -1506,9 +1256,6 @@ export const reactToMessage = <ThrowOnError extends boolean = false>(options: Op
  */
 export const getUserCard = <ThrowOnError extends boolean = false>(options: Options<GetUserCardData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetUserCardResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetUserCardResponse.parseAsync(data);
-        },
         url: '/u/{username}/card.json',
         ...options
     });
@@ -1519,9 +1266,6 @@ export const getUserCard = <ThrowOnError extends boolean = false>(options: Optio
  */
 export const getSession = <ThrowOnError extends boolean = false>(options?: Options<GetSessionData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetSessionResponse, unknown, ThrowOnError>({
-        responseValidator: async (data) => {
-            return await zGetSessionResponse.parseAsync(data);
-        },
         url: '/session/current.json',
         ...options
     });

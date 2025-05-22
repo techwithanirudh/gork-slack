@@ -2,8 +2,6 @@ import { getThread } from "./slack-utils";
 import { generateResponse } from "./generate-response";
 import type { WebhookNotification } from "../types";
 import { editMessage, sendMessage } from "../client/sdk.gen";
-import { zGetSessionResponse } from '../client/zod.gen';
-import { z } from 'zod';
 import { GetSessionResponse } from "../client/types.gen";
 
 const updateStatusUtil = async (

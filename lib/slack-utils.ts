@@ -3,9 +3,6 @@ import type { CoreMessage } from 'ai'
 import * as crypto from 'node:crypto'
 import { client } from '../client/client.gen';
 import { sendMessage, editMessage, getMessages, getSession } from '../client/sdk.gen';
-import { User } from '../types/discourse';
-import { z } from 'zod';
-import { zGetSessionResponse } from '../client/zod.gen';
 import { GetSessionResponse } from '../client/types.gen';
 
 const signingSecret = process.env.DISCOURSE_SIGNING_SECRET!

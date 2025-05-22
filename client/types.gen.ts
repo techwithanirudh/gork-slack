@@ -5260,6 +5260,25 @@ export type GetSessionData = {
     url: '/session/current.json';
 };
 
+export type GetSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Forbidden
+     */
+    403: unknown;
+    /**
+     * Too Many Requests
+     */
+    429: unknown;
+    /**
+     * Internal Server Error
+     */
+    500: unknown;
+};
+
 export type GetSessionResponses = {
     /**
      * Authenticated User Session Data
