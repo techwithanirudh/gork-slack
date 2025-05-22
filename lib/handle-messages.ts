@@ -2,10 +2,14 @@ import type {
   AssistantThreadStartedEvent,
   GenericMessageEvent,
 } from "@slack/web-api";
-import {  getThread, updateStatusUtil } from "./slack-utils";
+import {  getBotUser, getThread, updateStatusUtil } from "./slack-utils";
 import { generateResponse } from "./generate-response";
 import type { WebhookChatMessage } from "../types";
 import { sendMessage } from "../client/sdk.gen";
+import { keywords } from "../config";
+import { zGetSessionResponse } from '../client/zod.gen';
+import { z } from 'zod';
+import { GetSessionData, GetSessionResponse } from "../client/types.gen";
 
 export async function assistantThreadMessage(
   event: AssistantThreadStartedEvent,
@@ -42,18 +46,30 @@ export async function assistantThreadMessage(
 
 export async function handleNewAssistantMessage(
   event: WebhookChatMessage,
-  botUserId: number,
+  botUser: GetSessionResponse['current_user'],
 ) {
   if (
-    event.message.user.id === botUserId
+    !botUser ||
+    event.message.user.id === botUser.id
   )
     return;
 
   const { channel } = event;
+  const { message: content } = event.message;
+
+  const isDirectMessage = channel.chatable_type === "DirectMessage";
+  const hasKeyword = keywords.some((k) =>
+    content.toLowerCase().includes(k.toLowerCase())
+  );
+
+  if (!isDirectMessage && !hasKeyword) {
+    console.log("Not a direct message or no keyword found");
+    return;
+  }
 
   const updateStatus = await updateStatusUtil("is thinking...", event);
 
-  const messages = await getThread(channel.id, botUserId);
+  const messages = await getThread(channel.id, botUser);
   const result = await generateResponse(messages, updateStatus);
 
   await updateStatus(result);

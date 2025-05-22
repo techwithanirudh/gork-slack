@@ -4,7 +4,7 @@ import {
 } from "../lib/handle-messages";
 import { waitUntil } from "@vercel/functions";
 import { handleNewAppMention } from "../lib/handle-app-mention";
-import { verifyRequest, getBotId } from "../lib/slack-utils";
+import { verifyRequest, getBotUser } from "../lib/slack-utils";
 import type { WebhookChatMessage, WebhookNotification } from "../types";
 
 export async function POST(request: Request) {
@@ -14,28 +14,26 @@ export async function POST(request: Request) {
   await verifyRequest({ request, rawBody });
 
   try {
-    const botUserId = await getBotId();
+    const botUser = await getBotUser();
 
     const event = {
       type: request.headers.get('X-Discourse-Event-Type'),
       id: request.headers.get('X-Discourse-Event-Id')
     };
 
-    console.log('got request', event.type)
-    
-    if (event.type === "notification" && payload.notification_type === 29) {
-      waitUntil(handleNewAppMention(payload?.notification as WebhookNotification, botUserId));
-    }
-
-    // if (event.type === "assistant_thread_started") {
-    //   waitUntil(assistantThreadMessage(event));
-    // }
-
-    if (
+    if (event.type === "notification" && payload.notification?.notification_type === 29) {
+      console.log('processing AI request from notification');
+      waitUntil(
+        handleNewAppMention(payload?.notification as WebhookNotification, botUser)
+      );
+    } else if (
       event.type === "chat_message" &&
-      payload?.chat_message.message.user.id !== botUserId
+      payload?.chat_message.message.user.id !== botUser.id
     ) {
-      waitUntil(handleNewAssistantMessage(payload?.chat_message as WebhookChatMessage, botUserId));
+      console.log('processing AI request from chat message');
+      waitUntil(
+        handleNewAssistantMessage(payload?.chat_message as WebhookChatMessage, botUser)
+      );
     }
 
     return new Response("Success!", { status: 200 });

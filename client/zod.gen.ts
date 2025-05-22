@@ -4579,12 +4579,26 @@ export const zGetMessagesResponse = z.object({
             username: z.string().optional(),
             name: z.string().optional()
         })).optional(),
-        available_flags: z.array(z.string()).optional(),
+        available_flags: z.array(z.union([
+            z.string(),
+            z.null()
+        ])).optional(),
         uploads: z.array(z.object({})).optional(),
-        edited: z.boolean().optional()
+        edited: z.boolean().optional(),
+        blocks: z.array(z.object({})).optional(),
+        chat_webhook_event: z.union([
+            z.object({}),
+            z.null()
+        ]).optional()
     })).optional(),
-    tracking: z.object({}).optional(),
-    meta: z.object({}).optional()
+    tracking: z.union([
+        z.object({}),
+        z.null()
+    ]).optional(),
+    meta: z.union([
+        z.object({}),
+        z.null()
+    ]).optional()
 });
 
 export const zReactToMessageResponse = z.object({
@@ -4597,9 +4611,308 @@ export const zGetSessionResponse = z.object({
     current_user: z.object({
         id: z.number().int(),
         username: z.string(),
-        name: z.string().optional(),
+        name: z.string(),
         avatar_template: z.string(),
+        last_posted_at: z.union([
+            z.string(),
+            z.null()
+        ]),
+        last_seen_at: z.union([
+            z.string(),
+            z.null()
+        ]),
+        created_at: z.string(),
+        ignored: z.boolean(),
+        muted: z.boolean(),
+        can_ignore_user: z.boolean(),
+        can_ignore_users: z.boolean().optional(),
+        can_mute_user: z.boolean(),
+        can_mute_users: z.boolean().optional(),
+        can_send_private_messages: z.boolean(),
+        can_send_private_message_to_user: z.boolean(),
+        trust_level: z.number().int(),
+        moderator: z.boolean(),
         admin: z.boolean(),
-        moderator: z.boolean()
-    })
+        title: z.union([
+            z.string(),
+            z.null()
+        ]),
+        badge_count: z.number().int(),
+        second_factor_backup_enabled: z.boolean().optional(),
+        user_fields: z.object({
+            1: z.union([
+                z.string(),
+                z.null()
+            ]),
+            2: z.union([
+                z.string(),
+                z.null()
+            ])
+        }).optional(),
+        custom_fields: z.object({
+            first_name: z.union([
+                z.string(),
+                z.null()
+            ]).optional()
+        }),
+        time_read: z.number().int(),
+        recent_time_read: z.number().int(),
+        primary_group_id: z.union([
+            z.number().int(),
+            z.null()
+        ]),
+        primary_group_name: z.union([
+            z.string(),
+            z.null()
+        ]),
+        flair_group_id: z.union([
+            z.number().int(),
+            z.null()
+        ]),
+        flair_name: z.union([
+            z.string(),
+            z.null()
+        ]),
+        flair_url: z.union([
+            z.string(),
+            z.null()
+        ]),
+        flair_bg_color: z.union([
+            z.string(),
+            z.null()
+        ]),
+        flair_color: z.union([
+            z.string(),
+            z.null()
+        ]),
+        featured_topic: z.union([
+            z.string(),
+            z.null()
+        ]),
+        staged: z.boolean(),
+        can_edit: z.boolean(),
+        can_edit_username: z.boolean(),
+        can_edit_email: z.boolean(),
+        can_edit_name: z.boolean(),
+        uploaded_avatar_id: z.union([
+            z.number().int(),
+            z.null()
+        ]),
+        has_title_badges: z.boolean(),
+        pending_count: z.number().int(),
+        pending_posts_count: z.number().int().optional(),
+        profile_view_count: z.number().int(),
+        second_factor_enabled: z.boolean(),
+        can_upload_profile_header: z.boolean(),
+        can_upload_user_card_background: z.boolean(),
+        post_count: z.number().int(),
+        can_be_deleted: z.boolean(),
+        can_delete_all_posts: z.boolean(),
+        locale: z.union([
+            z.string(),
+            z.null()
+        ]),
+        muted_category_ids: z.array(z.unknown()),
+        regular_category_ids: z.array(z.unknown()),
+        watched_tags: z.array(z.unknown()),
+        watching_first_post_tags: z.array(z.unknown()),
+        tracked_tags: z.array(z.unknown()),
+        muted_tags: z.array(z.unknown()),
+        tracked_category_ids: z.array(z.unknown()),
+        watched_category_ids: z.array(z.unknown()),
+        watched_first_post_category_ids: z.array(z.unknown()),
+        system_avatar_upload_id: z.union([
+            z.string(),
+            z.null()
+        ]),
+        system_avatar_template: z.string(),
+        muted_usernames: z.array(z.unknown()),
+        ignored_usernames: z.array(z.unknown()),
+        allowed_pm_usernames: z.array(z.unknown()),
+        mailing_list_posts_per_day: z.number().int(),
+        can_change_bio: z.boolean(),
+        can_change_location: z.boolean(),
+        can_change_website: z.boolean(),
+        can_change_tracking_preferences: z.boolean(),
+        user_api_keys: z.union([
+            z.string(),
+            z.null()
+        ]),
+        user_passkeys: z.array(z.unknown()).optional(),
+        sidebar_tags: z.array(z.unknown()).optional(),
+        sidebar_category_ids: z.array(z.unknown()).optional(),
+        display_sidebar_tags: z.boolean().optional(),
+        can_pick_theme_with_custom_homepage: z.boolean().optional(),
+        user_auth_tokens: z.array(z.object({
+            id: z.number().int(),
+            client_ip: z.string(),
+            location: z.string(),
+            browser: z.string(),
+            device: z.string(),
+            os: z.string(),
+            icon: z.string(),
+            created_at: z.string(),
+            seen_at: z.string(),
+            is_active: z.boolean()
+        })),
+        user_notification_schedule: z.object({
+            enabled: z.boolean(),
+            day_0_start_time: z.number().int(),
+            day_0_end_time: z.number().int(),
+            day_1_start_time: z.number().int(),
+            day_1_end_time: z.number().int(),
+            day_2_start_time: z.number().int(),
+            day_2_end_time: z.number().int(),
+            day_3_start_time: z.number().int(),
+            day_3_end_time: z.number().int(),
+            day_4_start_time: z.number().int(),
+            day_4_end_time: z.number().int(),
+            day_5_start_time: z.number().int(),
+            day_5_end_time: z.number().int(),
+            day_6_start_time: z.number().int(),
+            day_6_end_time: z.number().int()
+        }),
+        use_logo_small_as_avatar: z.boolean(),
+        featured_user_badge_ids: z.array(z.unknown()),
+        invited_by: z.union([
+            z.string(),
+            z.null()
+        ]),
+        groups: z.array(z.object({
+            id: z.number().int(),
+            automatic: z.boolean(),
+            name: z.string(),
+            display_name: z.string(),
+            user_count: z.number().int(),
+            mentionable_level: z.number().int(),
+            messageable_level: z.number().int(),
+            visibility_level: z.number().int(),
+            primary_group: z.boolean(),
+            title: z.union([
+                z.string(),
+                z.null()
+            ]),
+            grant_trust_level: z.union([
+                z.string(),
+                z.null()
+            ]),
+            incoming_email: z.union([
+                z.string(),
+                z.null()
+            ]),
+            has_messages: z.boolean(),
+            flair_url: z.union([
+                z.string(),
+                z.null()
+            ]),
+            flair_bg_color: z.union([
+                z.string(),
+                z.null()
+            ]),
+            flair_color: z.union([
+                z.string(),
+                z.null()
+            ]),
+            bio_raw: z.union([
+                z.string(),
+                z.null()
+            ]),
+            bio_cooked: z.union([
+                z.string(),
+                z.null()
+            ]),
+            bio_excerpt: z.union([
+                z.string(),
+                z.null()
+            ]),
+            public_admission: z.boolean(),
+            public_exit: z.boolean(),
+            allow_membership_requests: z.boolean(),
+            full_name: z.union([
+                z.string(),
+                z.null()
+            ]),
+            default_notification_level: z.number().int(),
+            membership_request_template: z.union([
+                z.string(),
+                z.null()
+            ]),
+            members_visibility_level: z.number().int(),
+            can_see_members: z.boolean(),
+            can_admin_group: z.boolean(),
+            publish_read_state: z.boolean()
+        })),
+        group_users: z.array(z.object({
+            group_id: z.number().int(),
+            user_id: z.number().int(),
+            notification_level: z.number().int(),
+            owner: z.boolean().optional()
+        })),
+        user_option: z.object({
+            user_id: z.number().int(),
+            mailing_list_mode: z.boolean(),
+            mailing_list_mode_frequency: z.number().int(),
+            email_digests: z.boolean(),
+            email_level: z.number().int(),
+            email_messages_level: z.number().int(),
+            external_links_in_new_tab: z.boolean(),
+            bookmark_auto_delete_preference: z.number().int().optional(),
+            color_scheme_id: z.union([
+                z.string(),
+                z.null()
+            ]),
+            dark_scheme_id: z.union([
+                z.string(),
+                z.null()
+            ]),
+            dynamic_favicon: z.boolean(),
+            enable_quoting: z.boolean(),
+            enable_smart_lists: z.boolean(),
+            enable_defer: z.boolean(),
+            digest_after_minutes: z.number().int(),
+            automatically_unpin_topics: z.boolean(),
+            auto_track_topics_after_msecs: z.number().int(),
+            notification_level_when_replying: z.number().int(),
+            new_topic_duration_minutes: z.number().int(),
+            email_previous_replies: z.number().int(),
+            email_in_reply_to: z.boolean(),
+            like_notification_frequency: z.number().int(),
+            include_tl0_in_digests: z.boolean(),
+            theme_ids: z.array(z.unknown()),
+            theme_key_seq: z.number().int(),
+            allow_private_messages: z.boolean(),
+            enable_allowed_pm_users: z.boolean(),
+            homepage_id: z.union([
+                z.string(),
+                z.null()
+            ]),
+            hide_profile_and_presence: z.boolean(),
+            hide_profile: z.boolean(),
+            hide_presence: z.boolean(),
+            text_size: z.string(),
+            text_size_seq: z.number().int(),
+            title_count_mode: z.string(),
+            timezone: z.union([
+                z.string(),
+                z.null()
+            ]),
+            skip_new_user_tips: z.boolean(),
+            default_calendar: z.string().optional(),
+            oldest_search_log_date: z.union([
+                z.string(),
+                z.null()
+            ]).optional(),
+            sidebar_link_to_filtered_list: z.boolean().optional(),
+            sidebar_show_count_of_new_items: z.boolean().optional(),
+            watched_precedence_over_muted: z.union([
+                z.boolean(),
+                z.null()
+            ]).optional(),
+            seen_popups: z.union([
+                z.array(z.unknown()),
+                z.null()
+            ]).optional(),
+            topics_unread_when_closed: z.boolean()
+        })
+    }).optional()
 });

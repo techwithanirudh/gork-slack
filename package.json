@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && pnpm run openapi-ts",
+    "build": "tsc",
     "start": "node dist/index.js",
     "openapi-ts": "openapi-ts"
   },

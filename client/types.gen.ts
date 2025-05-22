@@ -5101,8 +5101,8 @@ export type GetUserEmailsResponses = {
 export type GetUserEmailsResponse = GetUserEmailsResponses[keyof GetUserEmailsResponses];
 
 export type SendMessageData = {
-    body: {
-        message: string;
+    body?: {
+        message?: string;
         staged_id?: string;
     };
     path: {
@@ -5125,8 +5125,8 @@ export type SendMessageResponses = {
 export type SendMessageResponse = SendMessageResponses[keyof SendMessageResponses];
 
 export type EditMessageData = {
-    body: {
-        message: string;
+    body?: {
+        message?: string;
     };
     path: {
         channel_id: number;
@@ -5162,7 +5162,7 @@ export type GetMessagesData = {
 
 export type GetMessagesResponses = {
     /**
-     * A page of messages with tracking info
+     * A page of messages
      */
     200: {
         messages?: Array<{
@@ -5186,27 +5186,33 @@ export type GetMessagesResponses = {
                 username?: string;
                 name?: string;
             }>;
-            available_flags?: Array<string>;
+            available_flags?: Array<string | null>;
             uploads?: Array<{
                 [key: string]: unknown;
             }>;
             edited?: boolean;
+            blocks?: Array<{
+                [key: string]: unknown;
+            }>;
+            chat_webhook_event?: {
+                [key: string]: unknown;
+            } | null;
         }>;
         tracking?: {
             [key: string]: unknown;
-        };
+        } | null;
         meta?: {
             [key: string]: unknown;
-        };
+        } | null;
     };
 };
 
 export type GetMessagesResponse = GetMessagesResponses[keyof GetMessagesResponses];
 
 export type ReactToMessageData = {
-    body: {
-        react_action: string;
-        emoji: string;
+    body?: {
+        react_action?: string;
+        emoji?: string;
     };
     path: {
         channel_id: number;
@@ -5238,7 +5244,7 @@ export type GetUserCardData = {
 
 export type GetUserCardResponses = {
     /**
-     * Full user card with badges and metadata
+     * User card with badges & metadata
      */
     200: {
         [key: string]: unknown;
@@ -5256,16 +5262,204 @@ export type GetSessionData = {
 
 export type GetSessionResponses = {
     /**
-     * Authenticated user session data
+     * Authenticated User Session Data
      */
     200: {
-        current_user: {
+        current_user?: {
             id: number;
             username: string;
-            name?: string;
+            name: string;
             avatar_template: string;
-            admin: boolean;
+            last_posted_at: string | null;
+            last_seen_at: string | null;
+            created_at: string;
+            ignored: boolean;
+            muted: boolean;
+            can_ignore_user: boolean;
+            can_ignore_users?: boolean;
+            can_mute_user: boolean;
+            can_mute_users?: boolean;
+            can_send_private_messages: boolean;
+            can_send_private_message_to_user: boolean;
+            trust_level: number;
             moderator: boolean;
+            admin: boolean;
+            title: string | null;
+            badge_count: number;
+            second_factor_backup_enabled?: boolean;
+            user_fields?: {
+                1: string | null;
+                2: string | null;
+            };
+            custom_fields: {
+                first_name?: string | null;
+            };
+            time_read: number;
+            recent_time_read: number;
+            primary_group_id: number | null;
+            primary_group_name: string | null;
+            flair_group_id: number | null;
+            flair_name: string | null;
+            flair_url: string | null;
+            flair_bg_color: string | null;
+            flair_color: string | null;
+            featured_topic: string | null;
+            staged: boolean;
+            can_edit: boolean;
+            can_edit_username: boolean;
+            can_edit_email: boolean;
+            can_edit_name: boolean;
+            uploaded_avatar_id: number | null;
+            has_title_badges: boolean;
+            pending_count: number;
+            pending_posts_count?: number;
+            profile_view_count: number;
+            second_factor_enabled: boolean;
+            can_upload_profile_header: boolean;
+            can_upload_user_card_background: boolean;
+            post_count: number;
+            can_be_deleted: boolean;
+            can_delete_all_posts: boolean;
+            locale: string | null;
+            muted_category_ids: Array<unknown>;
+            regular_category_ids: Array<unknown>;
+            watched_tags: Array<unknown>;
+            watching_first_post_tags: Array<unknown>;
+            tracked_tags: Array<unknown>;
+            muted_tags: Array<unknown>;
+            tracked_category_ids: Array<unknown>;
+            watched_category_ids: Array<unknown>;
+            watched_first_post_category_ids: Array<unknown>;
+            system_avatar_upload_id: string | null;
+            system_avatar_template: string;
+            muted_usernames: Array<unknown>;
+            ignored_usernames: Array<unknown>;
+            allowed_pm_usernames: Array<unknown>;
+            mailing_list_posts_per_day: number;
+            can_change_bio: boolean;
+            can_change_location: boolean;
+            can_change_website: boolean;
+            can_change_tracking_preferences: boolean;
+            user_api_keys: string | null;
+            user_passkeys?: Array<unknown>;
+            sidebar_tags?: Array<unknown>;
+            sidebar_category_ids?: Array<unknown>;
+            display_sidebar_tags?: boolean;
+            can_pick_theme_with_custom_homepage?: boolean;
+            user_auth_tokens: Array<{
+                id: number;
+                client_ip: string;
+                location: string;
+                browser: string;
+                device: string;
+                os: string;
+                icon: string;
+                created_at: string;
+                seen_at: string;
+                is_active: boolean;
+            }>;
+            user_notification_schedule: {
+                enabled: boolean;
+                day_0_start_time: number;
+                day_0_end_time: number;
+                day_1_start_time: number;
+                day_1_end_time: number;
+                day_2_start_time: number;
+                day_2_end_time: number;
+                day_3_start_time: number;
+                day_3_end_time: number;
+                day_4_start_time: number;
+                day_4_end_time: number;
+                day_5_start_time: number;
+                day_5_end_time: number;
+                day_6_start_time: number;
+                day_6_end_time: number;
+            };
+            use_logo_small_as_avatar: boolean;
+            featured_user_badge_ids: Array<unknown>;
+            invited_by: string | null;
+            groups: Array<{
+                id: number;
+                automatic: boolean;
+                name: string;
+                display_name: string;
+                user_count: number;
+                mentionable_level: number;
+                messageable_level: number;
+                visibility_level: number;
+                primary_group: boolean;
+                title: string | null;
+                grant_trust_level: string | null;
+                incoming_email: string | null;
+                has_messages: boolean;
+                flair_url: string | null;
+                flair_bg_color: string | null;
+                flair_color: string | null;
+                bio_raw: string | null;
+                bio_cooked: string | null;
+                bio_excerpt: string | null;
+                public_admission: boolean;
+                public_exit: boolean;
+                allow_membership_requests: boolean;
+                full_name: string | null;
+                default_notification_level: number;
+                membership_request_template: string | null;
+                members_visibility_level: number;
+                can_see_members: boolean;
+                can_admin_group: boolean;
+                publish_read_state: boolean;
+            }>;
+            group_users: Array<{
+                group_id: number;
+                user_id: number;
+                notification_level: number;
+                owner?: boolean;
+            }>;
+            user_option: {
+                user_id: number;
+                mailing_list_mode: boolean;
+                mailing_list_mode_frequency: number;
+                email_digests: boolean;
+                email_level: number;
+                email_messages_level: number;
+                external_links_in_new_tab: boolean;
+                bookmark_auto_delete_preference?: number;
+                color_scheme_id: string | null;
+                dark_scheme_id: string | null;
+                dynamic_favicon: boolean;
+                enable_quoting: boolean;
+                enable_smart_lists: boolean;
+                enable_defer: boolean;
+                digest_after_minutes: number;
+                automatically_unpin_topics: boolean;
+                auto_track_topics_after_msecs: number;
+                notification_level_when_replying: number;
+                new_topic_duration_minutes: number;
+                email_previous_replies: number;
+                email_in_reply_to: boolean;
+                like_notification_frequency: number;
+                include_tl0_in_digests: boolean;
+                theme_ids: Array<unknown>;
+                theme_key_seq: number;
+                allow_private_messages: boolean;
+                enable_allowed_pm_users: boolean;
+                homepage_id: string | null;
+                hide_profile_and_presence: boolean;
+                hide_profile: boolean;
+                hide_presence: boolean;
+                text_size: string;
+                text_size_seq: number;
+                title_count_mode: string;
+                timezone: string | null;
+                skip_new_user_tips: boolean;
+                default_calendar?: string;
+                oldest_search_log_date?: string | null;
+                sidebar_link_to_filtered_list?: boolean;
+                sidebar_show_count_of_new_items?: boolean;
+                watched_precedence_over_muted?: boolean | null;
+                seen_popups?: Array<unknown> | null;
+                topics_unread_when_closed: boolean;
+            };
         };
     };
 };

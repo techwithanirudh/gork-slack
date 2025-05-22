@@ -3,6 +3,10 @@ import type { CoreMessage } from 'ai'
 import * as crypto from 'node:crypto'
 import { client } from '../client/client.gen';
 import { sendMessage, editMessage, getMessages, getSession } from '../client/sdk.gen';
+import { User } from '../types/discourse';
+import { z } from 'zod';
+import { zGetSessionResponse } from '../client/zod.gen';
+import { GetSessionResponse } from '../client/types.gen';
 
 const signingSecret = process.env.DISCOURSE_SIGNING_SECRET!
 const url = process.env.DISCOURSE_URL!;
@@ -96,7 +100,7 @@ export const updateStatusUtil = async (
 export async function getThread(
   channel_id: number,
   // thread_ts: string,
-  botUserId: number,
+  botUser: GetSessionResponse['current_user'],
 ): Promise<CoreMessage[]> {
   const res = await getMessages({
     path: {
@@ -107,19 +111,20 @@ export async function getThread(
     }
   });
 
+  if (!botUser) throw new Error("botUser is undefined");
   if (!res?.data?.messages) throw new Error("No messages found in thread");
   const { messages } = res.data;
 
   const result = messages
     .map((message) => {
-      const isBot = message.user?.id === botUserId as any;
+      const isBot = message.user?.id === botUser.id as any;
       if (!message.message) return null;
 
       // For app mentions, remove the mention prefix
       // For DM messages, keep the full text
       let content = message.message;
-      if (!isBot && content.includes(`<@${botUserId}>`)) {
-        content = content.replace(`<@${botUserId}> `, "");
+      if (!isBot && content.includes(`<@${botUser.id}>`)) {
+        content = content.replace(`<@${botUser.id}> `, "");
       }
 
       return {
@@ -132,7 +137,7 @@ export async function getThread(
   return result;
 }
 
-export const getBotId = async (): Promise<number> => {
+export const getBotUser = async () => {
   // const { user_id: botUserId } = await client.auth.test();
   const res = await getSession();
 
@@ -141,11 +146,10 @@ export const getBotId = async (): Promise<number> => {
   }
 
   const { current_user: user } = res.data;
-  const id = user?.id;
 
-  if (!id) {
-    throw new Error("botUserId is undefined");
+  if (!user) {
+    throw new Error("botUser is undefined");
   }
 
-  return id;
+  return user;
 };

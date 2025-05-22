@@ -2,6 +2,9 @@ import { getThread } from "./slack-utils";
 import { generateResponse } from "./generate-response";
 import type { WebhookNotification } from "../types";
 import { editMessage, sendMessage } from "../client/sdk.gen";
+import { zGetSessionResponse } from '../client/zod.gen';
+import { z } from 'zod';
+import { GetSessionResponse } from "../client/types.gen";
 
 const updateStatusUtil = async (
   initialStatus: string,
@@ -37,10 +40,12 @@ const updateStatusUtil = async (
 
 export async function handleNewAppMention(
   event: WebhookNotification,
-  botUserId: number,
+  botUser: GetSessionResponse['current_user'],
 ) {
   console.log("Handling app mention");
-  if (event.user_id === botUserId) {
+
+  if (!botUser) return;
+  if (event.data?.mentioned_by_username === botUser.username) {
     console.log("Skipping app mention");
     return;
   }
@@ -49,7 +54,7 @@ export async function handleNewAppMention(
   const updateMessage = await updateStatusUtil("is thinking...", event);
 
   // if (thread_ts) {
-  const messages = await getThread(channel_id as any, botUserId);
+  const messages = await getThread(channel_id as any, botUser);
   const result = await generateResponse(messages, updateMessage);
   await updateMessage(result);
   // } else {
