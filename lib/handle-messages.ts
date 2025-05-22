@@ -12,26 +12,26 @@ export async function assistantThreadMessage(
   console.log(`Thread started: ${channel_id} ${thread_ts}`);
   console.log(JSON.stringify(event));
 
-  await client.chat.postMessage({
-    channel: channel_id,
-    thread_ts: thread_ts,
+  await client.postMessage({
+    channel_id: channel_id,
+    // thread_ts: thread_ts,
     text: "Hello, I'm an AI assistant built with the AI SDK by Vercel!",
   });
 
-  await client.assistant.threads.setSuggestedPrompts({
-    channel_id: channel_id,
-    thread_ts: thread_ts,
-    prompts: [
-      {
-        title: "Get the weather",
-        message: "What is the current weather in London?",
-      },
-      {
-        title: "Get the news",
-        message: "What is the latest Premier League news from the BBC?",
-      },
-    ],
-  });
+  // await client.assistant.threads.setSuggestedPrompts({
+  //   channel_id: channel_id,
+  //   thread_ts: thread_ts,
+  //   prompts: [
+  //     {
+  //       title: "Get the weather",
+  //       message: "What is the current weather in London?",
+  //     },
+  //     {
+  //       title: "Get the news",
+  //       message: "What is the latest Premier League news from the BBC?",
+  //     },
+  //   ],
+  // });
 }
 
 export async function handleNewAssistantMessage(
@@ -53,20 +53,20 @@ export async function handleNewAssistantMessage(
   const messages = await getThread(channel, thread_ts, botUserId);
   const result = await generateResponse(messages, updateStatus);
 
-  await client.chat.postMessage({
-    channel: channel,
-    thread_ts: thread_ts,
-    text: result,
-    unfurl_links: false,
-    blocks: [
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: result,
-        },
-      },
-    ],
+  await client.postMessage({
+    channel_id: channel,
+    // thread_ts: thread_ts,
+    message: result,
+    // unfurl_links: false,
+    // blocks: [
+    //   {
+    //     type: "section",
+    //     text: {
+    //       type: "mrkdwn",
+    //       text: result,
+    //     },
+    //   },
+    // ],
   });
 
   await updateStatus("");

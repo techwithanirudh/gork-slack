@@ -6,20 +6,20 @@ const updateStatusUtil = async (
   initialStatus: string,
   event: AppMentionEvent,
 ) => {
-  const initialMessage = await client.chat.postMessage({
-    channel: event.channel,
-    thread_ts: event.thread_ts ?? event.ts,
-    text: initialStatus,
+  const initialMessage = await client.postMessage({
+    channel_id: event.channel,
+    // thread_ts: event.thread_ts ?? event.ts,
+    message: initialStatus,
   });
 
   if (!initialMessage || !initialMessage.ts)
     throw new Error("Failed to post initial message");
 
   const updateMessage = async (status: string) => {
-    await client.chat.update({
-      channel: event.channel,
-      ts: initialMessage.ts as string,
-      text: status,
+    await client.editMessage({
+      channel_id: event.channel,
+      // ts: initialMessage.ts as string,
+      message: status,
     });
   };
   return updateMessage;
