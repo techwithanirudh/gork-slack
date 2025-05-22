@@ -1,13 +1,13 @@
 import { getThread } from "./slack-utils";
 import { generateResponse } from "./generate-response";
 import type { WebhookNotification } from "../types";
-import { editMessage, postMessage } from "../client/sdk.gen";
+import { editMessage, sendMessage } from "../client/sdk.gen";
 
 const updateStatusUtil = async (
   initialStatus: string,
   event: WebhookNotification,
 ) => {
-  const res = await postMessage({
+  const res = await sendMessage({
     path: {
       channel_id: event.data?.chat_channel_id as number,
     },
@@ -17,7 +17,6 @@ const updateStatusUtil = async (
     },
   });
 
-  // @ts-expect-error the types for this are broken
   if (!res?.data || !res.data?.message_id)
     throw new Error("Failed to post initial message");
   const initialMessage = res.data;
@@ -26,7 +25,6 @@ const updateStatusUtil = async (
     await editMessage({
       path: {
         channel_id: event.data?.chat_channel_id as number,
-        // @ts-expect-error the types for this are broken
         message_id: initialMessage.message_id!,
       },
       body: {

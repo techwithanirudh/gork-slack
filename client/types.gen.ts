@@ -5100,340 +5100,152 @@ export type GetUserEmailsResponses = {
 
 export type GetUserEmailsResponse = GetUserEmailsResponses[keyof GetUserEmailsResponses];
 
-export type PostMessageData = {
+export type SendMessageData = {
     body: {
-        /**
-         * The content of the message.
-         */
         message: string;
-    };
-    headers?: {
-        /**
-         * Referer URL (e.g. https://<base>/chat/c/{channel_name}/{channel_id})
-         */
-        Referer?: string;
+        staged_id?: string;
     };
     path: {
-        /**
-         * The ID of the chat channel.
-         */
         channel_id: number;
     };
     query?: never;
     url: '/chat/{channel_id}';
 };
 
-export type PostMessageErrors = {
+export type SendMessageResponses = {
     /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Forbidden
-     */
-    403: unknown;
-    /**
-     * Too Many Requests
-     */
-    429: unknown;
-    /**
-     * Internal Server Error
-     */
-    500: unknown;
-};
-
-export type PostMessageResponses = {
-    /**
-     * Posted message response
+     * Message sent successfully
      */
     200: {
-        id?: number;
-        cooked?: string;
-        raw?: string;
-        errors?: Array<string>;
+        success?: string;
+        message_id?: number;
     };
 };
 
-export type PostMessageResponse = PostMessageResponses[keyof PostMessageResponses];
-
-export type ReactToMessageData = {
-    body: {
-        /**
-         * Reaction action.
-         */
-        react_action: 'add' | 'remove';
-        /**
-         * The emoji to react with (e.g. :smile:).
-         */
-        emoji: string;
-    };
-    headers?: {
-        /**
-         * Referer URL
-         */
-        Referer?: string;
-    };
-    path: {
-        /**
-         * Chat channel ID.
-         */
-        channel_id: number;
-        /**
-         * Chat message ID.
-         */
-        message_id: number;
-    };
-    query?: never;
-    url: '/chat/{channel_id}/react/{message_id}';
-};
-
-export type ReactToMessageErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Forbidden
-     */
-    403: unknown;
-    /**
-     * Too Many Requests
-     */
-    429: unknown;
-    /**
-     * Internal Server Error
-     */
-    500: unknown;
-};
-
-export type ReactToMessageResponses = {
-    /**
-     * Reaction result
-     */
-    200: {
-        success?: 'OK';
-    };
-};
-
-export type ReactToMessageResponse = ReactToMessageResponses[keyof ReactToMessageResponses];
+export type SendMessageResponse = SendMessageResponses[keyof SendMessageResponses];
 
 export type EditMessageData = {
     body: {
-        /**
-         * New message content.
-         */
         message: string;
     };
-    headers?: {
-        /**
-         * Referer URL
-         */
-        Referer?: string;
-    };
     path: {
-        /**
-         * Chat channel ID
-         */
         channel_id: number;
-        /**
-         * Message ID
-         */
         message_id: number;
     };
     query?: never;
     url: '/chat/api/channels/{channel_id}/messages/{message_id}';
 };
 
-export type EditMessageErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Forbidden
-     */
-    403: unknown;
-    /**
-     * Not Found
-     */
-    404: unknown;
-    /**
-     * Internal Server Error
-     */
-    500: unknown;
-};
-
 export type EditMessageResponses = {
     /**
-     * Edited message response
+     * Message updated
      */
-    200: unknown;
+    200: {
+        success?: string;
+        message_id?: number;
+    };
 };
+
+export type EditMessageResponse = EditMessageResponses[keyof EditMessageResponses];
 
 export type GetMessagesData = {
     body?: never;
-    headers?: {
-        /**
-         * Referer URL
-         */
-        Referer?: string;
-    };
     path: {
-        /**
-         * Chat channel ID
-         */
         channel_id: number;
     };
     query?: {
-        /**
-         * Start from last-read
-         */
         fetch_from_last_read?: boolean;
-        /**
-         * Number of messages
-         */
         page_size?: number;
     };
     url: '/chat/api/channels/{channel_id}/messages';
 };
 
-export type GetMessagesErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Forbidden
-     */
-    403: unknown;
-    /**
-     * Too Many Requests
-     */
-    429: unknown;
-    /**
-     * Internal Server Error
-     */
-    500: unknown;
-};
-
 export type GetMessagesResponses = {
     /**
-     * List of chat messages
+     * A page of messages with tracking info
      */
     200: {
         messages?: Array<{
             id?: number;
             message?: string;
+            cooked?: string;
             created_at?: Date;
+            chat_channel_id?: number;
+            streaming?: boolean;
             user?: {
+                id?: number;
                 username?: string;
+                name?: string;
+                avatar_template?: string;
+                moderator?: boolean;
+                admin?: boolean;
+                staff?: boolean;
             };
+            mentioned_users?: Array<{
+                id?: number;
+                username?: string;
+                name?: string;
+            }>;
+            available_flags?: Array<string>;
+            uploads?: Array<{
+                [key: string]: unknown;
+            }>;
+            edited?: boolean;
         }>;
+        tracking?: {
+            [key: string]: unknown;
+        };
+        meta?: {
+            [key: string]: unknown;
+        };
     };
 };
 
 export type GetMessagesResponse = GetMessagesResponses[keyof GetMessagesResponses];
 
-export type GetChatChannelData = {
+export type ReactToMessageData = {
     body: {
-        /**
-         * Username of the other user
-         */
-        'target_usernames[]': string;
+        react_action: string;
+        emoji: string;
     };
-    headers?: {
-        /**
-         * Referer URL
-         */
-        Referer?: string;
+    path: {
+        channel_id: number;
+        message_id: number;
     };
-    path?: never;
     query?: never;
-    url: '/chat/api/direct-message-channels.json';
+    url: '/chat/{channel_id}/react/{message_id}';
 };
 
-export type GetChatChannelErrors = {
+export type ReactToMessageResponses = {
     /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Forbidden
-     */
-    403: unknown;
-    /**
-     * Too Many Requests
-     */
-    429: unknown;
-    /**
-     * Internal Server Error
-     */
-    500: unknown;
-};
-
-export type GetChatChannelResponses = {
-    /**
-     * DM channel info
+     * Reaction added/removed
      */
     200: {
-        channel?: {
-            id?: number;
-            chatable?: {
-                users?: Array<{
-                    id?: number;
-                    username?: string;
-                    name?: string;
-                    avatar_template?: string;
-                    admin?: boolean;
-                    moderator?: boolean;
-                }>;
-            };
-        };
+        success?: string;
     };
 };
 
-export type GetChatChannelResponse = GetChatChannelResponses[keyof GetChatChannelResponses];
+export type ReactToMessageResponse = ReactToMessageResponses[keyof ReactToMessageResponses];
 
-export type GetUserInfoData = {
+export type GetUserCardData = {
     body?: never;
     path: {
-        /**
-         * Discourse username
-         */
         username: string;
     };
     query?: never;
     url: '/u/{username}/card.json';
 };
 
-export type GetUserInfoErrors = {
+export type GetUserCardResponses = {
     /**
-     * Not Found
-     */
-    404: unknown;
-    /**
-     * Internal Server Error
-     */
-    500: unknown;
-};
-
-export type GetUserInfoResponses = {
-    /**
-     * User card info
+     * Full user card with badges and metadata
      */
     200: {
-        user?: {
-            id?: number;
-            username?: string;
-            name?: string;
-            avatar_template?: string;
-            admin?: boolean;
-            moderator?: boolean;
-        };
+        [key: string]: unknown;
     };
 };
 
-export type GetUserInfoResponse = GetUserInfoResponses[keyof GetUserInfoResponses];
+export type GetUserCardResponse = GetUserCardResponses[keyof GetUserCardResponses];
 
 export type GetSessionData = {
     body?: never;
@@ -5442,28 +5254,9 @@ export type GetSessionData = {
     url: '/session/current.json';
 };
 
-export type GetSessionErrors = {
-    /**
-     * Bad Request
-     */
-    400: unknown;
-    /**
-     * Forbidden – invalid API key or insufficient permissions
-     */
-    403: unknown;
-    /**
-     * Too Many Requests
-     */
-    429: unknown;
-    /**
-     * Internal Server Error
-     */
-    500: unknown;
-};
-
 export type GetSessionResponses = {
     /**
-     * Current session info
+     * Authenticated user session data
      */
     200: {
         current_user: {

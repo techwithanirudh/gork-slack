@@ -4547,56 +4547,51 @@ export const zGetUserEmailsResponse = z.object({
     associated_accounts: z.array(z.unknown())
 });
 
-export const zPostMessageResponse = z.object({
-    id: z.number().int().optional(),
-    cooked: z.string().optional(),
-    raw: z.string().optional(),
-    errors: z.array(z.string()).optional()
+export const zSendMessageResponse = z.object({
+    success: z.string().optional(),
+    message_id: z.number().int().optional()
 });
 
-export const zReactToMessageResponse = z.object({
-    success: z.enum([
-        'OK'
-    ]).optional()
+export const zEditMessageResponse = z.object({
+    success: z.string().optional(),
+    message_id: z.number().int().optional()
 });
 
 export const zGetMessagesResponse = z.object({
     messages: z.array(z.object({
         id: z.number().int().optional(),
         message: z.string().optional(),
+        cooked: z.string().optional(),
         created_at: z.string().datetime().optional(),
+        chat_channel_id: z.number().int().optional(),
+        streaming: z.boolean().optional(),
         user: z.object({
-            username: z.string().optional()
-        }).optional()
-    })).optional()
+            id: z.number().int().optional(),
+            username: z.string().optional(),
+            name: z.string().optional(),
+            avatar_template: z.string().optional(),
+            moderator: z.boolean().optional(),
+            admin: z.boolean().optional(),
+            staff: z.boolean().optional()
+        }).optional(),
+        mentioned_users: z.array(z.object({
+            id: z.number().int().optional(),
+            username: z.string().optional(),
+            name: z.string().optional()
+        })).optional(),
+        available_flags: z.array(z.string()).optional(),
+        uploads: z.array(z.object({})).optional(),
+        edited: z.boolean().optional()
+    })).optional(),
+    tracking: z.object({}).optional(),
+    meta: z.object({}).optional()
 });
 
-export const zGetChatChannelResponse = z.object({
-    channel: z.object({
-        id: z.number().int().optional(),
-        chatable: z.object({
-            users: z.array(z.object({
-                id: z.number().int().optional(),
-                username: z.string().optional(),
-                name: z.string().optional(),
-                avatar_template: z.string().optional(),
-                admin: z.boolean().optional(),
-                moderator: z.boolean().optional()
-            })).optional()
-        }).optional()
-    }).optional()
+export const zReactToMessageResponse = z.object({
+    success: z.string().optional()
 });
 
-export const zGetUserInfoResponse = z.object({
-    user: z.object({
-        id: z.number().int().optional(),
-        username: z.string().optional(),
-        name: z.string().optional(),
-        avatar_template: z.string().optional(),
-        admin: z.boolean().optional(),
-        moderator: z.boolean().optional()
-    }).optional()
-});
+export const zGetUserCardResponse = z.object({});
 
 export const zGetSessionResponse = z.object({
     current_user: z.object({

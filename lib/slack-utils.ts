@@ -2,7 +2,7 @@ import type { WebhookChatMessage, WebhookNotification } from '../types';
 import type { CoreMessage } from 'ai'
 import * as crypto from 'node:crypto'
 import { client } from '../client/client.gen';
-import { postMessage, editMessage, getMessages, getSession } from '../client/sdk.gen';
+import { sendMessage, editMessage, getMessages, getSession } from '../client/sdk.gen';
 
 const signingSecret = process.env.DISCOURSE_SIGNING_SECRET!
 const url = process.env.DISCOURSE_URL!;
@@ -63,7 +63,7 @@ export const updateStatusUtil = async (
   initialStatus: string,
   event: WebhookChatMessage,
 ) => {
-  const res = await postMessage({
+  const res = await sendMessage({
     path: {
       channel_id: event.channel?.id,
     },
@@ -76,7 +76,6 @@ export const updateStatusUtil = async (
   if (!res?.data) throw new Error("Failed to post initial message");
   const initialMessage = res.data;
 
-  // @ts-expect-error the types for this are broken
   if (!initialMessage || !initialMessage.message_id)
     throw new Error("Failed to post initial message");
 
@@ -84,7 +83,6 @@ export const updateStatusUtil = async (
     await editMessage({
       path: {
         channel_id: event.channel?.id,
-        // @ts-expect-error the types for this are broken
         message_id: initialMessage.message_id!,
       },
       body: {
@@ -114,7 +112,6 @@ export async function getThread(
 
   const result = messages
     .map((message) => {
-      // @ts-expect-error the types for this are broken
       const isBot = message.user?.id === botUserId as any;
       if (!message.message) return null;
 

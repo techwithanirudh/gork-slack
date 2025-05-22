@@ -17078,8 +17078,8 @@
     },
     "/chat/{channel_id}": {
       "post": {
-        "summary": "Post a new message to a chat channel",
-        "operationId": "postMessage",
+        "summary": "Send a message to a chat channel",
+        "operationId": "sendMessage",
         "tags": [
           "Chat"
         ],
@@ -17089,30 +17089,26 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer"
-            },
-            "description": "The ID of the chat channel."
-          },
-          {
-            "name": "Referer",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Referer URL (e.g. https://<base>/chat/c/{channel_name}/{channel_id})"
+              "type": "integer",
+              "example": 23
+            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "message": {
                     "type": "string",
-                    "description": "The content of the message."
+                    "example": "this spam to helpp me understand the response data"
+                  },
+                  "staged_id": {
+                    "type": "string",
+                    "nullable": true,
+                    "example": "0886e40a-b729-4d8a-af93-925df316fe67"
                   }
                 },
                 "required": [
@@ -17124,124 +17120,7 @@
         },
         "responses": {
           "200": {
-            "description": "Posted message response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "cooked": {
-                      "type": "string"
-                    },
-                    "raw": {
-                      "type": "string"
-                    },
-                    "errors": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      },
-                      "example": [
-                        "You posted an identical message too recently."
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "429": {
-            "description": "Too Many Requests",
-            "headers": {
-              "Retry-After": {
-                "schema": {
-                  "type": "integer"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/chat/{channel_id}/react/{message_id}": {
-      "put": {
-        "summary": "Add or remove a reaction on a chat message",
-        "operationId": "reactToMessage",
-        "tags": [
-          "Chat"
-        ],
-        "parameters": [
-          {
-            "name": "channel_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "Chat channel ID."
-          },
-          {
-            "name": "message_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "Chat message ID."
-          },
-          {
-            "name": "Referer",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Referer URL"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "react_action": {
-                    "type": "string",
-                    "enum": [
-                      "add",
-                      "remove"
-                    ],
-                    "description": "Reaction action."
-                  },
-                  "emoji": {
-                    "type": "string",
-                    "description": "The emoji to react with (e.g. :smile:)."
-                  }
-                },
-                "required": [
-                  "react_action",
-                  "emoji"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Reaction result",
+            "description": "Message sent successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -17249,40 +17128,27 @@
                   "properties": {
                     "success": {
                       "type": "string",
-                      "enum": [
-                        "OK"
-                      ]
+                      "example": "OK"
+                    },
+                    "message_id": {
+                      "type": "integer",
+                      "example": 4041
                     }
                   }
+                },
+                "example": {
+                  "success": "OK",
+                  "message_id": 4041
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "429": {
-            "description": "Too Many Requests",
-            "headers": {
-              "Retry-After": {
-                "schema": {
-                  "type": "integer"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     },
     "/chat/api/channels/{channel_id}/messages/{message_id}": {
       "put": {
-        "summary": "Edit an existing chat message",
+        "summary": "Edit an existing message",
         "operationId": "editMessage",
         "tags": [
           "Chat"
@@ -17293,39 +17159,30 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer"
-            },
-            "description": "Chat channel ID"
+              "type": "integer",
+              "example": 23
+            }
           },
           {
             "name": "message_id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer"
-            },
-            "description": "Message ID"
-          },
-          {
-            "name": "Referer",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Referer URL"
+              "type": "integer",
+              "example": 4050
+            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "message": {
                     "type": "string",
-                    "description": "New message content."
+                    "example": "Hello world!"
                   }
                 },
                 "required": [
@@ -17337,26 +17194,33 @@
         },
         "responses": {
           "200": {
-            "description": "Edited message response"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
+            "description": "Message updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "string"
+                    },
+                    "message_id": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "success": "OK",
+                  "message_id": 4050
+                }
+              }
+            }
           }
         }
       }
     },
     "/chat/api/channels/{channel_id}/messages": {
       "get": {
-        "summary": "Get messages from a chat channel",
+        "summary": "Fetch chat messages",
         "operationId": "getMessages",
         "tags": [
           "Chat"
@@ -17367,43 +17231,30 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer"
-            },
-            "description": "Chat channel ID"
+              "type": "integer",
+              "example": 23
+            }
           },
           {
             "name": "fetch_from_last_read",
             "in": "query",
-            "required": false,
             "schema": {
               "type": "boolean",
-              "default": false
-            },
-            "description": "Start from last-read"
+              "example": true
+            }
           },
           {
             "name": "page_size",
             "in": "query",
-            "required": false,
             "schema": {
               "type": "integer",
-              "default": 20
-            },
-            "description": "Number of messages"
-          },
-          {
-            "name": "Referer",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Referer URL"
+              "example": 50
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "List of chat messages",
+            "description": "A page of messages with tracking info",
             "content": {
               "application/json": {
                 "schema": {
@@ -17420,80 +17271,182 @@
                           "message": {
                             "type": "string"
                           },
+                          "cooked": {
+                            "type": "string"
+                          },
                           "created_at": {
                             "type": "string",
                             "format": "date-time"
                           },
+                          "chat_channel_id": {
+                            "type": "integer"
+                          },
+                          "streaming": {
+                            "type": "boolean"
+                          },
                           "user": {
                             "type": "object",
                             "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
                               "username": {
                                 "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "avatar_template": {
+                                "type": "string"
+                              },
+                              "moderator": {
+                                "type": "boolean"
+                              },
+                              "admin": {
+                                "type": "boolean"
+                              },
+                              "staff": {
+                                "type": "boolean"
                               }
                             }
+                          },
+                          "mentioned_users": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "username": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          "available_flags": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "uploads": {
+                            "type": "array",
+                            "items": {
+                              "type": "object"
+                            }
+                          },
+                          "edited": {
+                            "type": "boolean"
                           }
                         }
                       }
+                    },
+                    "tracking": {
+                      "type": "object"
+                    },
+                    "meta": {
+                      "type": "object"
                     }
+                  }
+                },
+                "example": {
+                  "messages": [
+                    {
+                      "id": 4027,
+                      "message": "@twa why dont you have nitro",
+                      "cooked": "<p><a class=\"mention\" href=\"/u/twa\">@twa</a> why dont you have nitro</p>",
+                      "created_at": "2025-05-22T16:06:07Z",
+                      "chat_channel_id": 23,
+                      "streaming": false,
+                      "user": {
+                        "id": 16,
+                        "username": "winter",
+                        "name": "Ice",
+                        "avatar_template": "/user_avatar/community.techwithanirudh.com/winter/{size}/64_2.png",
+                        "moderator": true,
+                        "admin": false,
+                        "staff": true
+                      },
+                      "mentioned_users": [
+                        {
+                          "id": 1,
+                          "username": "twa",
+                          "name": "Anirudh Sriram"
+                        }
+                      ],
+                      "available_flags": [
+                        "notify_user",
+                        "off_topic",
+                        "spam"
+                      ],
+                      "uploads": []
+                    }
+                  ],
+                  "tracking": {
+                    "channel_tracking": {},
+                    "thread_tracking": {}
+                  },
+                  "meta": {
+                    "can_load_more_past": true,
+                    "can_load_more_future": false
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "429": {
-            "description": "Too Many Requests",
-            "headers": {
-              "Retry-After": {
-                "schema": {
-                  "type": "integer"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     },
-    "/chat/api/direct-message-channels.json": {
-      "post": {
-        "summary": "Create or get a direct message channel",
-        "operationId": "getChatChannel",
+    "/chat/{channel_id}/react/{message_id}": {
+      "put": {
+        "summary": "React to a message",
+        "operationId": "reactToMessage",
         "tags": [
-          "DirectMessage"
+          "Chat"
         ],
         "parameters": [
           {
-            "name": "Referer",
-            "in": "header",
-            "required": false,
+            "name": "channel_id",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "Referer URL"
+              "type": "integer",
+              "example": 23
+            }
+          },
+          {
+            "name": "message_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 4051
+            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "target_usernames[]": {
+                  "react_action": {
                     "type": "string",
-                    "description": "Username of the other user"
+                    "example": "add"
+                  },
+                  "emoji": {
+                    "type": "string",
+                    "example": "heart"
                   }
                 },
                 "required": [
-                  "target_usernames[]"
+                  "react_action",
+                  "emoji"
                 ]
               }
             }
@@ -17501,85 +17454,32 @@
         },
         "responses": {
           "200": {
-            "description": "DM channel info",
+            "description": "Reaction added/removed",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "channel": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "chatable": {
-                          "type": "object",
-                          "properties": {
-                            "users": {
-                              "type": "array",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "id": {
-                                    "type": "integer"
-                                  },
-                                  "username": {
-                                    "type": "string"
-                                  },
-                                  "name": {
-                                    "type": "string",
-                                    "nullable": true
-                                  },
-                                  "avatar_template": {
-                                    "type": "string"
-                                  },
-                                  "admin": {
-                                    "type": "boolean"
-                                  },
-                                  "moderator": {
-                                    "type": "boolean"
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
+                    "success": {
+                      "type": "string"
                     }
                   }
+                },
+                "example": {
+                  "success": "OK"
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "429": {
-            "description": "Too Many Requests",
-            "headers": {
-              "Retry-After": {
-                "schema": {
-                  "type": "integer"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     },
     "/u/{username}/card.json": {
       "get": {
-        "summary": "Get user-card info",
-        "operationId": "getUserInfo",
+        "summary": "Fetch a user card",
+        "operationId": "getUserCard",
         "tags": [
-          "Users"
+          "User"
         ],
         "parameters": [
           {
@@ -17587,20 +17487,81 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "Discourse username"
+              "type": "string",
+              "example": "winter"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "User card info",
+            "description": "Full user card with badges and metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "user_badges": [
+                    {
+                      "id": 50,
+                      "granted_at": "2025-05-06T18:10:58.099Z",
+                      "count": 1,
+                      "badge_id": 4
+                    }
+                  ],
+                  "badges": [
+                    {
+                      "id": 4,
+                      "name": "Leader",
+                      "description": "Global edit...",
+                      "slug": "leader"
+                    }
+                  ],
+                  "badge_types": [
+                    {
+                      "id": 1,
+                      "name": "Gold",
+                      "sort_order": 9
+                    }
+                  ],
+                  "users": [
+                    {
+                      "id": 16,
+                      "username": "winter",
+                      "name": "Ice",
+                      "trust_level": 4
+                    }
+                  ],
+                  "user": {
+                    "id": 16,
+                    "username": "winter",
+                    "name": "Ice",
+                    "flair_name": "CCC",
+                    "trust_level": 4
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/current.json": {
+      "get": {
+        "summary": "Get current session info",
+        "operationId": "getSession",
+        "tags": [
+          "Session"
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated user session data",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "user": {
+                    "current_user": {
                       "type": "object",
                       "properties": {
                         "id": {
@@ -17622,112 +17583,32 @@
                         "moderator": {
                           "type": "boolean"
                         }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/session/current.json": {
-      "get": {
-        "summary": "Get current session information",
-        "operationId": "getSession",
-        "tags": [
-          "Session"
-        ],
-        "responses": {
-          "200": {
-            "description": "Current session info",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "current_user"
-                  ],
-                  "properties": {
-                    "current_user": {
-                      "type": "object",
+                      },
                       "required": [
                         "id",
                         "username",
                         "avatar_template",
                         "admin",
                         "moderator"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "example": 1
-                        },
-                        "username": {
-                          "type": "string",
-                          "example": "anirudh"
-                        },
-                        "name": {
-                          "type": "string",
-                          "nullable": true,
-                          "example": "Anirudh Sriram"
-                        },
-                        "avatar_template": {
-                          "type": "string",
-                          "example": "/user_avatar/discourse.example.com/anirudh/{size}/2_2.png"
-                        },
-                        "admin": {
-                          "type": "boolean",
-                          "example": true
-                        },
-                        "moderator": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
+                      ]
                     }
-                  }
+                  },
+                  "required": [
+                    "current_user"
+                  ]
                 },
                 "example": {
                   "current_user": {
                     "id": 1,
-                    "username": "anirudh",
+                    "username": "twa",
                     "name": "Anirudh Sriram",
-                    "avatar_template": "/user_avatar/discourse.example.com/anirudh/120/2_2.png",
+                    "avatar_template": "/user_avatar/community.techwithanirudh.com/twa/{size}/70_2.png",
                     "admin": true,
-                    "moderator": false
+                    "moderator": true
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden – invalid API key or insufficient permissions"
-          },
-          "429": {
-            "description": "Too Many Requests",
-            "headers": {
-              "Retry-After": {
-                "description": "Seconds until you can retry",
-                "schema": {
-                  "type": "integer",
-                  "example": 30
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
@@ -17744,14 +17625,6 @@
     }
   ],
   "components": {
-    "schemas": {},
-    "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "Api-Key",
-        "description": "Your Discourse API key."
-      }
-    }
+    "schemas": {}
   }
 }

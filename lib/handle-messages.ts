@@ -5,7 +5,7 @@ import type {
 import {  getThread, updateStatusUtil } from "./slack-utils";
 import { generateResponse } from "./generate-response";
 import type { WebhookChatMessage } from "../types";
-import { postMessage } from "../client/sdk.gen";
+import { sendMessage } from "../client/sdk.gen";
 
 export async function assistantThreadMessage(
   event: AssistantThreadStartedEvent,
@@ -14,7 +14,7 @@ export async function assistantThreadMessage(
   console.log(`Thread started: ${channel_id} ${thread_ts}`);
   console.log(JSON.stringify(event));
 
-  await postMessage({
+  await sendMessage({
     path: {
       channel_id: channel_id as any,
     },
