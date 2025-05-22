@@ -46,27 +46,10 @@ export async function handleNewAssistantMessage(
 
   const { channel } = event;
 
-  const updateStatus = updateStatusUtil(channel.id);
-  await updateStatus("is thinking...");
+  const updateStatus = await updateStatusUtil("is thinking...", event);
 
   const messages = await getThread(channel.id, botUserId);
   const result = await generateResponse(messages, updateStatus);
 
-  await client.postMessage({
-    channel_id: channel.id,
-    // thread_ts: thread_ts,
-    message: result,
-    // unfurl_links: false,
-    // blocks: [
-    //   {
-    //     type: "section",
-    //     text: {
-    //       type: "mrkdwn",
-    //       text: result,
-    //     },
-    //   },
-    // ],
-  });
-
-  await updateStatus("");
+  await updateStatus(result);
 }

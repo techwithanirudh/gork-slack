@@ -1,3 +1,4 @@
+import { WebhookChatMessage, WebhookNotification } from '@/types';
 import { CoreMessage } from 'ai'
 import crypto from 'crypto'
 import DiscourseAPI from 'discourse2-chat';
@@ -54,14 +55,27 @@ export const verifyRequest = async ({
   }
 };
 
-export const updateStatusUtil = (channel: number) => {
-  return async (status: string) => {
-    // await client.assistant.threads.setStatus({
-    //   channel_id: channel,
-    //   thread_ts: thread_ts,
-    //   status: status,
-    // });
+export const updateStatusUtil = async (
+  initialStatus: string,
+  event: WebhookChatMessage,
+) => {
+  const initialMessage = await client.postMessage({
+    channel_id: event.channel?.id,
+    // thread_ts: event.thread_ts ?? event.ts,
+    message: initialStatus,
+  });
+
+  if (!initialMessage || !initialMessage.message_id)
+    throw new Error("Failed to post initial message");
+
+  const updateMessage = async (status: string) => {
+    await client.editMessage({
+      channel_id: event.channel?.id,
+      message_id: initialMessage.message_id!,
+      message: status,
+    });
   };
+  return updateMessage;
 };
 
 export async function getThread(

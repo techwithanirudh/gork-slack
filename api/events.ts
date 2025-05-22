@@ -1,4 +1,3 @@
-import type { AppMentionEvent, SlackEvent } from "@slack/web-api";
 import {
   assistantThreadMessage,
   handleNewAssistantMessage,

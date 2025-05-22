@@ -12,13 +12,13 @@ const updateStatusUtil = async (
     message: initialStatus,
   });
 
-  if (!initialMessage || !initialMessage.id)
+  if (!initialMessage || !initialMessage.message_id)
     throw new Error("Failed to post initial message");
 
   const updateMessage = async (status: string) => {
     await client.editMessage({
       channel_id: event.data?.chat_channel_id as number,
-      message_id: initialMessage.id!,
+      message_id: initialMessage.message_id!,
       message: status,
     });
   };
