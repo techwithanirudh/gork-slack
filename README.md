@@ -1,6 +1,6 @@
 # AI SDK Slackbot
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnicoalbanese%2Fai-sdk-slackbot&env=SLACK_BOT_TOKEN,SLACK_SIGNING_SECRET,OPENAI_API_KEY,EXA_API_KEY&envDescription=API%20keys%20needed%20for%20application&envLink=https%3A%2F%2Fgithub.com%2Fnicoalbanese%2Fai-sdk-slackbot%3Ftab%3Dreadme-ov-file%234-set-environment-variables&project-name=ai-sdk-slackbot)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnicoalbanese%2Fai-sdk-slackbot&env=DISCOURSE_BOT_TOKEN,DISCOURSE_SIGNING_SECRET,OPENAI_API_KEY,EXA_API_KEY&envDescription=API%20keys%20needed%20for%20application&envLink=https%3A%2F%2Fgithub.com%2Fnicoalbanese%2Fai-sdk-slackbot%3Ftab%3Dreadme-ov-file%234-set-environment-variables&project-name=ai-sdk-slackbot)
 
 An AI-powered chatbot for Slack powered by the [AI SDK by Vercel](https://sdk.vercel.ai/docs).
 
@@ -42,7 +42,7 @@ pnpm install
 ### 3. Configure Slack App Settings
 
 - Go to "Basic Information"
-   - Under "App Credentials", note down your "Signing Secret". This will be an environment variable `SLACK_SIGNING_SECRET`
+   - Under "App Credentials", note down your "Signing Secret". This will be an environment variable `DISCOURSE_SIGNING_SECRET`
 - Go to "App Home"
   - Under Show Tabs -> Messages Tab, Enable "Allow users to send Slash commands and messages from the messages tab"
 - Go to "OAuth & Permissions"
@@ -53,7 +53,7 @@ pnpm install
       - `im:history`
       - `im:read`
       - `im:write`
-   - Install the app to your workspace and note down the "Bot User OAuth Token" for the environment variable `SLACK_BOT_TOKEN`
+   - Install the app to your workspace and note down the "Bot User OAuth Token" for the environment variable `DISCOURSE_BOT_TOKEN`
 
 - Go to "Event Subscriptions"
    - Enable Events
@@ -76,8 +76,8 @@ Create a `.env` file in the root of your project with the following:
 
 ```
 # Slack Credentials
-SLACK_BOT_TOKEN=xoxb-your-bot-token
-SLACK_SIGNING_SECRET=your-signing-secret
+DISCOURSE_BOT_TOKEN=xoxb-your-bot-token
+DISCOURSE_SIGNING_SECRET=your-signing-secret
 
 # OpenAI Credentials
 OPENAI_API_KEY=your-openai-api-key
@@ -119,8 +119,8 @@ Make sure to modify the [subscription URL](./README.md/#enable-slack-events) to 
 
 3. Add your environment variables in the Vercel project settings:
 
-   - `SLACK_BOT_TOKEN`
-   - `SLACK_SIGNING_SECRET`
+   - `DISCOURSE_BOT_TOKEN`
+   - `DISCOURSE_SIGNING_SECRET`
    - `OPENAI_API_KEY`
    - `EXA_API_KEY`
 

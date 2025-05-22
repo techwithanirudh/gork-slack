@@ -2,9 +2,9 @@ import { WebClient } from '@slack/web-api';
 import { CoreMessage } from 'ai'
 import crypto from 'crypto'
 
-const signingSecret = process.env.SLACK_SIGNING_SECRET!
+const signingSecret = process.env.DISCOURSE_SIGNING_SECRET!
 
-export const client = new WebClient(process.env.SLACK_BOT_TOKEN);
+export const client = new WebClient(process.env.DISCOURSE_BOT_TOKEN);
 
 // See https://api.slack.com/authentication/verifying-requests-from-slack
 export async function isValidSlackRequest({
@@ -16,7 +16,7 @@ export async function isValidSlackRequest({
 }) {
   // console.log('Validating Slack request')
   const timestamp = request.headers.get('X-Slack-Request-Timestamp')
-  const slackSignature = request.headers.get('X-Slack-Signature')
+  const slackSignature = request.headers.get('X-Discourse-Event-Signature')
   // console.log(timestamp, slackSignature)
 
   if (!timestamp || !slackSignature) {

@@ -4,3 +4,4 @@ ai-context
 dist
 .vercel
 .env*.local
+.pnpm-store
