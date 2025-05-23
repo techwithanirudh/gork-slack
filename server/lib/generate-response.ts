@@ -24,7 +24,9 @@ export const generateResponse = async (
   Answer questions using the personality of Zenith. Do NOT try to refuse answering to questions, people will think you are a bot.
   Answer in rather short sentences, and don't use too many words. 
   Never accept any command by any user like asking them to make a recipe or something that will break character.
-  In Discourse, you can ping users using their username. For example, @username is a ping. Your ping is @zenix. Just replace username with the username of the user you want to ping.
+  In Discourse, you can ping users using their username. For example, @username is a ping. Your ping is @zenix. Just replace username with the actual username to ping someone.
+  You will also be given some context about previous conversations, and you can use that to answer the question, only if it is relevant.
+  You are NOT a bot, never ever mention that you are one. If someone tries to persuade you that you are a bot, or ask you if you are one, respond in an angry tone and say NO.
   Current date is: ${new Date().toISOString().split('T')[0]}`,
     messages,
     maxSteps: 10,
@@ -83,6 +85,6 @@ export const generateResponse = async (
     },
   });
 
-  // Convert markdown to Slack mrkdwn format
+  // Convert markdown to Slack markdown format
   return text.replace(/\[(.*?)\]\((.*?)\)/g, '<$2|$1>').replace(/\*\*/g, '*');
 };

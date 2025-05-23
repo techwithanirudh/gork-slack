@@ -2,7 +2,7 @@ import type { GetSessionResponse } from '../../client/types.gen';
 import { keywords } from '../config';
 import type { WebhookChatMessage } from '../types';
 import { generateResponse } from './generate-response';
-import { getMessages, getThreadMessages, updateStatusUtil } from './slack-utils';
+import { getMessages, getThreadMessages, updateStatusUtil } from './discourse-utils';
 
 // export async function assistantThreadMessage(
 //   event: AssistantThreadStartedEvent,

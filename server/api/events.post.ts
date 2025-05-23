@@ -1,7 +1,7 @@
 import { waitUntil } from '@vercel/functions';
 import { handleNewAppMention } from '../lib/handle-app-mention';
 import { handleNewAssistantMessage } from '../lib/handle-messages';
-import { getBotUser, verifyRequest } from '../lib/slack-utils';
+import { getBotUser, verifyRequest } from '../lib/discourse-utils';
 import type { WebhookChatMessage, WebhookNotification } from '../types';
 
 export default defineEventHandler(async request => {
