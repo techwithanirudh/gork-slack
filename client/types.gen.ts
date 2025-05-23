@@ -5653,6 +5653,7 @@ export type GetSessionResponses = {
       };
       custom_fields: {
         first_name?: string | null;
+        last_chat_channel_id?: number | null;
       };
       time_read: number;
       recent_time_read: number;

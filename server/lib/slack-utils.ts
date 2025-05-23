@@ -12,6 +12,7 @@ import {
 import type { GetSessionResponse } from '../../client/types.gen';
 import type { WebhookChatMessage } from '../types';
 import { env } from '../env';
+import type { EventHandlerRequest, H3Event } from 'h3'
 
 const signingSecret = env.DISCOURSE_SIGNING_SECRET;
 const url = env.DISCOURSE_URL;
@@ -83,11 +84,11 @@ export const updateStatusUtil = async (
     },
   });
 
-  if (!res?.data?.success) throw new Error('Failed to post initial message');
-  const initialMessage = res.data;
+  if (!res?.data || !res.data?.message_id) {
+    throw new Error(`Failed to post initial message, thread_id: ${thread_id}, ${JSON.stringify(res)}`);
+  }
 
-  if (!initialMessage || !initialMessage.message_id)
-    throw new Error('Failed to post initial message');
+  const initialMessage = res.data;
 
   const updateMessage = async (status: string) => {
     console.log('Updating message', status);

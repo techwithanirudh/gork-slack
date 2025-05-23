@@ -19,8 +19,10 @@ const updateStatusUtil = async (
     },
   });
 
-  if (!res?.data || !res.data?.message_id)
-    throw new Error('Failed to post initial message');
+  if (!res?.data || !res.data?.message_id) {
+    throw new Error(`Failed to post initial message, thread_id: ${thread_id}, ${JSON.stringify(res)}`);
+  }
+
   const initialMessage = res.data;
 
   const updateMessage = async (status: string) => {

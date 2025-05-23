@@ -4,22 +4,22 @@ import { handleNewAssistantMessage } from '../lib/handle-messages';
 import { getBotUser, verifyRequest } from '../lib/slack-utils';
 import type { WebhookChatMessage, WebhookNotification } from '../types';
 
-export default defineEventHandler(async event => {
-  const rawBody = JSON.stringify(await readBody(event));
+export default defineEventHandler(async request => {
+  const rawBody = JSON.stringify(await readBody(request));
   const payload = JSON.parse(rawBody);
 
-  await verifyRequest({ request: event, rawBody });
+  await verifyRequest({ request, rawBody });
 
   try {
     const botUser = await getBotUser();
 
-    const whEvent = {
-      type: getRequestHeader(event, 'X-Discourse-Event-Type'),
-      id: getRequestHeader(event, 'X-Discourse-Event-Id'),
+    const event = {
+      type: getRequestHeader(request, 'X-Discourse-Event-Type'),
+      id: getRequestHeader(request, 'X-Discourse-Event-Id'),
     };
 
     if (
-      whEvent.type === 'notification' &&
+      event.type === 'notification' &&
       payload.notification?.notification_type === 29 &&
       payload.notification?.user_id === botUser.id
     ) {
@@ -31,7 +31,7 @@ export default defineEventHandler(async event => {
         ),
       );
     } else if (
-      whEvent.type === 'chat_message' &&
+      event.type === 'chat_message' &&
       payload?.chat_message.message.user.id !== botUser.id
     ) {
       waitUntil(

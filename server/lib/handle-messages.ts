@@ -48,12 +48,16 @@ export async function handleNewAssistantMessage(
   const { message: content } = event.message;
   const thread_id = event.message.thread_id ?? null;
 
-  const isDirectMessage = channel.chatable_type === 'DirectMessage';
-  const hasKeyword = keywords.some((k) =>
-    content.toLowerCase().includes(k.toLowerCase()),
+  const isDM = channel.chatable_type === 'DirectMessage';
+  const myDMId = botUser.custom_fields?.last_chat_channel_id;
+  const isOwnDM = isDM && channel.id === myDMId;
+  const hasKeyword = keywords.some(kw =>
+    content.toLowerCase().includes(kw.toLowerCase())
   );
 
-  if (!isDirectMessage && !hasKeyword) return;
+  if (isDM && !isOwnDM) return;
+
+  if (!isDM && !hasKeyword) return;
 
   console.log('processing AI request from chat message');
 
