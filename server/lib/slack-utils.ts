@@ -91,7 +91,6 @@ export const updateStatusUtil = async (
   const initialMessage = res.data;
 
   const updateMessage = async (status: string) => {
-    console.log('Updating message', status);
     await editMessage({
       path: {
         channel_id: event.channel?.id,

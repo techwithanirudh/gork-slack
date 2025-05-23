@@ -72,4 +72,6 @@ export async function handleNewAssistantMessage(
     : await getMessages(channel.id as number, botUser);
   const result = await generateResponse(messages, updateStatus);
   await updateStatus(result);
+
+  console.log(`replied to ${event.message.user.username}: ${result}`);
 }

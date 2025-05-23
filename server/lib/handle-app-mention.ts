@@ -73,4 +73,6 @@ export async function handleNewAppMention(
   //   );
   //   await updateMessage(result);
   // }
+
+  console.log(`replied to ${event.data?.mentioned_by_username}: ${result}`);
 }
