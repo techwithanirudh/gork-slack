@@ -135,7 +135,7 @@ export async function getMessages(
 
       return {
         role: isBot ? 'assistant' : 'user',
-        content: content,
+        content: `${message.user?.username}: ${content}`,
       } as CoreMessage;
     })
     .filter((msg): msg is CoreMessage => msg !== null);
@@ -176,7 +176,7 @@ export async function getThreadMessages(
 
       return {
         role: isBot ? 'assistant' : 'user',
-        content: content,
+        content: `${message.user?.username}: ${content}`,
       } as CoreMessage;
     })
     .filter((msg): msg is CoreMessage => msg !== null);
