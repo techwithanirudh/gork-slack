@@ -120,8 +120,8 @@ export async function getThread(
       // For app mentions, remove the mention prefix
       // For DM messages, keep the full text
       let content = message.message;
-      if (!isBot && content.includes(`<@${botUser.id}>`)) {
-        content = content.replace(`<@${botUser.id}> `, "");
+      if (!isBot && content.includes(`<@${botUser.username}>`)) {
+        content = content.replace(`<@${botUser.username}> `, "");
       }
 
       return {

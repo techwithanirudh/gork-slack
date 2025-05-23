@@ -25,6 +25,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@hey-api/openapi-ts": "^0.67.5",
     "@types/node": "^20.11.17",
     "typescript": "^5.3.3"

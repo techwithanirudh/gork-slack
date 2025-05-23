@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       id: request.headers.get('X-Discourse-Event-Id')
     };
 
-    if (event.type === "notification" && payload.notification?.notification_type === 29) {
+    if (event.type === "notification" && payload.notification?.notification_type === 29 && payload.notification?.user_id === botUser.id) {
       console.log('processing AI request from notification');
       waitUntil(
         handleNewAppMention(payload?.notification as WebhookNotification, botUser)
@@ -30,7 +30,6 @@ export async function POST(request: Request) {
       event.type === "chat_message" &&
       payload?.chat_message.message.user.id !== botUser.id
     ) {
-      console.log('processing AI request from chat message');
       waitUntil(
         handleNewAssistantMessage(payload?.chat_message as WebhookChatMessage, botUser)
       );

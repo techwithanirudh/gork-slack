@@ -60,10 +60,13 @@ export async function handleNewAssistantMessage(
     content.toLowerCase().includes(k.toLowerCase())
   );
 
-  if (!isDirectMessage && !hasKeyword) {
-    console.log("Not a direct message or no keyword found");
+  if (
+    !isDirectMessage && 
+    !hasKeyword
+  ) 
     return;
-  }
+
+  console.log('processing AI request from chat message');
 
   const updateStatus = await updateStatusUtil("is thinking...", event);
 
