@@ -1,6 +1,6 @@
 import * as crypto from 'node:crypto';
 import type { CoreMessage } from 'ai';
-import { client } from '../client/client.gen';
+import { client } from '../../client/client.gen';
 import {
   getThread as _getThread,
   editMessage,
@@ -8,8 +8,8 @@ import {
   getThreadMessages as _getThreadMessages,
   getSession,
   sendMessage,
-} from '../client/sdk.gen';
-import type { GetSessionResponse } from '../client/types.gen';
+} from '../../client/sdk.gen';
+import type { GetSessionResponse } from '../../client/types.gen';
 import type { WebhookChatMessage } from '../types';
 import { env } from '../env';
 
@@ -28,10 +28,10 @@ export function isValidDiscourseRequest({
   request,
   rawBody,
 }: {
-  request: Request;
+  request: H3Event<EventHandlerRequest>;
   rawBody: string;
 }): boolean {
-  const signatureHeader = request.headers.get('X-Discourse-Event-Signature');
+  const signatureHeader = getRequestHeader(request, 'X-Discourse-Event-Signature');
 
   if (!signatureHeader || !signatureHeader.startsWith('sha256=')) {
     console.log('Missing or malformed signature');
@@ -59,7 +59,7 @@ export const verifyRequest = async ({
   request,
   rawBody,
 }: {
-  request: Request;
+  request: H3Event<EventHandlerRequest>;
   rawBody: string;
 }) => {
   const validRequest = await isValidDiscourseRequest({ request, rawBody });

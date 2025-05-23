@@ -4,22 +4,22 @@ import { handleNewAssistantMessage } from '../lib/handle-messages';
 import { getBotUser, verifyRequest } from '../lib/slack-utils';
 import type { WebhookChatMessage, WebhookNotification } from '../types';
 
-export async function POST(request: Request) {
-  const rawBody = await request.text();
+export default defineEventHandler(async event => {
+  const rawBody = JSON.stringify(await readBody(event));
   const payload = JSON.parse(rawBody);
 
-  await verifyRequest({ request, rawBody });
+  await verifyRequest({ request: event, rawBody });
 
   try {
     const botUser = await getBotUser();
 
-    const event = {
-      type: request.headers.get('X-Discourse-Event-Type'),
-      id: request.headers.get('X-Discourse-Event-Id'),
+    const whEvent = {
+      type: getRequestHeader(event, 'X-Discourse-Event-Type'),
+      id: getRequestHeader(event, 'X-Discourse-Event-Id'),
     };
 
     if (
-      event.type === 'notification' &&
+      whEvent.type === 'notification' &&
       payload.notification?.notification_type === 29 &&
       payload.notification?.user_id === botUser.id
     ) {
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         ),
       );
     } else if (
-      event.type === 'chat_message' &&
+      whEvent.type === 'chat_message' &&
       payload?.chat_message.message.user.id !== botUser.id
     ) {
       waitUntil(
@@ -47,4 +47,4 @@ export async function POST(request: Request) {
     console.error('Error generating response', error);
     return new Response('Error generating response', { status: 500 });
   }
-}
+});

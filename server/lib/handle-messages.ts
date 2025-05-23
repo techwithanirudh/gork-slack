@@ -1,4 +1,4 @@
-import type { GetSessionResponse } from '../client/types.gen';
+import type { GetSessionResponse } from '../../client/types.gen';
 import { keywords } from '../config';
 import type { WebhookChatMessage } from '../types';
 import { generateResponse } from './generate-response';

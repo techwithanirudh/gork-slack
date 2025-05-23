@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "nitro build",
+    "dev": "nitro dev",
+    "prepare": "nitro prepare",
+    "preview": "node .output/server/index.mjs",
     "format": "biome format --write .",
     "lint": "tsx ./scripts/lint.mts && biome lint .",
     "lint:write": "biome lint --write .",
@@ -29,7 +31,7 @@
     "discourse2-chat": "^1.1.5",
     "exa-js": "^1.4.10",
     "tsx": "^4.19.4",
-    "vercel": "^42.1.1",
+    "nitropack": "latest",
     "zod": "^3.24.2"
   },
   "devDependencies": {

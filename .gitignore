@@ -1,7 +1,9 @@
 node_modules
-.env
-ai-context
 dist
-.vercel
+.data
+.nitro
+.cache
+.output
+.env
 .env*.local
 .pnpm-store

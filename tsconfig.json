@@ -1,14 +1,4 @@
+// https://nitro.unjs.io/guide/typescript
 {
-  "compilerOptions": {
-    "strict": true,
-    "target": "ESNext",
-    "module": "NodeNext",
-    "allowJs": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "outDir": "./dist"
-  },
-  "exclude": ["node_modules"],
-  "include": ["api"]
+  "extends": "./.nitro/types/tsconfig.json"
 }
