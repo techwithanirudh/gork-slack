@@ -2,14 +2,16 @@
 
 import type { GetMessagesResponse } from './types.gen';
 
-export const getMessagesResponseTransformer = async (data: any): Promise<GetMessagesResponse> => {
-    if (data.messages) {
-        data.messages = data.messages.map((item: any) => {
-            if (item.created_at) {
-                item.created_at = new Date(item.created_at);
-            }
-            return item;
-        });
-    }
-    return data;
+export const getMessagesResponseTransformer = async (
+  data: any,
+): Promise<GetMessagesResponse> => {
+  if (data.messages) {
+    data.messages = data.messages.map((item: any) => {
+      if (item.created_at) {
+        item.created_at = new Date(item.created_at);
+      }
+      return item;
+    });
+  }
+  return data;
 };

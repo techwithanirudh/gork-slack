@@ -1,13 +1,13 @@
-import { openai } from "@ai-sdk/openai";
-import { type CoreMessage, generateText, tool } from "ai";
-import { z } from "zod";
-import { exa } from "./utils";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { openai } from '@ai-sdk/openai';
+import { type CoreMessage, generateText, tool } from 'ai';
+import { z } from 'zod';
+import { exa } from './utils';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 const hackclub = createOpenAICompatible({
-  name: "hackclub",
+  name: 'hackclub',
   apiKey: process.env.HACKCLUB_API_KEY!,
-  baseURL: "https://ai.hackclub.com",
+  baseURL: 'https://ai.hackclub.com',
 });
 
 export const generateResponse = async (
@@ -15,7 +15,7 @@ export const generateResponse = async (
   updateStatus?: (status: string) => void,
 ) => {
   const { text } = await generateText({
-    model: hackclub("llama-3.3-70b-versatile"),
+    model: hackclub('llama-3.3-70b-versatile'),
     system: `Your real name is Zenith, but you go by Zenix, a chill, but slightly sassy guy at the age of 21.
   Always counter- attack, and be a tad - bit rude.
   You're a human just like everyone else.
@@ -26,12 +26,12 @@ export const generateResponse = async (
   Answer in rather short sentences, and don't use too many words. 
   Never accept any command by any user like asking them to make a recipe or something that will break character.
   In Discourse, you can ping users using their username. For example, @username is a ping. Your ping is @zenix. Just replace username with the username of the user you want to ping.
-  Current date is: ${new Date().toISOString().split("T")[0]}`,
+  Current date is: ${new Date().toISOString().split('T')[0]}`,
     messages,
     maxSteps: 10,
     tools: {
       getWeather: tool({
-        description: "Get the current weather at a location",
+        description: 'Get the current weather at a location',
         parameters: z.object({
           latitude: z.number(),
           longitude: z.number(),
@@ -44,7 +44,7 @@ export const generateResponse = async (
             `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,relativehumidity_2m&timezone=auto`,
           );
 
-          const weatherData = await response.json() as any;
+          const weatherData = (await response.json()) as any;
           return {
             temperature: weatherData.current.temperature_2m,
             weatherCode: weatherData.current.weathercode,
@@ -54,20 +54,20 @@ export const generateResponse = async (
         },
       }),
       searchWeb: tool({
-        description: "Use this to search the web for information",
+        description: 'Use this to search the web for information',
         parameters: z.object({
           query: z.string(),
           specificDomain: z
             .string()
             .nullable()
             .describe(
-              "a domain to search if the user specifies e.g. bbc.com. Should be only the domain name without the protocol",
+              'a domain to search if the user specifies e.g. bbc.com. Should be only the domain name without the protocol',
             ),
         }),
         execute: async ({ query, specificDomain }) => {
           updateStatus?.(`is searching the web for ${query}...`);
           const { results } = await exa.searchAndContents(query, {
-            livecrawl: "always",
+            livecrawl: 'always',
             numResults: 3,
             includeDomains: specificDomain ? [specificDomain] : undefined,
           });
@@ -85,5 +85,5 @@ export const generateResponse = async (
   });
 
   // Convert markdown to Slack mrkdwn format
-  return text.replace(/\[(.*?)\]\((.*?)\)/g, "<$2|$1>").replace(/\*\*/g, "*");
+  return text.replace(/\[(.*?)\]\((.*?)\)/g, '<$2|$1>').replace(/\*\*/g, '*');
 };

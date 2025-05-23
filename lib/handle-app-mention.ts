@@ -1,8 +1,8 @@
-import { getThread } from "./slack-utils";
-import { generateResponse } from "./generate-response";
-import type { WebhookNotification } from "../types";
-import { editMessage, sendMessage } from "../client/sdk.gen";
-import { GetSessionResponse } from "../client/types.gen";
+import { getThread } from './slack-utils';
+import { generateResponse } from './generate-response';
+import type { WebhookNotification } from '../types';
+import { editMessage, sendMessage } from '../client/sdk.gen';
+import { GetSessionResponse } from '../client/types.gen';
 
 const updateStatusUtil = async (
   initialStatus: string,
@@ -19,7 +19,7 @@ const updateStatusUtil = async (
   });
 
   if (!res?.data || !res.data?.message_id)
-    throw new Error("Failed to post initial message");
+    throw new Error('Failed to post initial message');
   const initialMessage = res.data;
 
   const updateMessage = async (status: string) => {
@@ -40,16 +40,16 @@ export async function handleNewAppMention(
   event: WebhookNotification,
   botUser: GetSessionResponse['current_user'],
 ) {
-  console.log("Handling app mention");
+  console.log('Handling app mention');
 
   if (!botUser) return;
   if (event.data?.mentioned_by_username === botUser.username) {
-    console.log("Skipping app mention");
+    console.log('Skipping app mention');
     return;
   }
 
   const { chat_channel_id: channel_id } = event?.data;
-  const updateMessage = await updateStatusUtil("is thinking...", event);
+  const updateMessage = await updateStatusUtil('is thinking...', event);
 
   // if (thread_ts) {
   const messages = await getThread(channel_id as any, botUser);
