@@ -23,6 +23,7 @@
     "@ai-sdk/openai-compatible": "^0.2.14",
     "@hey-api/client-fetch": "^0.10.1",
     "@slack/web-api": "^7.0.2",
+    "@t3-oss/env-core": "^0.13.4",
     "@vercel/functions": "^2.0.0",
     "ai": "^4.3.16",
     "discourse2-chat": "^1.1.5",

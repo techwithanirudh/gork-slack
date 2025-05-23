@@ -2,7 +2,8 @@
   "compilerOptions": {
     "strict": true,
     "target": "ESNext",
-    "module": "CommonJS",
+    "module": "NodeNext",
+    "allowJs": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,

@@ -11,14 +11,15 @@ import {
 } from '../client/sdk.gen';
 import type { GetSessionResponse } from '../client/types.gen';
 import type { WebhookChatMessage } from '../types';
+import { env } from '../env';
 
-const signingSecret = process.env.DISCOURSE_SIGNING_SECRET!;
-const url = process.env.DISCOURSE_URL!;
+const signingSecret = env.DISCOURSE_SIGNING_SECRET;
+const url = env.DISCOURSE_URL;
 
 client.setConfig({
   baseUrl: url,
   headers: {
-    'Api-Key': process.env.DISCOURSE_BOT_TOKEN!,
+    'Api-Key': env.DISCOURSE_BOT_TOKEN,
   },
 });
 
