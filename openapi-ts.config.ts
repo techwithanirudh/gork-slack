@@ -3,14 +3,14 @@ import { defineConfig } from '@hey-api/openapi-ts';
 export default defineConfig({
   input: './openapi.json',
   output: {
-    // format: 'prettier',
-    // lint: 'eslint',
+    format: 'biome',
+    lint: 'biome',
     path: './client',
   },
   plugins: [
     '@hey-api/client-fetch',
     '@hey-api/schemas',
-    'zod',
+    // 'zod',
     {
       dates: true,
       name: '@hey-api/transformers',
@@ -22,7 +22,7 @@ export default defineConfig({
     {
       name: '@hey-api/sdk',
       transformer: true,
-      validator: true,
+      // validator: true,
     },
   ],
 });

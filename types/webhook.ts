@@ -67,6 +67,7 @@ export interface WebhookNotification {
 export interface WebhookChatMessage {
   message: {
     id: number;
+    thread_id?: number | null;
     message: string;
     cooked: string;
     created_at: string;

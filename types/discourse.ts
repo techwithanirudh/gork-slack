@@ -524,7 +524,7 @@ export interface Group {
 export interface UserSidebarTag {
   [propname: string]: unknown;
   name: string;
-  description: void /* 未知类型 */;
+  description: undefined /* 未知类型 */;
   pm_only: boolean;
 }
 

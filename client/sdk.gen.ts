@@ -184,6 +184,8 @@ import type {
   GetMessagesResponse,
   ReactToMessageData,
   ReactToMessageResponse,
+  GetThreadData,
+  GetThreadResponse,
   GetUserCardData,
   GetUserCardResponse,
   GetSessionData,
@@ -1974,6 +1976,22 @@ export const reactToMessage = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/x-www-form-urlencoded',
       ...options?.headers,
     },
+  });
+};
+
+/**
+ * Get thread details
+ */
+export const getThread = <ThrowOnError extends boolean = false>(
+  options: Options<GetThreadData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).get<
+    GetThreadResponse,
+    unknown,
+    ThrowOnError
+  >({
+    url: '/chat/api/channels/{channel_id}/threads/{thread_id}',
+    ...options,
   });
 };
 

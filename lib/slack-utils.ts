@@ -1,14 +1,15 @@
-import type { WebhookChatMessage, WebhookNotification } from '../types';
-import type { CoreMessage } from 'ai';
 import * as crypto from 'node:crypto';
+import type { CoreMessage } from 'ai';
 import { client } from '../client/client.gen';
 import {
-  sendMessage,
+  getThread as _getThread,
   editMessage,
   getMessages,
   getSession,
+  sendMessage,
 } from '../client/sdk.gen';
-import { GetSessionResponse } from '../client/types.gen';
+import type { GetSessionResponse } from '../client/types.gen';
+import type { WebhookChatMessage } from '../types';
 
 const signingSecret = process.env.DISCOURSE_SIGNING_SECRET!;
 const url = process.env.DISCOURSE_URL!;
@@ -68,14 +69,15 @@ export const verifyRequest = async ({
 export const updateStatusUtil = async (
   initialStatus: string,
   event: WebhookChatMessage,
+  thread_id?: number | null,
 ) => {
   const res = await sendMessage({
     path: {
       channel_id: event.channel?.id,
     },
-    // thread_ts: event.thread_ts ?? event.ts,
     body: {
       message: initialStatus,
+      thread_id: thread_id ?? undefined,
     },
   });
 
@@ -101,15 +103,25 @@ export const updateStatusUtil = async (
 
 export async function getThread(
   channel_id: number,
-  // thread_ts: string,
   botUser: GetSessionResponse['current_user'],
+  thread_id?: number | null,
 ): Promise<CoreMessage[]> {
+  const thread = thread_id
+    ? await _getThread({
+        path: {
+          channel_id,
+          thread_id,
+        },
+      })
+    : undefined;
+
   const res = await getMessages({
     path: {
       channel_id,
     },
     query: {
       page_size: 50,
+      target_message_id: thread?.data?.thread?.last_message_id ?? undefined,
     },
   });
 
@@ -119,7 +131,7 @@ export async function getThread(
 
   const result = messages
     .map((message) => {
-      const isBot = message.user?.id === (botUser.id as any);
+      const isBot = message.user?.id === botUser.id;
       if (!message.message) return null;
 
       // For app mentions, remove the mention prefix

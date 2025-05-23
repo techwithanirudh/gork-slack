@@ -15075,6 +15075,14 @@
                   "staged_id": {
                     "type": "string",
                     "nullable": true
+                  },
+                  "in_reply_to_id": {
+                    "type": "integer",
+                    "nullable": true
+                  },
+                  "thread_id": {
+                    "type": "integer",
+                    "nullable": true
                   }
                 }
               }
@@ -15194,6 +15202,15 @@
             "schema": {
               "type": "integer",
               "example": 50
+            }
+          },
+          {
+            "name": "target_message_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": 1234
             }
           }
         ],
@@ -15367,6 +15384,158 @@
                   "properties": {
                     "success": {
                       "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat/api/channels/{channel_id}/threads/{thread_id}": {
+      "get": {
+        "summary": "Get thread details",
+        "operationId": "getThread",
+        "tags": ["Thread"],
+        "parameters": [
+          {
+            "name": "channel_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 2
+            }
+          },
+          {
+            "name": "thread_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 89
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thread info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "thread": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "id": {
+                          "type": ["integer", "null"]
+                        },
+                        "title": {
+                          "type": ["string", "null"]
+                        },
+                        "status": {
+                          "type": ["string", "null"]
+                        },
+                        "channel_id": {
+                          "type": ["integer", "null"]
+                        },
+                        "meta": {
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "reply_count": {
+                          "type": ["integer", "null"]
+                        },
+                        "current_user_membership": {
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "preview": {
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "last_message_id": {
+                          "type": ["integer", "null"]
+                        },
+                        "force": {
+                          "type": ["boolean", "null"]
+                        },
+                        "original_message": {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "thread": {
+                    "id": 89,
+                    "title": null,
+                    "status": "open",
+                    "channel_id": 2,
+                    "meta": {
+                      "message_bus_last_ids": {
+                        "thread_message_bus_last_id": 2
+                      }
+                    },
+                    "reply_count": 1,
+                    "current_user_membership": {
+                      "notification_level": 2,
+                      "thread_id": 89,
+                      "last_read_message_id": 4248,
+                      "thread_title_prompt_seen": false
+                    },
+                    "preview": {
+                      "last_reply_created_at": "2025-05-23T04:21:48Z",
+                      "last_reply_excerpt": "tred",
+                      "last_reply_id": 4248,
+                      "participant_count": 2,
+                      "reply_count": 1,
+                      "participant_users": [
+                        {
+                          "id": 24,
+                          "username": "zenix",
+                          "name": "Zenith",
+                          "avatar_template": "/user_avatar/.../zenix/{size}/271_2.png"
+                        },
+                        {
+                          "id": 1,
+                          "username": "twa",
+                          "name": "Anirudh Sriram",
+                          "avatar_template": "/user_avatar/.../twa/{size}/70_2.png"
+                        }
+                      ],
+                      "last_reply_user": {
+                        "id": 1,
+                        "username": "twa",
+                        "name": "Anirudh Sriram",
+                        "avatar_template": "/user_avatar/.../twa/{size}/70_2.png"
+                      }
+                    },
+                    "last_message_id": 4248,
+                    "force": false,
+                    "original_message": {
+                      "id": 4235,
+                      "message": "okay, same answer: i'm good.",
+                      "cooked": "<p>okay, same answer: i'm good.</p>",
+                      "created_at": "2025-05-23T04:15:15.655Z",
+                      "excerpt": "okay, same answer: i&#39;m good.",
+                      "chat_channel_id": 2,
+                      "deleted_at": null,
+                      "mentioned_users": [],
+                      "user": {
+                        "id": 24,
+                        "username": "zenix",
+                        "name": "Zenith",
+                        "avatar_template": "/user_avatar/.../zenix/{size}/271_2.png",
+                        "can_chat": null,
+                        "has_chat_enabled": null
+                      }
                     }
                   }
                 }

@@ -1,8 +1,7 @@
-import { openai } from '@ai-sdk/openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { type CoreMessage, generateText, tool } from 'ai';
 import { z } from 'zod';
 import { exa } from './utils';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 const hackclub = createOpenAICompatible({
   name: 'hackclub',

@@ -5220,6 +5220,8 @@ export type SendMessageData = {
   body?: {
     message?: string;
     staged_id?: string;
+    in_reply_to_id?: number;
+    thread_id?: number;
   };
   path: {
     channel_id: number;
@@ -5274,6 +5276,7 @@ export type GetMessagesData = {
   query?: {
     fetch_from_last_read?: boolean;
     page_size?: number;
+    target_message_id?: number;
   };
   url: '/chat/api/channels/{channel_id}/messages';
 };
@@ -5352,6 +5355,115 @@ export type ReactToMessageResponses = {
 
 export type ReactToMessageResponse =
   ReactToMessageResponses[keyof ReactToMessageResponses];
+
+export type GetThreadData = {
+  body?: never;
+  path: {
+    channel_id: number;
+    thread_id: number;
+  };
+  query?: never;
+  url: '/chat/api/channels/{channel_id}/threads/{thread_id}';
+};
+
+export type GetThreadResponses = {
+  /**
+   * Thread info
+   */
+  200: {
+    thread?: {
+      id?: number | null;
+      title?: string | null;
+      status?: string | null;
+      channel_id?: number | null;
+      meta?: {
+        [key: string]: unknown;
+      };
+      reply_count?: number | null;
+      current_user_membership?: {
+        [key: string]: unknown;
+      };
+      preview?: {
+        [key: string]: unknown;
+      };
+      last_message_id?: number | null;
+      force?: boolean | null;
+      original_message?: {
+        [key: string]: unknown;
+      };
+      [key: string]:
+        | unknown
+        | (number | null)
+        | (string | null)
+        | (string | null)
+        | (number | null)
+        | {
+            [key: string]: unknown;
+          }
+        | (number | null)
+        | {
+            [key: string]: unknown;
+          }
+        | {
+            [key: string]: unknown;
+          }
+        | (number | null)
+        | (boolean | null)
+        | {
+            [key: string]: unknown;
+          }
+        | undefined;
+    };
+    [key: string]:
+      | unknown
+      | {
+          id?: number | null;
+          title?: string | null;
+          status?: string | null;
+          channel_id?: number | null;
+          meta?: {
+            [key: string]: unknown;
+          };
+          reply_count?: number | null;
+          current_user_membership?: {
+            [key: string]: unknown;
+          };
+          preview?: {
+            [key: string]: unknown;
+          };
+          last_message_id?: number | null;
+          force?: boolean | null;
+          original_message?: {
+            [key: string]: unknown;
+          };
+          [key: string]:
+            | unknown
+            | (number | null)
+            | (string | null)
+            | (string | null)
+            | (number | null)
+            | {
+                [key: string]: unknown;
+              }
+            | (number | null)
+            | {
+                [key: string]: unknown;
+              }
+            | {
+                [key: string]: unknown;
+              }
+            | (number | null)
+            | (boolean | null)
+            | {
+                [key: string]: unknown;
+              }
+            | undefined;
+        }
+      | undefined;
+  };
+};
+
+export type GetThreadResponse = GetThreadResponses[keyof GetThreadResponses];
 
 export type GetUserCardData = {
   body?: never;

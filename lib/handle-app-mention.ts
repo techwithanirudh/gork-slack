@@ -1,20 +1,21 @@
-import { getThread } from './slack-utils';
-import { generateResponse } from './generate-response';
-import type { WebhookNotification } from '../types';
 import { editMessage, sendMessage } from '../client/sdk.gen';
-import { GetSessionResponse } from '../client/types.gen';
+import type { GetSessionResponse } from '../client/types.gen';
+import type { WebhookNotification } from '../types';
+import { generateResponse } from './generate-response';
+import { getThread } from './slack-utils';
 
 const updateStatusUtil = async (
   initialStatus: string,
   event: WebhookNotification,
+  thread_id?: number | null,
 ) => {
   const res = await sendMessage({
     path: {
       channel_id: event.data?.chat_channel_id as number,
     },
-    // thread_ts: event.thread_ts ?? event.ts,
     body: {
       message: initialStatus,
+      thread_id: thread_id ?? undefined,
     },
   });
 
@@ -49,10 +50,11 @@ export async function handleNewAppMention(
   }
 
   const { chat_channel_id: channel_id } = event?.data;
-  const updateMessage = await updateStatusUtil('is thinking...', event);
+  const thread_id = event?.data?.chat_thread_id as number ?? undefined;
+  const updateMessage = await updateStatusUtil('is thinking...', event, thread_id);
 
   // if (thread_ts) {
-  const messages = await getThread(channel_id as any, botUser);
+  const messages = await getThread(channel_id as number, botUser, thread_id);
   const result = await generateResponse(messages, updateMessage);
   await updateMessage(result);
   // } else {
