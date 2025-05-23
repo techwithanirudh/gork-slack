@@ -5,3 +5,5 @@ discourse-2 chat openapi is broken it doesn't have proper spec it thinks that in
   });
 
 has a .message.id instead of a message_id 
+
+https://github.com/nitrojs/nitro/discussions/1356

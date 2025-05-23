@@ -11,7 +11,7 @@ import {
 } from '../../client/sdk.gen';
 import type { GetSessionResponse } from '../../client/types.gen';
 import type { WebhookChatMessage } from '../types';
-import { env } from '../env';
+import { env } from '~/env';
 import type { EventHandlerRequest, H3Event } from 'h3'
 
 const signingSecret = env.DISCOURSE_SIGNING_SECRET;
