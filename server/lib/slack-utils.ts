@@ -135,7 +135,7 @@ export async function getMessages(
 
       return {
         role: isBot ? 'assistant' : 'user',
-        content: `${message.user?.username}: ${content}`,
+        content: `${message.user?.name} (${message.user?.username}): ${content}`,
       } as CoreMessage;
     })
     .filter((msg): msg is CoreMessage => msg !== null);
