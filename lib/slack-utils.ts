@@ -4,7 +4,8 @@ import { client } from '../client/client.gen';
 import {
   getThread as _getThread,
   editMessage,
-  getMessages,
+  getMessages as _getMessages,
+  getThreadMessages as _getThreadMessages,
   getSession,
   sendMessage,
 } from '../client/sdk.gen';
@@ -81,13 +82,14 @@ export const updateStatusUtil = async (
     },
   });
 
-  if (!res?.data) throw new Error('Failed to post initial message');
+  if (!res?.data?.success) throw new Error('Failed to post initial message');
   const initialMessage = res.data;
 
   if (!initialMessage || !initialMessage.message_id)
     throw new Error('Failed to post initial message');
 
   const updateMessage = async (status: string) => {
+    console.log('Updating message', status);
     await editMessage({
       path: {
         channel_id: event.channel?.id,
@@ -101,27 +103,57 @@ export const updateStatusUtil = async (
   return updateMessage;
 };
 
-export async function getThread(
+export async function getMessages(
   channel_id: number,
   botUser: GetSessionResponse['current_user'],
-  thread_id?: number | null,
 ): Promise<CoreMessage[]> {
-  const thread = thread_id
-    ? await _getThread({
-        path: {
-          channel_id,
-          thread_id,
-        },
-      })
-    : undefined;
-
-  const res = await getMessages({
+  const res = await _getMessages({
     path: {
       channel_id,
     },
     query: {
       page_size: 50,
-      target_message_id: thread?.data?.thread?.last_message_id ?? undefined,
+    },
+  });
+
+  if (!botUser) throw new Error('botUser is undefined');
+  if (!res?.data?.messages) throw new Error('No messages found in thread');
+  const { messages } = res.data;
+
+  const result = messages
+    .map((message) => {
+      const isBot = message.user?.id === botUser.id;
+      if (!message.message) return null;
+
+      // For app mentions, remove the mention prefix
+      // For DM messages, keep the full text
+      let content = message.message;
+      if (!isBot && content.includes(`<@${botUser.username}>`)) {
+        content = content.replace(`<@${botUser.username}> `, '');
+      }
+
+      return {
+        role: isBot ? 'assistant' : 'user',
+        content: content,
+      } as CoreMessage;
+    })
+    .filter((msg): msg is CoreMessage => msg !== null);
+
+  return result;
+}
+
+export async function getThreadMessages(
+  channel_id: number,
+  botUser: GetSessionResponse['current_user'],
+  thread_id: number,
+): Promise<CoreMessage[]> {
+  const res = await _getThreadMessages({
+    path: {
+      channel_id,
+      thread_id: thread_id,
+    },
+    query: {
+      page_size: 50,
     },
   });
 

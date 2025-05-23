@@ -2,7 +2,7 @@ import { editMessage, sendMessage } from '../client/sdk.gen';
 import type { GetSessionResponse } from '../client/types.gen';
 import type { WebhookNotification } from '../types';
 import { generateResponse } from './generate-response';
-import { getThread } from './slack-utils';
+import { getMessages, getThreadMessages } from './slack-utils';
 
 const updateStatusUtil = async (
   initialStatus: string,
@@ -50,12 +50,19 @@ export async function handleNewAppMention(
   }
 
   const { chat_channel_id: channel_id } = event?.data;
-  const thread_id = event?.data?.chat_thread_id as number ?? undefined;
-  const updateMessage = await updateStatusUtil('is thinking...', event, thread_id);
+  const thread_id = (event?.data?.chat_thread_id as number) ?? undefined;
+  const updateMessage = await updateStatusUtil(
+    'is thinking...',
+    event,
+    thread_id,
+  );
 
   // if (thread_ts) {
-  const messages = await getThread(channel_id as number, botUser, thread_id);
+  const messages = thread_id
+    ? await getThreadMessages(channel_id as number, botUser, thread_id)
+    : await getMessages(channel_id as number, botUser);
   const result = await generateResponse(messages, updateMessage);
+
   await updateMessage(result);
   // } else {
   //   const result = await generateResponse(

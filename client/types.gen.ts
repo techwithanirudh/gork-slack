@@ -5243,119 +5243,6 @@ export type SendMessageResponses = {
 export type SendMessageResponse =
   SendMessageResponses[keyof SendMessageResponses];
 
-export type EditMessageData = {
-  body?: {
-    message?: string;
-  };
-  path: {
-    channel_id: number;
-    message_id: number;
-  };
-  query?: never;
-  url: '/chat/api/channels/{channel_id}/messages/{message_id}';
-};
-
-export type EditMessageResponses = {
-  /**
-   * Message updated
-   */
-  200: {
-    success?: string;
-    message_id?: number;
-  };
-};
-
-export type EditMessageResponse =
-  EditMessageResponses[keyof EditMessageResponses];
-
-export type GetMessagesData = {
-  body?: never;
-  path: {
-    channel_id: number;
-  };
-  query?: {
-    fetch_from_last_read?: boolean;
-    page_size?: number;
-    target_message_id?: number;
-  };
-  url: '/chat/api/channels/{channel_id}/messages';
-};
-
-export type GetMessagesResponses = {
-  /**
-   * A page of messages
-   */
-  200: {
-    messages?: Array<{
-      id?: number;
-      message?: string;
-      cooked?: string;
-      created_at?: Date;
-      chat_channel_id?: number;
-      streaming?: boolean;
-      user?: {
-        id?: number;
-        username?: string;
-        name?: string;
-        avatar_template?: string;
-        moderator?: boolean;
-        admin?: boolean;
-        staff?: boolean;
-      };
-      mentioned_users?: Array<{
-        id?: number;
-        username?: string;
-        name?: string;
-      }>;
-      available_flags?: Array<string | null>;
-      uploads?: Array<{
-        [key: string]: unknown;
-      }>;
-      edited?: boolean;
-      blocks?: Array<{
-        [key: string]: unknown;
-      }>;
-      chat_webhook_event?: {
-        [key: string]: unknown;
-      } | null;
-    }>;
-    tracking?: {
-      [key: string]: unknown;
-    } | null;
-    meta?: {
-      [key: string]: unknown;
-    } | null;
-  };
-};
-
-export type GetMessagesResponse =
-  GetMessagesResponses[keyof GetMessagesResponses];
-
-export type ReactToMessageData = {
-  body?: {
-    react_action?: string;
-    emoji?: string;
-  };
-  path: {
-    channel_id: number;
-    message_id: number;
-  };
-  query?: never;
-  url: '/chat/{channel_id}/react/{message_id}';
-};
-
-export type ReactToMessageResponses = {
-  /**
-   * Reaction added/removed
-   */
-  200: {
-    success?: string;
-  };
-};
-
-export type ReactToMessageResponse =
-  ReactToMessageResponses[keyof ReactToMessageResponses];
-
 export type GetThreadData = {
   body?: never;
   path: {
@@ -5464,6 +5351,227 @@ export type GetThreadResponses = {
 };
 
 export type GetThreadResponse = GetThreadResponses[keyof GetThreadResponses];
+
+export type EditMessageData = {
+  body?: {
+    message?: string;
+  };
+  path: {
+    channel_id: number;
+    message_id: number;
+  };
+  query?: never;
+  url: '/chat/api/channels/{channel_id}/messages/{message_id}';
+};
+
+export type EditMessageResponses = {
+  /**
+   * Message updated
+   */
+  200: {
+    success?: string;
+    message_id?: number;
+  };
+};
+
+export type EditMessageResponse =
+  EditMessageResponses[keyof EditMessageResponses];
+
+export type GetMessagesData = {
+  body?: never;
+  path: {
+    channel_id: number;
+  };
+  query?: {
+    fetch_from_last_read?: boolean;
+    page_size?: number;
+    target_message_id?: number;
+  };
+  url: '/chat/api/channels/{channel_id}/messages';
+};
+
+export type GetMessagesResponses = {
+  /**
+   * A page of messages
+   */
+  200: {
+    messages?: Array<{
+      id?: number;
+      message?: string;
+      cooked?: string;
+      created_at?: Date;
+      chat_channel_id?: number;
+      streaming?: boolean;
+      user?: {
+        id?: number;
+        username?: string;
+        name?: string;
+        avatar_template?: string;
+        moderator?: boolean;
+        admin?: boolean;
+        staff?: boolean;
+      };
+      mentioned_users?: Array<{
+        id?: number;
+        username?: string;
+        name?: string;
+      }>;
+      available_flags?: Array<string | null>;
+      uploads?: Array<{
+        [key: string]: unknown;
+      }>;
+      edited?: boolean;
+      blocks?: Array<{
+        [key: string]: unknown;
+      }>;
+      chat_webhook_event?: {
+        [key: string]: unknown;
+      } | null;
+    }>;
+    tracking?: {
+      [key: string]: unknown;
+    } | null;
+    meta?: {
+      [key: string]: unknown;
+    } | null;
+  };
+};
+
+export type GetMessagesResponse =
+  GetMessagesResponses[keyof GetMessagesResponses];
+
+export type GetThreadMessagesData = {
+  body?: never;
+  path: {
+    channel_id: number;
+    thread_id: number;
+  };
+  query?: {
+    /**
+     * Start fetching from this message ID
+     */
+    target_message_id?: number;
+    page_size?: number;
+  };
+  url: '/chat/api/channels/{channel_id}/threads/{thread_id}/messages';
+};
+
+export type GetThreadMessagesResponses = {
+  /**
+   * A page of messages in the thread
+   */
+  200: {
+    messages?: Array<{
+      id?: number | null;
+      message?: string | null;
+      cooked?: string | null;
+      created_at?: Date | null;
+      thread_id?: number | null;
+      chat_channel_id?: number | null;
+      user?: {
+        [key: string]: unknown;
+      };
+      available_flags?: Array<string | null>;
+      [key: string]:
+        | unknown
+        | (number | null)
+        | (string | null)
+        | (string | null)
+        | (Date | null)
+        | (number | null)
+        | (number | null)
+        | {
+            [key: string]: unknown;
+          }
+        | Array<string | null>
+        | undefined;
+    }>;
+    tracking?: {
+      [key: string]: unknown;
+    } | null;
+    meta?: {
+      target_message_id?: number | null;
+      can_load_more_future?: boolean | null;
+      can_load_more_past?: boolean | null;
+      [key: string]:
+        | unknown
+        | (number | null)
+        | (boolean | null)
+        | (boolean | null)
+        | undefined;
+    };
+    [key: string]:
+      | unknown
+      | Array<{
+          id?: number | null;
+          message?: string | null;
+          cooked?: string | null;
+          created_at?: Date | null;
+          thread_id?: number | null;
+          chat_channel_id?: number | null;
+          user?: {
+            [key: string]: unknown;
+          };
+          available_flags?: Array<string | null>;
+          [key: string]:
+            | unknown
+            | (number | null)
+            | (string | null)
+            | (string | null)
+            | (Date | null)
+            | (number | null)
+            | (number | null)
+            | {
+                [key: string]: unknown;
+              }
+            | Array<string | null>
+            | undefined;
+        }>
+      | ({
+          [key: string]: unknown;
+        } | null)
+      | {
+          target_message_id?: number | null;
+          can_load_more_future?: boolean | null;
+          can_load_more_past?: boolean | null;
+          [key: string]:
+            | unknown
+            | (number | null)
+            | (boolean | null)
+            | (boolean | null)
+            | undefined;
+        }
+      | undefined;
+  };
+};
+
+export type GetThreadMessagesResponse =
+  GetThreadMessagesResponses[keyof GetThreadMessagesResponses];
+
+export type ReactToMessageData = {
+  body?: {
+    react_action?: string;
+    emoji?: string;
+  };
+  path: {
+    channel_id: number;
+    message_id: number;
+  };
+  query?: never;
+  url: '/chat/{channel_id}/react/{message_id}';
+};
+
+export type ReactToMessageResponses = {
+  /**
+   * Reaction added/removed
+   */
+  200: {
+    success?: string;
+  };
+};
+
+export type ReactToMessageResponse =
+  ReactToMessageResponses[keyof ReactToMessageResponses];
 
 export type GetUserCardData = {
   body?: never;

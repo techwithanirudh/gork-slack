@@ -178,21 +178,26 @@ import type {
   GetUserEmailsResponse,
   SendMessageData,
   SendMessageResponse,
+  GetThreadData,
+  GetThreadResponse,
   EditMessageData,
   EditMessageResponse,
   GetMessagesData,
   GetMessagesResponse,
+  GetThreadMessagesData,
+  GetThreadMessagesResponse,
   ReactToMessageData,
   ReactToMessageResponse,
-  GetThreadData,
-  GetThreadResponse,
   GetUserCardData,
   GetUserCardResponse,
   GetSessionData,
   GetSessionResponse,
 } from './types.gen';
 import { client as _heyApiClient } from './client.gen';
-import { getMessagesResponseTransformer } from './transformers.gen';
+import {
+  getMessagesResponseTransformer,
+  getThreadMessagesResponseTransformer,
+} from './transformers.gen';
 
 export type Options<
   TData extends TDataShape = TDataShape,
@@ -1921,6 +1926,22 @@ export const sendMessage = <ThrowOnError extends boolean = false>(
 };
 
 /**
+ * Get thread details
+ */
+export const getThread = <ThrowOnError extends boolean = false>(
+  options: Options<GetThreadData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).get<
+    GetThreadResponse,
+    unknown,
+    ThrowOnError
+  >({
+    url: '/chat/api/channels/{channel_id}/threads/{thread_id}',
+    ...options,
+  });
+};
+
+/**
  * Edit an existing message
  */
 export const editMessage = <ThrowOnError extends boolean = false>(
@@ -1959,6 +1980,23 @@ export const getMessages = <ThrowOnError extends boolean = false>(
 };
 
 /**
+ * Fetch thread messages
+ */
+export const getThreadMessages = <ThrowOnError extends boolean = false>(
+  options: Options<GetThreadMessagesData, ThrowOnError>,
+) => {
+  return (options.client ?? _heyApiClient).get<
+    GetThreadMessagesResponse,
+    unknown,
+    ThrowOnError
+  >({
+    responseTransformer: getThreadMessagesResponseTransformer,
+    url: '/chat/api/channels/{channel_id}/threads/{thread_id}/messages',
+    ...options,
+  });
+};
+
+/**
  * React to a message
  */
 export const reactToMessage = <ThrowOnError extends boolean = false>(
@@ -1976,22 +2014,6 @@ export const reactToMessage = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/x-www-form-urlencoded',
       ...options?.headers,
     },
-  });
-};
-
-/**
- * Get thread details
- */
-export const getThread = <ThrowOnError extends boolean = false>(
-  options: Options<GetThreadData, ThrowOnError>,
-) => {
-  return (options.client ?? _heyApiClient).get<
-    GetThreadResponse,
-    unknown,
-    ThrowOnError
-  >({
-    url: '/chat/api/channels/{channel_id}/threads/{thread_id}',
-    ...options,
   });
 };
 

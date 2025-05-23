@@ -2,7 +2,7 @@ import type { GetSessionResponse } from '../client/types.gen';
 import { keywords } from '../config';
 import type { WebhookChatMessage } from '../types';
 import { generateResponse } from './generate-response';
-import { getThread, updateStatusUtil } from './slack-utils';
+import { getMessages, getThreadMessages, updateStatusUtil } from './slack-utils';
 
 // export async function assistantThreadMessage(
 //   event: AssistantThreadStartedEvent,
@@ -57,10 +57,15 @@ export async function handleNewAssistantMessage(
 
   console.log('processing AI request from chat message');
 
-  const updateStatus = await updateStatusUtil('is thinking...', event, thread_id);
+  const updateStatus = await updateStatusUtil(
+    'is thinking...',
+    event,
+    thread_id,
+  );
 
-  const messages = await getThread(channel.id, botUser, thread_id);
+  const messages = thread_id
+    ? await getThreadMessages(channel.id as number, botUser, thread_id)
+    : await getMessages(channel.id as number, botUser);
   const result = await generateResponse(messages, updateStatus);
-
   await updateStatus(result);
 }
