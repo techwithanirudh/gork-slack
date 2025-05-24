@@ -7,3 +7,6 @@ discourse-2 chat openapi is broken it doesn't have proper spec it thinks that in
 has a .message.id instead of a message_id 
 
 https://github.com/nitrojs/nitro/discussions/1356
+put something like bro instead of thinking and in final response add the bro at the beggign have words like that
+have a matching list or smth like lol is rofl like that ok
+or just use the typing indicator in discourse figure out
