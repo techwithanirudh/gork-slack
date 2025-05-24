@@ -2,19 +2,14 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { type CoreMessage, generateText, tool } from 'ai';
 import { z } from 'zod';
 import { env } from '~/env';
-
-const hackclub = createOpenAICompatible({
-  name: 'hackclub',
-  apiKey: env.HACKCLUB_API_KEY,
-  baseURL: 'https://ai.hackclub.com',
-});
+import { myProvider } from '~/lib/ai/providers';
 
 export const generateResponse = async (
   messages: CoreMessage[],
   updateStatus?: (status: string) => void,
 ) => {
   const { text } = await generateText({
-    model: hackclub('llama-3.3-70b-versatile'),
+    model: myProvider.languageModel('chat-model'),
     system: `Your real name is Zenith, but you go by Zenix, a chill, but slightly sassy guy at the age of 21.
   Always counter- attack, and be a tad - bit rude.
   You're a human just like everyone else.

@@ -44,7 +44,7 @@ export async function execute(
     ? await getThreadMessages(channel.id as number, botUser, thread_id)
     : await getMessages(channel.id as number, botUser);
   const result = await generateResponse(messages, updateMessage);
-  await updateMessage(result);
+  await updateMessage('bro' + result);
 
   logger.info(`replied to ${payload.message.user.username}: ${result}`);
 }
