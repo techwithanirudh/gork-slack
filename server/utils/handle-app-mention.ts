@@ -3,7 +3,7 @@ import type { GetSessionResponse } from '../../client/types.gen';
 import type { WebhookNotification } from '~/types';
 import { generateResponse } from './generate-response';
 import { getMessages, getThreadMessages } from './discourse';
-import logger from "~/lib/logger";
+import logger from '~/lib/logger';
 
 const updateStatusUtil = async (
   initialStatus: string,
@@ -21,7 +21,9 @@ const updateStatusUtil = async (
   });
 
   if (!res?.data || !res.data?.message_id) {
-    throw new Error(`Failed to post initial message, thread_id: ${thread_id}, ${JSON.stringify(res)}`);
+    throw new Error(
+      `Failed to post initial message, thread_id: ${thread_id}, ${JSON.stringify(res)}`,
+    );
   }
 
   const initialMessage = res.data;

@@ -2,6 +2,6 @@
 {
   "extends": "./.nitro/types/tsconfig.json",
   "compilerOptions": {
-    "strictNullChecks": true,
-  },
+    "strictNullChecks": true
+  }
 }

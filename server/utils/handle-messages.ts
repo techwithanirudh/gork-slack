@@ -3,7 +3,7 @@ import { keywords } from '~/config';
 import type { WebhookChatMessage } from '~/types';
 import { generateResponse } from './generate-response';
 import { getMessages, getThreadMessages, updateStatusUtil } from './discourse';
-import logger from "~/lib/logger";
+import logger from '~/lib/logger';
 
 // export async function assistantThreadMessage(
 //   event: AssistantThreadStartedEvent,
@@ -52,8 +52,8 @@ export async function handleNewAssistantMessage(
   const isDM = channel.chatable_type === 'DirectMessage';
   const myDMId = botUser.custom_fields?.last_chat_channel_id;
   const isOwnDM = isDM && channel.id === myDMId;
-  const hasKeyword = keywords.some(kw =>
-    content.toLowerCase().includes(kw.toLowerCase())
+  const hasKeyword = keywords.some((kw) =>
+    content.toLowerCase().includes(kw.toLowerCase()),
   );
 
   if (isDM && !isOwnDM) return;

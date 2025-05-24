@@ -1,9 +1,9 @@
-import type { Geo } from "@vercel/functions";
+import type { Geo } from '@vercel/functions';
 
 export interface RequestHints {
   time: string;
-  city: Geo["city"];
-  country: Geo["country"];
+  city: Geo['city'];
+  country: Geo['country'];
   server: string;
   channel: string;
   joined: number;
@@ -60,7 +60,7 @@ export const artifactsPrompt = `\
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
-  memories
+  memories,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
@@ -68,9 +68,9 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === "chat-model") {
+  if (selectedChatModel === 'chat-model') {
     return `${regularPrompt}\n\n${requestPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
-  } else if (selectedChatModel === "artifacts-model") {
+  } else if (selectedChatModel === 'artifacts-model') {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   }
 };

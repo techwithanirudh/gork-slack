@@ -12,8 +12,8 @@ import {
 import type { GetSessionResponse } from '../../client/types.gen';
 import type { WebhookChatMessage } from '../types';
 import { env } from '~/env';
-import { getRequestHeader, type EventHandlerRequest, type H3Event } from 'h3'
-import logger from "~/lib/logger";
+import { getRequestHeader, type EventHandlerRequest, type H3Event } from 'h3';
+import logger from '~/lib/logger';
 
 const signingSecret = env.DISCOURSE_SIGNING_SECRET;
 const url = env.DISCOURSE_URL;
@@ -33,7 +33,10 @@ export function isValidDiscourseRequest({
   request: H3Event<EventHandlerRequest>;
   rawBody: string;
 }): boolean {
-  const signatureHeader = getRequestHeader(request, 'X-Discourse-Event-Signature');
+  const signatureHeader = getRequestHeader(
+    request,
+    'X-Discourse-Event-Signature',
+  );
 
   if (!signatureHeader || !signatureHeader.startsWith('sha256=')) {
     logger.info('Missing or malformed signature');
@@ -86,7 +89,9 @@ export const updateStatusUtil = async (
   });
 
   if (!res?.data || !res.data?.message_id) {
-    throw new Error(`Failed to post initial message, thread_id: ${thread_id}, ${JSON.stringify(res)}`);
+    throw new Error(
+      `Failed to post initial message, thread_id: ${thread_id}, ${JSON.stringify(res)}`,
+    );
   }
 
   const initialMessage = res.data;
