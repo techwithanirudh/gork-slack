@@ -13,6 +13,7 @@ import type { GetSessionResponse } from '../../client/types.gen';
 import type { WebhookChatMessage } from '../types';
 import { env } from '~/env';
 import { getRequestHeader, type EventHandlerRequest, type H3Event } from 'h3'
+import logger from "~/lib/logger";
 
 const signingSecret = env.DISCOURSE_SIGNING_SECRET;
 const url = env.DISCOURSE_URL;
@@ -35,7 +36,7 @@ export function isValidDiscourseRequest({
   const signatureHeader = getRequestHeader(request, 'X-Discourse-Event-Signature');
 
   if (!signatureHeader || !signatureHeader.startsWith('sha256=')) {
-    console.log('Missing or malformed signature');
+    logger.info('Missing or malformed signature');
     return false;
   }
 
@@ -51,7 +52,7 @@ export function isValidDiscourseRequest({
       Buffer.from(computedHmac, 'utf8'),
     );
   } catch (err) {
-    console.log('HMAC comparison failed:', err);
+    logger.info('HMAC comparison failed:', err);
     return false;
   }
 }

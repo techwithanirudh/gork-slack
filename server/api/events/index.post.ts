@@ -5,6 +5,7 @@ import { getBotUser, verifyRequest } from '~/utils/discourse';
 import type { WebhookChatMessage, WebhookNotification } from '~/types';
 import { defineEventHandler } from 'h3';
 import { getRequestHeader, readBody } from 'h3';
+import logger from "~/lib/logger";
 
 export default defineEventHandler(async request => {
   const rawBody = JSON.stringify(await readBody(request));
@@ -25,7 +26,7 @@ export default defineEventHandler(async request => {
       payload.notification?.notification_type === 29 &&
       payload.notification?.user_id === botUser.id
     ) {
-      console.log('processing AI request from notification');
+      logger.info('processing AI request from notification');
       waitUntil(
         handleNewAppMention(
           payload?.notification as WebhookNotification,

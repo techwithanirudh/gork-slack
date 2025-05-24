@@ -4,6 +4,11 @@ export default defineNitroConfig({
   preset: "bun",
   compatibilityDate: '2025-05-24',
   imports: {
-    autoImport: false,
-  }
+    autoImport: false
+  },
+  esbuild: {
+    options: {
+      target: "esnext",
+    },
+  },
 });

@@ -3,6 +3,7 @@ import { keywords } from '~/config';
 import type { WebhookChatMessage } from '~/types';
 import { generateResponse } from './generate-response';
 import { getMessages, getThreadMessages, updateStatusUtil } from './discourse';
+import logger from "~/lib/logger";
 
 // export async function assistantThreadMessage(
 //   event: AssistantThreadStartedEvent,
@@ -59,7 +60,7 @@ export async function handleNewAssistantMessage(
 
   if (!isDM && !hasKeyword) return;
 
-  console.log('processing AI request from chat message');
+  logger.info('processing AI request from chat message');
 
   const updateStatus = await updateStatusUtil(
     'is thinking...',
@@ -73,5 +74,5 @@ export async function handleNewAssistantMessage(
   const result = await generateResponse(messages, updateStatus);
   await updateStatus(result);
 
-  console.log(`replied to ${event.message.user.username}: ${result}`);
+  logger.info(`replied to ${event.message.user.username}: ${result}`);
 }

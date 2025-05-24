@@ -3,6 +3,7 @@ import type { GetSessionResponse } from '../../client/types.gen';
 import type { WebhookNotification } from '~/types';
 import { generateResponse } from './generate-response';
 import { getMessages, getThreadMessages } from './discourse';
+import logger from "~/lib/logger";
 
 const updateStatusUtil = async (
   initialStatus: string,
@@ -43,11 +44,11 @@ export async function handleNewAppMention(
   event: WebhookNotification,
   botUser: GetSessionResponse['current_user'],
 ) {
-  console.log('Handling app mention');
+  logger.info('Handling app mention');
 
   if (!botUser) return;
   if (event.data?.mentioned_by_username === botUser.username) {
-    console.log('Skipping app mention');
+    logger.info('Skipping app mention');
     return;
   }
 
@@ -74,5 +75,5 @@ export async function handleNewAppMention(
   //   await updateMessage(result);
   // }
 
-  console.log(`replied to ${event.data?.mentioned_by_username}: ${result}`);
+  logger.info(`replied to ${event.data?.mentioned_by_username}: ${result}`);
 }
