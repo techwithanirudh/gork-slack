@@ -14,6 +14,7 @@ export async function execute(
   botUser: GetSessionResponse['current_user'],
 ) {
   if (!botUser || payload.message.user.id === botUser.id) return;
+  logger.info('processing AI request from chat message');
 
   const { channel } = payload;
   const { message: content } = payload.message;

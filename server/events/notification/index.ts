@@ -15,15 +15,11 @@ export async function execute(
   payload: WebhookNotification,
   botUser: GetSessionResponse['current_user'],
 ) {
-  logger.info('Handling app mention');
-
-  if (!botUser) return;
+  if (!botUser || payload.data?.mentioned_by_username === botUser.username) return;
   if (!(payload?.notification_type === 29 && payload?.user_id === botUser.id))
     return;
-  if (payload.data?.mentioned_by_username === botUser.username) {
-    logger.info('Skipping app mention');
-    return;
-  }
+
+  logger.info('processing AI request from notification');
 
   const { chat_channel_id: channel_id } = payload?.data;
   const thread_id = (payload?.data?.chat_thread_id as number) ?? undefined;
