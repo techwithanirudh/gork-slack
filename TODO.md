@@ -10,3 +10,9 @@ https://github.com/nitrojs/nitro/discussions/1356
 put something like bro instead of thinking and in final response add the bro at the beggign have words like that
 have a matching list or smth like lol is rofl like that ok
 or just use the typing indicator in discourse figure out
+- make the starting message different randomzie like bro, lmao like that through keyword recognition, now it is fixed to bro, make it a setting
+- add mem0 support for adding memories
+- add ability for it to reply in posts
+- add staggered reply
+- use the prompts.ts and add request hints
+- do the relevance check
