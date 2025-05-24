@@ -1,12 +1,11 @@
-import { getBotUser, verifyRequest } from '~/utils/discourse';
 import {
-  defineEventHandler,
-  readRawBody,
-  getRequestHeader,
   createError,
+  defineEventHandler,
+  getRequestHeader,
+  readRawBody,
 } from 'h3';
-import logger from '~/lib/logger';
 import { events } from '~/events';
+import { getBotUser, verifyRequest } from '~/utils/discourse';
 
 export default defineEventHandler(async (request) => {
   const rawBody = (await readRawBody(request)) ?? '{}';

@@ -1,13 +1,13 @@
-import {
-  generateResponse,
-  getMessages,
-  getThreadMessages,
-  updateStatusUtil,
-} from '#imports';
 import { keywords } from '~/config';
 import logger from '~/lib/logger';
-import { WebhookChatMessage } from '~/types';
-import { GetSessionResponse } from '~~/client';
+import type { WebhookChatMessage } from '~/types';
+import type { GetSessionResponse } from '~~/client';
+import {
+  getMessages,
+  getThreadMessages,
+} from '~/utils/discourse';
+import { updateStatus } from '~/utils/discourse';
+import { generateResponse } from '~/utils/generate-response';
 
 export const name = 'chat_message';
 export const once = false;
@@ -35,17 +35,17 @@ export async function execute(
 
   logger.info('processing AI request from chat message');
 
-  const updateStatus = await updateStatusUtil(
+  const updateMessage = await updateStatus(
     'is thinking...',
-    payload,
+    payload?.channel?.id,
     thread_id,
   );
 
   const messages = thread_id
     ? await getThreadMessages(channel.id as number, botUser, thread_id)
     : await getMessages(channel.id as number, botUser);
-  const result = await generateResponse(messages, updateStatus);
-  await updateStatus(result);
+  const result = await generateResponse(messages, updateMessage);
+  await updateMessage(result);
 
   logger.info(`replied to ${payload.message.user.username}: ${result}`);
 }

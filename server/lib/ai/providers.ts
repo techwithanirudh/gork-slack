@@ -1,13 +1,8 @@
-import {
-  customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
-} from 'ai';
+import { customProvider } from 'ai';
 
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { env } from '~/env';
-import { createMem0 } from '@mem0/vercel-ai-provider';
 
 const hackclub = createOpenAICompatible({
   name: 'hackclub',
