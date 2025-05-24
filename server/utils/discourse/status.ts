@@ -1,4 +1,3 @@
-import type { WebhookChatMessage } from '~/types';
 import { editMessage, sendMessage } from '~~/client/sdk.gen';
 import { client } from './client';
 

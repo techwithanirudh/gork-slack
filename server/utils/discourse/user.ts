@@ -4,7 +4,7 @@ import { client } from './client';
 export const getBotUser = async () => {
   // const { user_id: botUserId } = await client.auth.test();
   const res = await getSession({
-    client
+    client,
   });
 
   if (!res?.data?.current_user) {

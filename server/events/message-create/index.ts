@@ -1,13 +1,10 @@
 import { keywords } from '~/config';
 import logger from '~/lib/logger';
 import type { WebhookChatMessage } from '~/types';
-import type { GetSessionResponse } from '~~/client';
-import {
-  getMessages,
-  getThreadMessages,
-} from '~/utils/discourse';
+import { getMessages, getThreadMessages } from '~/utils/discourse';
 import { updateStatus } from '~/utils/discourse';
 import { generateResponse } from '~/utils/generate-response';
+import type { GetSessionResponse } from '~~/client';
 
 export const name = 'chat_message';
 export const once = false;

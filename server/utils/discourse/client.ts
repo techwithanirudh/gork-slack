@@ -1,4 +1,4 @@
-import { createClient } from "@hey-api/client-fetch";
+import { createClient } from '@hey-api/client-fetch';
 import { env } from '~/env';
 
 const url = env.DISCOURSE_URL;

@@ -1,8 +1,12 @@
 import logger from '~/lib/logger';
 import type { WebhookNotification } from '~/types';
-import type { GetSessionResponse } from '~~/client/types.gen';
-import { getMessages, getThreadMessages, updateStatus } from '~/utils/discourse';
+import {
+  getMessages,
+  getThreadMessages,
+  updateStatus,
+} from '~/utils/discourse';
 import { generateResponse } from '~/utils/generate-response';
+import type { GetSessionResponse } from '~~/client/types.gen';
 
 export const name = 'notification';
 export const once = false;
@@ -14,7 +18,8 @@ export async function execute(
   logger.info('Handling app mention');
 
   if (!botUser) return;
-  if (!(payload?.notification_type === 29 && payload?.user_id === botUser.id)) return;
+  if (!(payload?.notification_type === 29 && payload?.user_id === botUser.id))
+    return;
   if (payload.data?.mentioned_by_username === botUser.username) {
     logger.info('Skipping app mention');
     return;
