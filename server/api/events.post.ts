@@ -1,4 +1,3 @@
-import { waitUntil } from '@vercel/functions';
 import { handleNewAppMention } from '~/utils/handle-app-mention';
 import { handleNewAssistantMessage } from '~/utils/handle-messages';
 import { getBotUser, verifyRequest } from '~/utils/discourse';
@@ -6,6 +5,7 @@ import type { WebhookChatMessage, WebhookNotification } from '~/types';
 import { defineEventHandler } from 'h3';
 import { getRequestHeader, readBody } from 'h3';
 import logger from "~/lib/logger";
+import { events } from "~/events";
 
 export default defineEventHandler(async request => {
   const rawBody = JSON.stringify(await readBody(request));
@@ -27,7 +27,7 @@ export default defineEventHandler(async request => {
       payload.notification?.user_id === botUser.id
     ) {
       logger.info('processing AI request from notification');
-      waitUntil(
+      request.waitUntil(
         handleNewAppMention(
           payload?.notification as WebhookNotification,
           botUser,
@@ -37,7 +37,7 @@ export default defineEventHandler(async request => {
       event.type === 'chat_message' &&
       payload?.chat_message.message.user.id !== botUser.id
     ) {
-      waitUntil(
+      request.waitUntil(
         handleNewAssistantMessage(
           payload?.chat_message as WebhookChatMessage,
           botUser,
