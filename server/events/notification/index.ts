@@ -24,7 +24,7 @@ export async function execute(
   const { chat_channel_id: channel_id } = payload?.data;
   const thread_id = (payload?.data?.chat_thread_id as number) ?? undefined;
   const updateMessage = await updateStatus(
-    'is thinking...',
+    'bro',
     channel_id as number,
     thread_id,
   );

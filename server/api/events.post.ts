@@ -24,6 +24,8 @@ export default defineEventHandler(async (request) => {
     const eventHandler = Object.values(events).find(
       (handler) => handler.name === event.type,
     );
+
+    // if one event is triggered, we don't need to check the others
     if (eventHandler) {
       request.waitUntil(
         eventHandler.execute(payload[eventHandler.name], botUser),

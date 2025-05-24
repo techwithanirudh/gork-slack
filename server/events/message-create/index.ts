@@ -14,7 +14,6 @@ export async function execute(
   botUser: GetSessionResponse['current_user'],
 ) {
   if (!botUser || payload.message.user.id === botUser.id) return;
-  logger.info('processing AI request from chat message');
 
   const { channel } = payload;
   const { message: content } = payload.message;
@@ -22,19 +21,21 @@ export async function execute(
 
   const isDM = channel.chatable_type === 'DirectMessage';
   const myDMId = botUser.custom_fields?.last_chat_channel_id;
+  
   const isOwnDM = isDM && channel.id === myDMId;
   const hasKeyword = keywords.some((kw) =>
     content.toLowerCase().includes(kw.toLowerCase()),
   );
+  const isMentioned = content.includes(`<@${botUser.username}>`);
 
   if (isDM && !isOwnDM) return;
 
-  if (!isDM && !hasKeyword) return;
+  if (!isDM && !hasKeyword && !isMentioned) return;
 
   logger.info('processing AI request from chat message');
 
   const updateMessage = await updateStatus(
-    'is thinking...',
+    'bro',
     payload?.channel?.id,
     thread_id,
   );
