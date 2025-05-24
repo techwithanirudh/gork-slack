@@ -2,7 +2,7 @@ import { editMessage, sendMessage } from '../../client/sdk.gen';
 import type { GetSessionResponse } from '../../client/types.gen';
 import type { WebhookNotification } from '~/types';
 import { generateResponse } from './generate-response';
-import { getMessages, getThreadMessages } from './discourse-utils';
+import { getMessages, getThreadMessages } from './discourse';
 
 const updateStatusUtil = async (
   initialStatus: string,

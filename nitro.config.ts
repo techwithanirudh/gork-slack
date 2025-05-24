@@ -2,5 +2,8 @@
 export default defineNitroConfig({
   srcDir: "server",
   preset: "bun",
-  compatibilityDate: '2025-05-24' 
+  compatibilityDate: '2025-05-24',
+  imports: {
+    autoImport: false,
+  }
 });

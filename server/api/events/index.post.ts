@@ -1,8 +1,10 @@
 import { waitUntil } from '@vercel/functions';
 import { handleNewAppMention } from '~/utils/handle-app-mention';
 import { handleNewAssistantMessage } from '~/utils/handle-messages';
-import { getBotUser, verifyRequest } from '~/utils/discourse-utils';
+import { getBotUser, verifyRequest } from '~/utils/discourse';
 import type { WebhookChatMessage, WebhookNotification } from '~/types';
+import { defineEventHandler } from 'h3';
+import { getRequestHeader, readBody } from 'h3';
 
 export default defineEventHandler(async request => {
   const rawBody = JSON.stringify(await readBody(request));
