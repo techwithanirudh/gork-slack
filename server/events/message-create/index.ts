@@ -1,3 +1,4 @@
+import { reply } from '~/utils/staggered-response';
 import { keywords } from '~/config';
 import logger from '~/lib/logger';
 import type { WebhookChatMessage } from '~/types';
@@ -21,7 +22,6 @@ export async function execute(
 
   const isDM = channel.chatable_type === 'DirectMessage';
   const myDMId = botUser.custom_fields?.last_chat_channel_id;
-  
   const isOwnDM = isDM && channel.id === myDMId;
   const hasKeyword = keywords.some((kw) =>
     content.toLowerCase().includes(kw.toLowerCase()),
@@ -34,17 +34,17 @@ export async function execute(
 
   logger.info('processing AI request from chat message');
 
-  const updateMessage = await updateStatus(
-    'bro',
-    payload?.channel?.id,
-    thread_id,
-  );
+  // const updateMessage = await updateStatus(
+  //   'bro',
+  //   payload?.channel?.id,
+  //   thread_id,
+  // );
 
   const messages = thread_id
     ? await getThreadMessages(channel.id as number, botUser, thread_id)
     : await getMessages(channel.id as number, botUser);
-  const result = await generateResponse(messages, updateMessage);
-  await updateMessage('bro' + result);
+  const result = await generateResponse(messages);
+  await reply(result, payload?.channel.id, thread_id);
 
   logger.info(`replied to ${payload.message.user.username}: ${result}`);
 }

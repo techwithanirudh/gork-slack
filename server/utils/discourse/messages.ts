@@ -26,7 +26,8 @@ export async function getMessages(
 
   const result = messages
     .map((message) => {
-      const isBot = message.user?.id === botUser.id;
+      const { user } = message;
+      const isBot = user?.id === botUser.id;
       if (!message.message) return null;
 
       // For app mentions, remove the mention prefix
@@ -36,9 +37,16 @@ export async function getMessages(
         content = content.replace(`<@${botUser.username}> `, '');
       }
 
+      const segments = [
+        `${user?.username} (${user?.name}) (id:${user?.id})`,
+        content,
+        message.edited ? '(Edited)' : null,
+        message.deleted_by_id ? `(Deleted by ${message.deleted_by_id})` : null,
+      ];
+
       return {
         role: isBot ? 'assistant' : 'user',
-        content: `${message.user?.name} (${message.user?.username}): ${content}`,
+        content: segments.filter(Boolean).join(' '),
       } as CoreMessage;
     })
     .filter((msg): msg is CoreMessage => msg !== null);

@@ -13,6 +13,8 @@ or just use the typing indicator in discourse figure out
 - make the starting message different randomzie like bro, lmao like that through keyword recognition, now it is fixed to bro, make it a setting
 - add mem0 support for adding memories
 - add ability for it to reply in posts
-- add staggered reply
+- add staggered reply tokenize msgs
 - use the prompts.ts and add request hints
 - do the relevance check
+- set custom status like discord bto does like online offline and custom status msgg
+- mark deleted messages as deleted so the ai know why it responded, same with edited messages

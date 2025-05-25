@@ -5,8 +5,7 @@ import { env } from '~/env';
 import { myProvider } from '~/lib/ai/providers';
 
 export const generateResponse = async (
-  messages: CoreMessage[],
-  updateStatus?: (status: string) => void,
+  messages: CoreMessage[]
 ) => {
   const { text } = await generateText({
     model: myProvider.languageModel('chat-model'),
@@ -34,7 +33,7 @@ export const generateResponse = async (
           city: z.string(),
         }),
         execute: async ({ latitude, longitude, city }) => {
-          updateStatus?.(`is getting weather for ${city}...`);
+          // updateStatus?.(`is getting weather for ${city}...`);
 
           const response = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,relativehumidity_2m&timezone=auto`,
