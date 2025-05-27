@@ -1,4 +1,4 @@
-import { waitUntil } from '@vercel/functions';
+import { waitUntil } from '@/utils/nitro';
 import {
   createError,
   defineEventHandler,
@@ -13,7 +13,6 @@ export default defineEventHandler(async (request) => {
   const payload = JSON.parse(rawBody);
 
   await verifyRequest({ request, rawBody });
-
   try {
     const botUser = await getBotUser();
 
@@ -29,7 +28,8 @@ export default defineEventHandler(async (request) => {
     // if one event is triggered, we don't need to check the others
     if (eventHandler) {
       waitUntil(
-        eventHandler.execute(payload[eventHandler.name], botUser),
+        request,
+        eventHandler.execute(payload[eventHandler.name], botUser)
       );
     }
 
