@@ -38,11 +38,14 @@ export async function getMessages(
       }
 
       const segments = [
-        `${user?.username} (${user?.name}) (id:${user?.id})`,
+        `${user?.username} (${user?.name}) (id:${user?.id}): `,
         content,
-        message.edited ? '(Edited)' : null,
-        message.deleted_by_id ? `(Deleted by ${message.deleted_by_id})` : null,
+        // message.edited ? '(Edited)' : null,
+        // message.deleted_by_id ? `(Deleted by ${message.deleted_by_id})` : null,
       ];
+
+      if (message.edited) segments.push('::: system (Edited) :::');
+      if (message.deleted_by_id) segments.push(`::: system (Deleted by ${message.deleted_by_id}) :::`);
 
       return {
         role: isBot ? 'assistant' : 'user',

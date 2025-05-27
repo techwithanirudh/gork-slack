@@ -28,6 +28,8 @@
     "@mem0/vercel-ai-provider": "^1.0.5",
     "@openrouter/ai-sdk-provider": "^0.4.6",
     "@t3-oss/env-core": "^0.13.4",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.34.9",
     "@vercel/functions": "^2.0.0",
     "ai": "^4.3.16",
     "compromise": "^14.14.4",
