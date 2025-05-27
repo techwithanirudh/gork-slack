@@ -1,3 +1,4 @@
+import { waitUntil } from '@vercel/functions';
 import {
   createError,
   defineEventHandler,
@@ -27,7 +28,7 @@ export default defineEventHandler(async (request) => {
 
     // if one event is triggered, we don't need to check the others
     if (eventHandler) {
-      request.waitUntil(
+      waitUntil(
         eventHandler.execute(payload[eventHandler.name], botUser),
       );
     }
