@@ -1,4 +1,4 @@
-import { Uploads } from "./discourse";
+import type { Uploads } from './discourse';
 
 export interface BasicChatMessage {
   id: number;

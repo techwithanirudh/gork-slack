@@ -425,7 +425,7 @@ export interface User extends BasicUser {
   gravatar_avatar_upload_id?: number;
   gravatar_avatar_template?: string;
   associated_accounts?: UserAssociatedAccount[];
-  profile_background_upload_url: string;
+  profile_background_upload_url?: string;
   custom_avatar_upload_id?: number;
   custom_avatar_template?: string;
 }
@@ -524,7 +524,7 @@ export interface Group {
 export interface UserSidebarTag {
   [propname: string]: unknown;
   name: string;
-  description: void /* 未知类型 */;
+  description: undefined /* 未知类型 */;
   pm_only: boolean;
 }
 
