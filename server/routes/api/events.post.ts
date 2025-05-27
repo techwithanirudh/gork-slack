@@ -1,4 +1,4 @@
-import { waitUntil } from '@/utils/nitro';
+import { waitUntil } from '~/utils/nitro';
 import {
   createError,
   defineEventHandler,
