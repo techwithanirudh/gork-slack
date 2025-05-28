@@ -10,8 +10,5 @@ export default defineNitroConfig({
     options: {
       target: 'esnext',
     },
-  },
-  routeRules: {
-    '/**': { proxy: '/api/**' },
   }
 });
