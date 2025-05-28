@@ -1,5 +1,4 @@
-import { useRuntimeConfig } from '#imports'
-import { waitUntil as vercelWaitUntil } from '@vercel/functions'
+import * as vercel from '@vercel/functions'
 import { env } from 'process'
 import type { H3Event as Event } from 'h3'
 
@@ -7,10 +6,10 @@ export function waitUntil(
   request: Event,
   task: Promise<unknown>
 ): void {
-   const preset = useRuntimeConfig(request).public.preset ?? env.NITRO_PRESET;
+  const isVercel = !!env.VERCEL;
 
-  if (preset === 'vercel') {
-    vercelWaitUntil(task)
+  if (isVercel) {
+    vercel.waitUntil(task)
   } else {
     request.waitUntil(task)
   }

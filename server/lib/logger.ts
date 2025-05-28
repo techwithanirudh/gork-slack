@@ -14,7 +14,7 @@ async function exists(path: string): Promise<boolean> {
 }
 
 const isProd = process.env.NODE_ENV === 'production';
-const isVercel = !!process.env.VERCEL;
+const isVercel = !!env.VERCEL;
 const logDir = env.LOG_DIRECTORY ?? 'logs';
 const logLevel = env.LOG_LEVEL ?? 'info';
 
