@@ -2,11 +2,11 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnicoalbanese%2Fai-sdk-slackbot&env=DISCOURSE_BOT_TOKEN,DISCOURSE_SIGNING_SECRET,OPENAI_API_KEY,EXA_API_KEY&envDescription=API%20keys%20needed%20for%20application&envLink=https%3A%2F%2Fgithub.com%2Fnicoalbanese%2Fai-sdk-slackbot%3Ftab%3Dreadme-ov-file%234-set-environment-variables&project-name=ai-sdk-slackbot)
 
-An AI-powered chatbot for Slack powered by the [AI SDK by Vercel](https://sdk.vercel.ai/docs).
+An AI-powered chatbot for Discourse powered by the [AI SDK by Vercel](https://sdk.vercel.ai/docs).
 
 ## Features
 
-- Integrates with [Slack's API](https://api.slack.com) for easy Slack communication
+- Integrates with [Discourse's API](https://api.discourse.org) for easy communication
 - Use any LLM with the AI SDK ([easily switch between providers](https://sdk.vercel.ai/providers/ai-sdk-providers))
 - Works both with app mentions and as an assistant in direct messages
 - Maintains conversation context within both threads and direct messages
