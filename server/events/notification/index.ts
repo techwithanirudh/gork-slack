@@ -4,7 +4,7 @@ import {
   getMessages,
   getThreadMessages,
   updateStatus,
-} from '~/utils/discourse';
+} from '~/lib/discourse';
 import { generateResponse } from '~/utils/generate-response';
 import type { GetSessionResponse } from '~~/client/types.gen';
 

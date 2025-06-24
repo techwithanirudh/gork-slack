@@ -6,7 +6,7 @@ import {
   readRawBody,
 } from 'h3';
 import { events } from '~/events';
-import { getBotUser, verifyRequest } from '~/utils/discourse';
+import { getBotUser, verifyRequest } from '~/lib/discourse';
 
 export default defineEventHandler(async (request) => {
   const rawBody = (await readRawBody(request)) ?? '{}';
