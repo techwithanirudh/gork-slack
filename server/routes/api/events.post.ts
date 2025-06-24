@@ -1,3 +1,4 @@
+import { waitUntil } from '~/utils/nitro';
 import {
   createError,
   defineEventHandler,
@@ -5,14 +6,13 @@ import {
   readRawBody,
 } from 'h3';
 import { events } from '~/events';
-import { getBotUser, verifyRequest } from '~/utils/discourse';
+import { getBotUser, verifyRequest } from '~/lib/discourse';
 
 export default defineEventHandler(async (request) => {
   const rawBody = (await readRawBody(request)) ?? '{}';
   const payload = JSON.parse(rawBody);
 
   await verifyRequest({ request, rawBody });
-
   try {
     const botUser = await getBotUser();
 
@@ -27,8 +27,9 @@ export default defineEventHandler(async (request) => {
 
     // if one event is triggered, we don't need to check the others
     if (eventHandler) {
-      request.waitUntil(
-        eventHandler.execute(payload[eventHandler.name], botUser),
+      waitUntil(
+        request,
+        eventHandler.execute(payload[eventHandler.name], botUser)
       );
     }
 

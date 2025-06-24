@@ -2,7 +2,7 @@ import { speed as speedConfig } from "~/config";
 import { sentences, normalize } from "./tokenize-messages";
 import logger from "~/lib/logger";
 import { sendMessage } from "~~/client";
-import { client } from '~/utils/discourse/client';
+import { client } from '~/lib/discourse/client';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

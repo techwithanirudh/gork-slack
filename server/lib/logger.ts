@@ -13,28 +13,44 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
+const isProd = process.env.NODE_ENV === 'production';
+const isVercel = !!env.VERCEL;
 const logDir = env.LOG_DIRECTORY ?? 'logs';
+const logLevel = env.LOG_LEVEL ?? 'info';
 
-if (!(await exists(logDir))) {
+if (!isVercel && !(await exists(logDir))) {
   await mkdir(logDir, { recursive: true });
 }
 
-const transport = pino.transport({
-  targets: [
-    {
-      target: 'pino/file',
-      options: { destination: path.join(logDir, 'app.log') },
-    },
-    {
-      target: 'pino-pretty',
-    },
-  ],
-});
+const targets: Array<any> = [];
 
-export default pino(
-  {
-    level: env.LOG_LEVEL || 'info',
-    timestamp: pino.stdTimeFunctions.isoTime,
-  },
-  transport,
-);
+if (!isVercel) {
+  targets.push({
+    target: 'pino/file',
+    options: { destination: path.join(logDir, 'app.log') },
+    level: logLevel,
+  });
+}
+
+if (!isProd) {
+  targets.push({
+    target: 'pino-pretty',
+    options: {
+      colorize: true,
+      translateTime: 'yyyy-mm-dd HH:MM:ss.l o',
+      ignore: 'pid,hostname',
+    },
+    level: logLevel,
+  });
+}
+
+const transport =
+  targets.length > 0
+    ? pino.transport({ targets })
+    : undefined;
+
+const logger = transport
+  ? pino({ level: logLevel, timestamp: pino.stdTimeFunctions.isoTime }, transport)
+  : pino({ level: logLevel, timestamp: pino.stdTimeFunctions.isoTime });
+
+export default logger;

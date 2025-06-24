@@ -1,7 +1,12 @@
 import { createEnv } from '@t3-oss/env-core';
 import { z } from 'zod';
+import { upstashRedis, vercel } from "@t3-oss/env-core/presets-zod";
 
 export const env = createEnv({
+  extends: [
+    vercel(),
+    upstashRedis()
+  ],
   server: {
     // Discourse
     DISCOURSE_BOT_TOKEN: z.string().min(1),
@@ -17,9 +22,6 @@ export const env = createEnv({
       .enum(['debug', 'info', 'warn', 'error'])
       .optional()
       .default('info'),
-    // Redis
-    UPSTASH_REDIS_REST_URL: z.string().min(1).url(),
-    UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
     // Mem0
     MEM0_API_KEY: z.string().min(1).startsWith('m0-'),
   },
