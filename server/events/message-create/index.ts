@@ -1,5 +1,5 @@
 import { reply } from '~/utils/staggered-response';
-import { keywords } from '~/config';
+import { keywordRegex } from '~/config';
 import logger from '~/lib/logger';
 import type { WebhookChatMessage } from '~/types';
 import { getMessages, getThreadMessages } from '~/lib/discourse';
@@ -7,6 +7,7 @@ import { updateStatus } from '~/lib/discourse';
 import { generateResponse } from '~/utils/generate-response';
 import type { GetSessionResponse } from '~~/client';
 import { ratelimit, redisKeys } from '~/lib/kv';
+import { requestQueue } from '~/utils/request-queue';
 
 export const name = 'chat_message';
 export const once = false;
@@ -34,9 +35,7 @@ export async function execute(
   }
 
   const isOwnDM = isDM && channel.id === myDMId;
-  const hasKeyword = keywords.some((kw) =>
-    content.toLowerCase().includes(kw.toLowerCase()),
-  );
+  const hasKeyword = keywordRegex.test(content);
   const isMentioned = content.includes(`<@${botUser.username}>`);
 
   logger.info(
@@ -54,11 +53,15 @@ export async function execute(
   //   thread_id,
   // );
 
-  const messages = thread_id
-    ? await getThreadMessages(channel.id as number, botUser, thread_id)
-    : await getMessages(channel.id as number, botUser);
-  const result = await generateResponse(messages);
-  await reply(result, payload?.channel.id, thread_id);
-
-  logger.info(`replied to ${payload.message.user.username}: ${result}`);
+  const priority = isDM ? 2 : (isMentioned ? 1 : 0);
+  
+  await requestQueue.add(async () => {
+    const messages = thread_id
+      ? await getThreadMessages(channel.id as number, botUser, thread_id)
+      : await getMessages(channel.id as number, botUser);
+    const result = await generateResponse(messages);
+    await reply(result, payload?.channel.id, thread_id);
+    
+    logger.info(`replied to ${payload.message.user.username}: ${result}`);
+  }, priority);
 }

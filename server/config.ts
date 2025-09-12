@@ -1,13 +1,14 @@
 export const keywords = ['zenix', 'zenith', 'ai', 'bot', 'zen'];
+export const keywordRegex = /\b(zenix|zenith|ai|bot|zen)\b/i;
 export const country = 'Greece';
 export const city = 'Athens';
 export const timezone = 'Europe/Athens';
 
 export const speed = {
-  minDelay: 5,
-  maxDelay: 15,
+  minDelay: 3,
+  maxDelay: 8,
   speedMethod: 'divide',
-  speedFactor: 60,
+  speedFactor: 80,
 };
 
 // export const statuses = ["online", "idle", "dnd", "offline"];

@@ -17,4 +17,6 @@ export const ratelimit = new Ratelimit({
 export const redisKeys = {
   messageCount: (contextId: string) => `ctx:messageCount:${contextId}`,
   channelCount: (contextId: string) => `ctx:channelCount:${contextId}`,
+  responseCache: (messagesHash: string) => `cache:response:${messagesHash}`,
+  userContext: (userId: string) => `ctx:user:${userId}`,
 };
