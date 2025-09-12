@@ -3,10 +3,21 @@ import { type CoreMessage, generateText, tool } from 'ai';
 import { z } from 'zod';
 import { env } from '~/env';
 import { myProvider } from '~/lib/ai/providers';
+import { redis, redisKeys } from '~/lib/kv';
+import { createHash } from 'crypto';
 
 export const generateResponse = async (
   messages: CoreMessage[]
 ) => {
+  const messagesHash = createHash('sha256')
+    .update(JSON.stringify(messages.slice(-10)))
+    .digest('hex');
+  
+  const cachedResponse = await redis.get(redisKeys.responseCache(messagesHash));
+  if (cachedResponse && typeof cachedResponse === 'string') {
+    return cachedResponse;
+  }
+
   const { text } = await generateText({
     model: myProvider.languageModel('chat-model'),
     system: `Your real name is Zenith, but you go by Zenix, a chill, but slightly sassy guy at the age of 21.
@@ -79,6 +90,9 @@ export const generateResponse = async (
     },
   });
 
-  // Convert markdown to Slack markdown format
-  return text.replace(/\[(.*?)\]\((.*?)\)/g, '<$2|$1>').replace(/\*\*/g, '*');
+  const result = text.replace(/\[(.*?)\]\((.*?)\)/g, '<$2|$1>').replace(/\*\*/g, '*');
+  
+  await redis.setex(redisKeys.responseCache(messagesHash), 300, result);
+  
+  return result;
 };

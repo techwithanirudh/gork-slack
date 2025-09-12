@@ -16,7 +16,7 @@ export async function getMessages(
       channel_id,
     },
     query: {
-      page_size: 50,
+      page_size: 25,
     },
   });
 
@@ -69,7 +69,7 @@ export async function getThreadMessages(
       thread_id: thread_id,
     },
     query: {
-      page_size: 50,
+      page_size: 25,
     },
   });
 
