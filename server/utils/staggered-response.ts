@@ -45,7 +45,7 @@ export async function reply({ client, channel, text, threadTs }: ReplyOptions): 
     let isFirst = true;
 
     for (const raw of segments) {
-        const chunk = raw.toLowerCase().trim().replace(/\.$/, "");
+        const chunk = raw.trim();
         if (!chunk) continue;
 
         const { minDelay, maxDelay } = speedConfig;

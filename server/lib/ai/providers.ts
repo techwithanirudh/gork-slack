@@ -3,16 +3,16 @@ import { customProvider } from 'ai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { env } from '~/env';
 
-const hackclub = createOpenAICompatible({
-  name: 'hackclub',
-  apiKey: env.HACKCLUB_API_KEY,
-  baseURL: 'https://ai.hackclub.com',
-});
+const openrouter = createOpenAICompatible({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: env.OPENROUTER_API_KEY,
+  name: "OpenRouter"
+})
 
 export const myProvider = customProvider({
   languageModels: {
-    'chat-model': hackclub('llama-3.3-70b-versatile'),
-    'artifact-model': hackclub('llama-3.3-70b-versatile'),
+    'chat-model': openrouter('x-ai/grok-4-fast'),
+    'artifact-model': openrouter('x-ai/grok-4-fast'),
   },
   imageModels: {
     // 'small-model': openai.image('dall-e-2'),

@@ -17,8 +17,6 @@ export const env = createEnv({
       .optional(),
     PORT: z.coerce.number().optional(),
     // AI
-    OPENAI_API_KEY: z.string().optional(),
-    HACKCLUB_API_KEY: z.string().optional(),
     OPENROUTER_API_KEY: z.string().optional(),
     // Logging
     LOG_DIRECTORY: z.string().optional().default('logs'),
