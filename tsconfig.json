@@ -1,7 +1,22 @@
-// https://nitro.unjs.io/guide/typescript
 {
-  "extends": "./.nitro/types/tsconfig.json",
   "compilerOptions": {
-    "strictNullChecks": true
-  }
+    "target": "ES2022",
+    "module": "ESNext",
+  "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "rootDir": "server",
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["server/*"]
+    }
+  },
+  "include": ["server/**/*.ts"],
+  "exclude": ["dist", "node_modules"]
 }

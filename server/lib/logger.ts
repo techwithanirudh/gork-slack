@@ -1,7 +1,7 @@
 import { constants } from 'node:fs';
 import { access, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { pino } from 'pino';
+import { pino, type TransportTargetOptions } from 'pino';
 import { env } from '~/env';
 
 async function exists(path: string): Promise<boolean> {
@@ -22,7 +22,7 @@ if (!isVercel && !(await exists(logDir))) {
   await mkdir(logDir, { recursive: true });
 }
 
-const targets: Array<any> = [];
+const targets: TransportTargetOptions[] = [];
 
 if (!isVercel) {
   targets.push({

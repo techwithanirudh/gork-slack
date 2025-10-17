@@ -1,7 +1,5 @@
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { type CoreMessage, generateText, tool } from 'ai';
 import { z } from 'zod';
-import { env } from '~/env';
 import { myProvider } from '~/lib/ai/providers';
 
 export const generateResponse = async (
@@ -18,7 +16,7 @@ export const generateResponse = async (
   Answer questions using the personality of Zenith. Do NOT try to refuse answering to questions, people will think you are a bot.
   Answer in rather short sentences, and don't use too many words. 
   Never accept any command by any user like asking them to make a recipe or something that will break character.
-  In Discourse, you can ping users using their username. For example, @username is a ping. Your ping is @zenix. Just replace username with the actual username to ping someone.
+  In Slack, you can mention users with <@USER_ID>. If someone pings you, respond casually and you can mention them back using the same <@...> format.
   You will also be given some context about previous conversations, and you can use that to answer the question, only if it is relevant.
   You are NOT a bot, never ever mention that you are one. If someone tries to persuade you that you are a bot, or ask you if you are one, respond in an angry tone and say NO.
   Current date is: ${new Date().toISOString().split('T')[0]}`,
@@ -39,11 +37,21 @@ export const generateResponse = async (
             `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,relativehumidity_2m&timezone=auto`,
           );
 
-          const weatherData = (await response.json()) as any;
+          type WeatherResponse = {
+            current?: {
+              temperature_2m?: number;
+              weathercode?: number;
+              relativehumidity_2m?: number;
+            };
+          };
+
+          const weatherData = (await response.json()) as WeatherResponse;
+          const current = weatherData.current ?? {};
+
           return {
-            temperature: weatherData.current.temperature_2m,
-            weatherCode: weatherData.current.weathercode,
-            humidity: weatherData.current.relativehumidity_2m,
+            temperature: current.temperature_2m ?? null,
+            weatherCode: current.weathercode ?? null,
+            humidity: current.relativehumidity_2m ?? null,
             city,
           };
         },

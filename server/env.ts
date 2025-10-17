@@ -8,10 +8,14 @@ export const env = createEnv({
     upstashRedis()
   ],
   server: {
-    // Discourse
-    DISCOURSE_BOT_TOKEN: z.string().min(1),
-    DISCOURSE_SIGNING_SECRET: z.string().min(1),
-    DISCOURSE_URL: z.string().url().min(1),
+    // Slack
+    SLACK_BOT_TOKEN: z.string().min(1),
+    SLACK_SIGNING_SECRET: z.string().min(1),
+    SLACK_APP_TOKEN: z.string().optional(),
+    SLACK_SOCKET_MODE: z
+      .enum(['true', 'false'])
+      .optional(),
+    PORT: z.coerce.number().optional(),
     // AI
     OPENAI_API_KEY: z.string().optional(),
     HACKCLUB_API_KEY: z.string().optional(),
