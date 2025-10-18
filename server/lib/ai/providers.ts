@@ -4,10 +4,10 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { env } from '~/env';
 
 const openrouter = createOpenAICompatible({
-  baseURL: "https://openrouter.ai/api/v1",
+  baseURL: 'https://openrouter.ai/api/v1',
   apiKey: env.OPENROUTER_API_KEY,
-  name: "OpenRouter"
-})
+  name: 'OpenRouter',
+});
 
 export const myProvider = customProvider({
   languageModels: {

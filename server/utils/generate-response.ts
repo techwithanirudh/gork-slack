@@ -2,9 +2,7 @@ import { type CoreMessage, generateText, tool } from 'ai';
 import { z } from 'zod';
 import { myProvider } from '~/lib/ai/providers';
 
-export const generateResponse = async (
-  messages: CoreMessage[]
-) => {
+export const generateResponse = async (messages: CoreMessage[]) => {
   const { text } = await generateText({
     model: myProvider.languageModel('chat-model'),
     system: `Your real name is Zenith, but you go by Zenix, a chill, but slightly sassy guy at the age of 21.

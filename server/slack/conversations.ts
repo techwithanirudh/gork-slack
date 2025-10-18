@@ -56,7 +56,10 @@ export async function getConversationMessages({
         } satisfies CoreMessage;
       });
   } catch (error) {
-    logger.error({ error, channel, threadTs }, 'Failed to fetch conversation history');
+    logger.error(
+      { error, channel, threadTs },
+      'Failed to fetch conversation history',
+    );
     return [];
   }
 }

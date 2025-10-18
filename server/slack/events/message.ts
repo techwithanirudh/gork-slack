@@ -6,7 +6,10 @@ import { generateResponse } from '~/utils/generate-response';
 import { reply } from '~/utils/staggered-response';
 import { getConversationMessages } from '../conversations';
 
-function shouldRespond(event: GenericMessageEvent, botUserId?: string): boolean {
+function shouldRespond(
+  event: GenericMessageEvent,
+  botUserId?: string,
+): boolean {
   const text = event.text ?? '';
   const isDM = event.channel_type === 'im';
 
@@ -38,11 +41,12 @@ export function registerMessageEvents(app: App): void {
       return;
     }
 
-    const contextId = message.channel_type === 'im'
-      ? `dm:${message.user}`
-      : message.channel;
+    const contextId =
+      message.channel_type === 'im' ? `dm:${message.user}` : message.channel;
 
-    const { success } = await ratelimit.limit(redisKeys.channelCount(contextId));
+    const { success } = await ratelimit.limit(
+      redisKeys.channelCount(contextId),
+    );
     if (!success) {
       logger.info({ contextId }, 'Rate limit reached, skipping response');
       return;

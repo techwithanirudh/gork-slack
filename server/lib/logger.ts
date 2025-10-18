@@ -44,13 +44,13 @@ if (!isProd) {
   });
 }
 
-const transport =
-  targets.length > 0
-    ? pino.transport({ targets })
-    : undefined;
+const transport = targets.length > 0 ? pino.transport({ targets }) : undefined;
 
 const logger = transport
-  ? pino({ level: logLevel, timestamp: pino.stdTimeFunctions.isoTime }, transport)
+  ? pino(
+      { level: logLevel, timestamp: pino.stdTimeFunctions.isoTime },
+      transport,
+    )
   : pino({ level: logLevel, timestamp: pino.stdTimeFunctions.isoTime });
 
 export default logger;

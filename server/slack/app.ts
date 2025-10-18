@@ -14,7 +14,9 @@ export function createSlackApp(): SlackApp {
 
   if (socketMode) {
     if (!env.SLACK_APP_TOKEN) {
-      throw new Error('SLACK_APP_TOKEN is required when socket mode is enabled.');
+      throw new Error(
+        'SLACK_APP_TOKEN is required when socket mode is enabled.',
+      );
     }
 
     const app = new App({
