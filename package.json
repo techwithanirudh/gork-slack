@@ -4,9 +4,8 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsx watch server/index.ts",
-    "start": "node dist/index.js",
+    "dev": "bun run --hot server/index.ts",
+    "start": "bun run server/index.ts",
     "format": "biome format --write .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
@@ -34,8 +33,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@types/node": "^20.11.17",
-    "tsx": "^4.19.4",
     "typescript": "^5.3.3"
   },
   "private": true
