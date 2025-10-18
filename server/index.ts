@@ -11,11 +11,8 @@ async function main() {
     return;
   }
 
-  const fallbackPort = Number(process.env.PORT ?? 3000);
-  const port = env.PORT ?? fallbackPort;
-
-  await app.start(port);
-  logger.info({ port }, 'Slack Bolt app listening for events');
+  await app.start(env.PORT);
+  logger.info({ port: env.PORT }, 'Slack Bolt app listening for events');
 }
 
 void main().catch((error) => {

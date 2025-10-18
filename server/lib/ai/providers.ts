@@ -14,5 +14,5 @@ export const myProvider = customProvider({
   languageModels: {
     'chat-model': openrouter('x-ai/grok-4-fast'),
     'artifact-model': openrouter('x-ai/grok-4-fast'),
-  }
+  },
 });

@@ -10,9 +10,9 @@ export const env = createEnv({
     SLACK_SIGNING_SECRET: z.string().min(1),
     SLACK_APP_TOKEN: z.string().optional(),
     SLACK_SOCKET_MODE: z.enum(['true', 'false']).optional(),
-    PORT: z.coerce.number().optional(),
+    PORT: z.coerce.number().default(3000),
     // AI
-    OPENROUTER_API_KEY: z.string().optional(),
+    OPENROUTER_API_KEY: z.string().min(1),
     // Logging
     LOG_DIRECTORY: z.string().optional().default('logs'),
     LOG_LEVEL: z

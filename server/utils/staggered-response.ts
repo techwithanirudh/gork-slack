@@ -47,7 +47,6 @@ export async function reply({
   threadTs,
 }: ReplyOptions): Promise<void> {
   const segments = normalize(sentences(text));
-  let isFirst = true;
 
   for (const raw of segments) {
     const chunk = raw.trim();
@@ -59,9 +58,6 @@ export async function reply({
 
     try {
       await sleep(calculateDelay(chunk));
-      if (isFirst) {
-        isFirst = false;
-      }
 
       await client.chat.postMessage({
         channel,
