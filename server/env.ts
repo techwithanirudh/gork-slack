@@ -1,21 +1,18 @@
 import { createEnv } from '@t3-oss/env-core';
+import { upstashRedis, vercel } from '@t3-oss/env-core/presets-zod';
 import { z } from 'zod';
-import { upstashRedis, vercel } from "@t3-oss/env-core/presets-zod";
 
 export const env = createEnv({
-  extends: [
-    vercel(),
-    upstashRedis()
-  ],
+  extends: [vercel(), upstashRedis()],
   server: {
-    // Discourse
-    DISCOURSE_BOT_TOKEN: z.string().min(1),
-    DISCOURSE_SIGNING_SECRET: z.string().min(1),
-    DISCOURSE_URL: z.string().url().min(1),
+    // Slack
+    SLACK_BOT_TOKEN: z.string().min(1),
+    SLACK_SIGNING_SECRET: z.string().min(1),
+    SLACK_APP_TOKEN: z.string().optional(),
+    SLACK_SOCKET_MODE: z.enum(['true', 'false']).optional(),
+    PORT: z.coerce.number().default(3000),
     // AI
-    OPENAI_API_KEY: z.string().optional(),
-    HACKCLUB_API_KEY: z.string().optional(),
-    OPENROUTER_API_KEY: z.string().optional(),
+    OPENROUTER_API_KEY: z.string().min(1),
     // Logging
     LOG_DIRECTORY: z.string().optional().default('logs'),
     LOG_LEVEL: z

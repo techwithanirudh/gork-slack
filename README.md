@@ -1,172 +1,85 @@
-# AI SDK Discourse Chatbot
-# Neoroll/devarsh made it)
+# AI SDK Slack Chatbot
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnicoalbanese%2Fai-sdk-slackbot&env=DISCOURSE_BOT_TOKEN,DISCOURSE_SIGNING_SECRET,OPENAI_API_KEY,EXA_API_KEY&envDescription=API%20keys%20needed%20for%20application&envLink=https%3A%2F%2Fgithub.com%2Fnicoalbanese%2Fai-sdk-slackbot%3Ftab%3Dreadme-ov-file%234-set-environment-variables&project-name=ai-sdk-slackbot)
-
-An AI-powered chatbot for Discourse powered by the [AI SDK by Vercel](https://sdk.vercel.ai/docs).
+This project is a Slack Bolt chatbot powered by the [Vercel AI SDK](https://sdk.vercel.ai/docs). It listens for direct messages and mentions in Slack, keeps conversational context within threads, and replies in-character using large language models.
 
 ## Features
 
-- Integrates with [Discourse's API](https://api.discourse.org) for easy communication
-- Use any LLM with the AI SDK ([easily switch between providers](https://sdk.vercel.ai/providers/ai-sdk-providers))
-- Works both with app mentions and as an assistant in direct messages
-- Maintains conversation context within both threads and direct messages
-- Built-in tools for enhanced capabilities:
-  - Real-time weather lookup
-  - Web search (powered by [Exa](https://exa.ai))
-- Easily extensible architecture to add custom tools (e.g., knowledge search)
+- Built on [@slack/bolt](https://slack.dev/bolt-js) with support for both Socket Mode and HTTP receivers
+- Uses the Vercel AI SDK so you can swap LLM providers without rewriting business logic
+- Maintains context within direct messages and public channel threads
+- Includes example tools such as real-time weather lookup
+- Opinionated personality prompt for "Zenix" that can be customized easily
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 18+ installed
-- Slack workspace with admin privileges
-- [OpenAI API key](https://platform.openai.com/api-keys)
-- [Exa API key](https://exa.ai) (for web search functionality)
-- A server or hosting platform (e.g., [Vercel](https://vercel.com)) to deploy the bot
+- [Node.js](https://nodejs.org/) 18 or newer
+- Slack workspace with permissions to install custom apps
+- `SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET`
+- Optional: `SLACK_APP_TOKEN` if you prefer Socket Mode
+- Optional: `OPENAI_API_KEY`, `HACKCLUB_API_KEY`, `OPENROUTER_API_KEY` depending on which AI provider you enable
 
-## Setup
+## Environment Variables
 
-### 1. Install Dependencies
+Create a `.env` file (or configure your secrets in your host) with at least:
+
+```
+SLACK_BOT_TOKEN=xoxb-...
+SLACK_SIGNING_SECRET=...
+
+# Optional
+SLACK_APP_TOKEN=xapp-...
+SLACK_SOCKET_MODE=true        # set to "true" to use Socket Mode
+OPENAI_API_KEY=...
+HACKCLUB_API_KEY=...
+OPENROUTER_API_KEY=...
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+LOG_DIRECTORY=logs
+LOG_LEVEL=info
+MEM0_API_KEY=m0-...
+```
+
+## Slack App Setup (summary)
+
+1. Visit [api.slack.com/apps](https://api.slack.com/apps) and create a new app.
+2. Under **Basic Information**, copy the Signing Secret.
+3. Under **OAuth & Permissions**, add the bot scopes:
+   - `app_mentions:read`
+   - `chat:write`
+   - `im:history`
+   - `im:read`
+   - `im:write`
+4. Install the app to your workspace and copy the Bot User OAuth token.
+5. If you deploy with HTTP events, enable **Event Subscriptions** and point the Request URL to your deployment (e.g. `https://your-domain.com/slack/events`). Subscribe to `app_mention` and `message.im`.
+6. If you prefer Socket Mode, create an App-Level Token with the `connections:write` scope and set `SLACK_SOCKET_MODE=true`.
+
+## Development
 
 ```bash
 npm install
-# or
-pnpm install
+npm run dev
 ```
 
-### 2. Create a Slack App
+The development command runs the Bolt app with `tsx` and watches for file changes. Socket Mode is the easiest option locally—set `SLACK_SOCKET_MODE=true` and provide `SLACK_APP_TOKEN`.
 
-1. Go to [https://api.slack.com/apps](https://api.slack.com/apps) and click "Create New App"
-2. Choose "From scratch" and give your app a name
-3. Select your workspace
+To build the project:
 
-### 3. Configure Slack App Settings
-
-- Go to "Basic Information"
-   - Under "App Credentials", note down your "Signing Secret". This will be an environment variable `DISCOURSE_SIGNING_SECRET`
-- Go to "App Home"
-  - Under Show Tabs -> Messages Tab, Enable "Allow users to send Slash commands and messages from the messages tab"
-- Go to "OAuth & Permissions"
-   - Add the following [Bot Token Scopes](https://api.slack.com/scopes):
-      - `app_mentions:read`
-      - `assistant:write`
-      - `chat:write`
-      - `im:history`
-      - `im:read`
-      - `im:write`
-   - Install the app to your workspace and note down the "Bot User OAuth Token" for the environment variable `DISCOURSE_BOT_TOKEN`
-
-- Go to "Event Subscriptions"
-   - Enable Events
-   - Set the Request URL to either
-      - your deployment URL: (e.g. `https://your-app.vercel.app/api/events`)
-      - or, for local development, use the tunnel URL from the [Local Development](./README.md#local-development) section below
-   - Under "Subscribe to bot events", add:
-      - `app_mention`
-      - `assistant_thread_started`
-      - `message:im`
-   - Save Changes
-
-> Remember to include `/api/events` in the Request URL.
-
-You may need to refresh Slack with CMD+R or CTRL+R to pick up certain changes, such as enabling the chat tab
-
-### 4. Set Environment Variables
-
-Create a `.env` file in the root of your project with the following:
-
-```
-# Slack Credentials
-DISCOURSE_BOT_TOKEN=xoxb-your-bot-token
-DISCOURSE_SIGNING_SECRET=your-signing-secret
-
-# OpenAI Credentials
-OPENAI_API_KEY=your-openai-api-key
-
-# Exa API Key (for web search functionality)
-EXA_API_KEY=your-exa-api-key
+```bash
+npm run build
 ```
 
-Replace the placeholder values with your actual tokens.
+Compiled JavaScript is emitted to `dist/`. Start the compiled build with `npm start`.
 
-## Local Development
+## Deployment
 
-Use the [Vercel CLI](https://vercel.com/docs/cli) and [untun](https://github.com/unjs/untun) to test out this project locally:
+The bundled Bolt app is a plain Node.js process. Any platform that can run Node (Fly.io, Render, Railway, Vercel functions, etc.) will work. For serverless platforms make sure you use Socket Mode or provide an HTTP entrypoint and route Slack requests to the process.
 
-```sh
-pnpm i -g vercel
-pnpm vercel dev --listen 3000 --yes
-```
+## Customisation
 
-```sh
-npx untun@latest tunnel http://localhost:3000
-```
-
-Make sure to modify the [subscription URL](./README.md/#enable-slack-events) to the `untun` URL.
-
-> Note: you may encounter issues locally with `waitUntil`. This is being investigated.
-
-## Production Deployment
-
-### Deploying to Vercel
-
-1. Push your code to a GitHub repository
-
-2. Deploy to [Vercel](https://vercel.com):
-
-   - Go to vercel.com
-   - Create New Project
-   - Import your GitHub repository
-
-3. Add your environment variables in the Vercel project settings:
-
-   - `DISCOURSE_BOT_TOKEN`
-   - `DISCOURSE_SIGNING_SECRET`
-   - `OPENAI_API_KEY`
-   - `EXA_API_KEY`
-
-4. After deployment, Vercel will provide you with a production URL
-
-5. Update your Slack App configuration:
-   - Go to your [Slack App settings](https://api.slack.com/apps)
-   - Select your app
-
-   - Go to "Event Subscriptions"
-      - Enable Events
-      - Set the Request URL to: `https://your-app.vercel.app/api/events`
-   - Save Changes
-
-## Usage
-
-The bot will respond to:
-
-1. Direct messages - Send a DM to your bot
-2. Mentions - Mention your bot in a channel using `@YourBotName`
-
-The bot maintains context within both threads and direct messages, so it can follow along with the conversation.
-
-### Available Tools
-
-1. **Weather Tool**: The bot can fetch real-time weather information for any location.
-
-   - Example: "What's the weather like in London right now?"
-
-2. **Web Search**: The bot can search the web for up-to-date information using [Exa](https://exa.ai).
-   - Example: "Search for the latest news about AI technology"
-   - You can also specify a domain: "Search for the latest sports news on bbc.com"
-
-### Extending with New Tools
-
-The chatbot is built with an extensible architecture using the [AI SDK's tool system](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling). You can easily add new tools such as:
-
-- Knowledge base search
-- Database queries
-- Custom API integrations
-- Company documentation search
-
-To add a new tool, extend the tools object in the `lib/ai.ts` file following the existing pattern.
-
-You can also disable any of the existing tools by removing the tool in the `lib/ai.ts` file.
+- Modify the persona prompt in `server/utils/generate-response.ts`.
+- Adjust keyword detection or rate limits in `server/config.ts` and `server/lib/kv.ts`.
+- Extend `server/slack/events/message.ts` to handle more event types.
+- Add new tools for the LLM inside `server/utils/generate-response.ts` or create new utility modules.
 
 ## License
 

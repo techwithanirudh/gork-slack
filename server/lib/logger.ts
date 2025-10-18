@@ -1,7 +1,7 @@
 import { constants } from 'node:fs';
 import { access, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { pino } from 'pino';
+import pino, { transport as createTransport, type TransportTargetOptions } from 'pino';
 import { env } from '~/env';
 
 async function exists(path: string): Promise<boolean> {
@@ -22,7 +22,7 @@ if (!isVercel && !(await exists(logDir))) {
   await mkdir(logDir, { recursive: true });
 }
 
-const targets: Array<any> = [];
+const targets: TransportTargetOptions[] = [];
 
 if (!isVercel) {
   targets.push({
@@ -44,13 +44,13 @@ if (!isProd) {
   });
 }
 
-const transport =
-  targets.length > 0
-    ? pino.transport({ targets })
-    : undefined;
+const transport = targets.length > 0 ? createTransport({ targets }) : undefined;
 
 const logger = transport
-  ? pino({ level: logLevel, timestamp: pino.stdTimeFunctions.isoTime }, transport)
+  ? pino(
+      { level: logLevel, timestamp: pino.stdTimeFunctions.isoTime },
+      transport,
+    )
   : pino({ level: logLevel, timestamp: pino.stdTimeFunctions.isoTime });
 
 export default logger;

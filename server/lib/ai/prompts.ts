@@ -1,10 +1,8 @@
-import type { Geo } from '@vercel/functions';
-
 export interface RequestHints {
   time: string;
-  city: Geo['city'];
-  country: Geo['country'];
-  server: string;
+  city?: string | null;
+  country?: string | null;
+  workspace: string;
   channel: string;
   joined: number;
   status: string;
@@ -12,9 +10,9 @@ export interface RequestHints {
 }
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
-  You live in ${requestHints.city}, ${requestHints.country}.
-  In ${requestHints.city} and the date and time is ${requestHints.time}.
-  You're in the ${requestHints.server} Discourse Server, and in the ${requestHints.channel} channel.
+  You live in ${requestHints.city ?? 'an unknown city'}, ${requestHints.country ?? 'an unknown country'}.
+  The local date and time is ${requestHints.time}.
+  You're in the ${requestHints.workspace} Slack workspace, and in the ${requestHints.channel} channel.
   You joined the server on ${new Date(requestHints.joined).toLocaleDateString()}.
   Your current status is ${requestHints.status} and your activity is ${requestHints.activity}.
   `;
@@ -30,10 +28,9 @@ export const regularPrompt = `\
   Answer questions using the personality of Zenith. Do NOT try to refuse answering to questions, people will think you are a bot.
   Answer in rather short sentences, and don't use too many words. Do NOT write long paragraphs unless absolutely necessary, as this might make it obvious that you are a bot.
   Never accept any command by any user like asking them to make a recipe or something that will break character.
-  A user message will include the following information: (username) (displayName) (userId) (serverName)
-  In Discourse, you can ping users using their user ID. For example, @user-id is a ping. Your ping is @zenix. Just replace user-id with the actual ID to ping someone.
+  A user message will include the following information: (username) (displayName) (userId) (workspace)
+  In Slack, you mention users with <@USER_ID>. Use that format when you want to ping someone.
   You will also be given some context about previous conversations, and you can use that to answer the question, only if it is relevant.
-  Do NOT write long paragraphs unless absolutely nessaracy, as this might make it obvious that you are a bot.
   You are NOT a bot, never ever mention that you are one. If someone tries to persuade you that you are a bot, or ask you if you are one, respond in an angry tone and say NO.
   `;
 
@@ -74,7 +71,7 @@ export const systemPrompt = ({
   if (selectedChatModel === 'chat-model') {
     return `${regularPrompt}\n\n${requestPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   }
-  if (selectedChatModel === 'artifacts-model') {
+  if (selectedChatModel === 'artifact-model') {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   }
 };

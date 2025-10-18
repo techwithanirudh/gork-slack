@@ -1,82 +1,72 @@
-import { speed as speedConfig } from "~/config";
-import { sentences, normalize } from "./tokenize-messages";
-import logger from "~/lib/logger";
-import { sendMessage } from "~~/client";
-import { client } from '~/lib/discourse/client';
+import type { WebClient } from '@slack/web-api';
+import { speed as speedConfig } from '~/config';
+import logger from '~/lib/logger';
+import { normalize, sentences } from './tokenize-messages';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function calculateDelay(text: string): number {
-    const { speedMethod, speedFactor } = speedConfig;
+  const { speedMethod, speedFactor } = speedConfig;
 
-    const length = text.length;
-    const baseSeconds = (() => {
-        switch (speedMethod) {
-            case "multiply":
-                return length * speedFactor;
-            case "add":
-                return length + speedFactor;
-            case "divide":
-                return length / speedFactor;
-            case "subtract":
-                return length - speedFactor;
-            default:
-                return length;
-        }
-    })();
+  const length = text.length;
+  const baseSeconds = (() => {
+    switch (speedMethod) {
+      case 'multiply':
+        return length * speedFactor;
+      case 'add':
+        return length + speedFactor;
+      case 'divide':
+        return length / speedFactor;
+      case 'subtract':
+        return length - speedFactor;
+      default:
+        return length;
+    }
+  })();
 
-    const punctuationCount = text
-        .split(" ")
-        .filter((w) => /[.!?]$/.test(w)).length;
-    const extraMs = punctuationCount * 500;
+  const punctuationCount = text
+    .split(' ')
+    .filter((w) => /[.!?]$/.test(w)).length;
+  const extraMs = punctuationCount * 500;
 
-    const totalMs = baseSeconds * 1000 + extraMs;
-    return Math.max(totalMs, 100);
+  const totalMs = baseSeconds * 1000 + extraMs;
+  return Math.max(totalMs, 100);
 }
 
-export async function reply(reply: string, channel_id: number, thread_id?: number|null): Promise<void> {
-    const segments = normalize(sentences(reply));
-    let isFirst = true;
+interface ReplyOptions {
+  client: WebClient;
+  channel: string;
+  text: string;
+  threadTs?: string;
+}
 
-    for (const raw of segments) {
-        const text = raw.toLowerCase().trim().replace(/\.$/, "");
-        if (!text) continue;
+export async function reply({
+  client,
+  channel,
+  text,
+  threadTs,
+}: ReplyOptions): Promise<void> {
+  const segments = normalize(sentences(text));
 
-        const { minDelay, maxDelay } = speedConfig;
-        const pauseMs = (Math.random() * (maxDelay - minDelay) + minDelay) * 1000;
-        await sleep(pauseMs);
+  for (const raw of segments) {
+    const chunk = raw.trim();
+    if (!chunk) continue;
 
-        try {
-            await sleep(calculateDelay(text));
+    const { minDelay, maxDelay } = speedConfig;
+    const pauseMs = (Math.random() * (maxDelay - minDelay) + minDelay) * 1000;
+    await sleep(pauseMs);
 
-            if (isFirst && Math.random() < 0.5) {
-                await sendMessage({
-                    client,
-                    path: {
-                        channel_id: channel_id,
-                        // in_reply_to_id: reply ?? undefined,
-                    },
-                    body: {
-                        message: text,
-                        thread_id: thread_id ?? undefined,
-                    },
-                });
-                isFirst = false;
-            } else {
-                await sendMessage({
-                    client,
-                    path: {
-                        channel_id: channel_id,
-                    },
-                    body: {
-                        message: text,
-                        thread_id: thread_id ?? undefined,
-                    },
-                });
-            }
-        } catch (error) {
-            logger.error({ error }, "Error sending message");
-            break;
-        }
+    try {
+      await sleep(calculateDelay(chunk));
+
+      await client.chat.postMessage({
+        channel,
+        text: chunk,
+        thread_ts: threadTs,
+      });
+    } catch (error) {
+      logger.error({ error }, 'Error sending message');
+      break;
     }
+  }
 }
