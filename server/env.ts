@@ -9,7 +9,7 @@ export const env = createEnv({
     SLACK_BOT_TOKEN: z.string().min(1),
     SLACK_SIGNING_SECRET: z.string().min(1),
     SLACK_APP_TOKEN: z.string().optional(),
-    SLACK_SOCKET_MODE: z.enum(['true', 'false']).optional(),
+    SLACK_SOCKET_MODE: z.coerce.boolean().optional().default(false),
     PORT: z.coerce.number().default(3000),
     // AI
     OPENROUTER_API_KEY: z.string().min(1),
