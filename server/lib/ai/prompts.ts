@@ -71,7 +71,7 @@ export const systemPrompt = ({
   if (selectedChatModel === 'chat-model') {
     return `${regularPrompt}\n\n${requestPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   }
-  if (selectedChatModel === 'artifacts-model') {
+  if (selectedChatModel === 'artifact-model') {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   }
 };
