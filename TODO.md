@@ -1,4 +1,4 @@
-# Todo
+# TODO
 
 - Hook up Slack events beyond basic messages (slash commands, reactions, etc.).
 - Add a typing indicator or delay strategy that mirrors human behaviour but keeps original casing.
