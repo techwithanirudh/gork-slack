@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "bun run --hot server/index.ts",
+    "dev": "bun run --watch server/index.ts",
     "start": "bun run server/index.ts",
     "format": "biome format --write .",
     "lint": "biome lint .",
