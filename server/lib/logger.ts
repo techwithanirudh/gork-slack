@@ -1,7 +1,7 @@
 import { constants } from 'node:fs';
 import { access, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { type TransportTargetOptions, pino } from 'pino';
+import pino, { transport as createTransport, type TransportTargetOptions } from 'pino';
 import { env } from '~/env';
 
 async function exists(path: string): Promise<boolean> {
@@ -44,7 +44,7 @@ if (!isProd) {
   });
 }
 
-const transport = targets.length > 0 ? pino.transport({ targets }) : undefined;
+const transport = targets.length > 0 ? createTransport({ targets }) : undefined;
 
 const logger = transport
   ? pino(
