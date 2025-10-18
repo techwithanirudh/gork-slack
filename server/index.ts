@@ -1,5 +1,5 @@
-import logger from '~/lib/logger';
 import { env } from '~/env';
+import logger from '~/lib/logger';
 import { createSlackApp } from '~/slack/app';
 
 async function main() {

@@ -1,7 +1,7 @@
-import { generateObject, type CoreMessage } from 'ai';
-import { systemPrompt, type RequestHints } from '~/lib/ai/prompts';
+import { type CoreMessage, generateObject } from 'ai';
+import { type RequestHints, systemPrompt } from '~/lib/ai/prompts';
 import { myProvider } from '~/lib/ai/providers';
-import { probabilitySchema, type Probability } from '~/lib/validators';
+import { type Probability, probabilitySchema } from '~/lib/validators';
 
 export async function assessRelevance(
   messages: CoreMessage[],

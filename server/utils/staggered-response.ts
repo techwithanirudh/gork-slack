@@ -1,7 +1,7 @@
 import type { WebClient } from '@slack/web-api';
 import { speed as speedConfig } from '~/config';
-import { sentences, normalize } from './tokenize-messages';
 import logger from '~/lib/logger';
+import { normalize, sentences } from './tokenize-messages';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
