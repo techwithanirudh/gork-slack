@@ -1,4 +1,4 @@
-import { type ModelMessage, generateText, stepCountIs, tool } from 'ai';
+import { generateText, type ModelMessage, stepCountIs, tool } from 'ai';
 import { z } from 'zod';
 import { myProvider } from '~/lib/ai/providers';
 
@@ -85,6 +85,11 @@ export const generateResponse = async (messages: ModelMessage[]) => {
       //     };
       //   },
       // }),
+    },
+
+    experimental_telemetry: {
+      isEnabled: true,
+      functionId: 'chat-model',
     },
   });
 

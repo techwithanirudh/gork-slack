@@ -1,4 +1,4 @@
-import { type ModelMessage, generateObject } from 'ai';
+import { generateObject, type ModelMessage } from 'ai';
 import { type RequestHints, systemPrompt } from '~/lib/ai/prompts';
 import { myProvider } from '~/lib/ai/providers';
 import { type Probability, probabilitySchema } from '~/lib/validators';
@@ -19,6 +19,10 @@ export async function assessRelevance(
         memories,
       }),
       mode: 'json',
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: 'relevance-check',
+      },
     });
     return object;
   } catch {

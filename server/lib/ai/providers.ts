@@ -1,6 +1,5 @@
-import { customProvider } from 'ai';
-
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { customProvider } from 'ai';
 import { env } from '~/env';
 
 const openrouter = createOpenRouter({
