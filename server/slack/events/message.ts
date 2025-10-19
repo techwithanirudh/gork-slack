@@ -1,4 +1,4 @@
-import type { App, GenericMessageEvent } from '@slack/bolt';
+import type { App, types } from '@slack/bolt';
 import { keywords } from '~/config';
 import { ratelimit, redisKeys } from '~/lib/kv';
 import logger from '~/lib/logger';
@@ -7,7 +7,7 @@ import { reply } from '~/utils/staggered-response';
 import { getConversationMessages } from '../conversations';
 
 function shouldRespond(
-  event: GenericMessageEvent,
+  event: types.GenericMessageEvent,
   botUserId?: string,
 ): boolean {
   const text = event.text ?? '';
@@ -29,7 +29,7 @@ function shouldRespond(
 
 export function registerMessageEvents(app: App): void {
   app.event('message', async ({ event, client, context }) => {
-    const message = event as GenericMessageEvent;
+    const message = event as types.GenericMessageEvent;
 
     if (message.subtype) return;
     if (!message.text) return;
