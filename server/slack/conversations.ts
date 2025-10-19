@@ -1,5 +1,5 @@
 import type { WebClient } from '@slack/web-api';
-import type { CoreMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 import logger from '~/lib/logger';
 
 interface ConversationOptions {
@@ -24,7 +24,7 @@ export async function getConversationMessages({
   threadTs,
   botUserId,
   limit = 40,
-}: ConversationOptions): Promise<CoreMessage[]> {
+}: ConversationOptions): Promise<ModelMessage[]> {
   try {
     const response = threadTs
       ? await client.conversations.replies({ channel, ts: threadTs, limit })
@@ -53,7 +53,7 @@ export async function getConversationMessages({
         return {
           role: isBot ? 'assistant' : 'user',
           content: `${message.user ?? 'unknown'}: ${content}`,
-        } satisfies CoreMessage;
+        } satisfies ModelMessage;
       });
   } catch (error) {
     logger.error(

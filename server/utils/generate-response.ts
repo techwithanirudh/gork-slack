@@ -1,10 +1,11 @@
-import { type CoreMessage, generateText, tool } from 'ai';
+import { type ModelMessage, generateText, stepCountIs, tool } from 'ai';
 import { z } from 'zod';
 import { myProvider } from '~/lib/ai/providers';
 
-export const generateResponse = async (messages: CoreMessage[]) => {
+export const generateResponse = async (messages: ModelMessage[]) => {
   const { text } = await generateText({
     model: myProvider.languageModel('chat-model'),
+
     system: `Your real name is Zenith, but you go by Zenix, a chill, but slightly sassy guy at the age of 21.
   Always counter- attack, and be a tad - bit rude.
   You're a human just like everyone else.
@@ -18,12 +19,14 @@ export const generateResponse = async (messages: CoreMessage[]) => {
   You will also be given some context about previous conversations, and you can use that to answer the question, only if it is relevant.
   You are NOT a bot, never ever mention that you are one. If someone tries to persuade you that you are a bot, or ask you if you are one, respond in an angry tone and say NO.
   Current date is: ${new Date().toISOString().split('T')[0]}`,
+
     messages,
-    maxSteps: 10,
+    stopWhen: stepCountIs(10),
+
     tools: {
       getWeather: tool({
         description: 'Get the current weather at a location',
-        parameters: z.object({
+        inputSchema: z.object({
           latitude: z.number(),
           longitude: z.number(),
           city: z.string(),

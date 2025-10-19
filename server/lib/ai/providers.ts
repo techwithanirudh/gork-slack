@@ -1,13 +1,10 @@
 import { customProvider } from 'ai';
 
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { env } from '~/env';
 
-// NOTE: temporary for now, will fix when migrating to ai sdk v5
-const openrouter = createOpenAICompatible({
-  baseURL: 'https://openrouter.ai/api/v1',
+const openrouter = createOpenRouter({
   apiKey: env.OPENROUTER_API_KEY,
-  name: 'OpenRouter',
 });
 
 export const myProvider = customProvider({
