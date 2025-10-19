@@ -24,12 +24,12 @@
     "ai": "^5.0.76",
     "compromise": "^14.14.4",
     "date-fns": "^4.1.0",
-    "pino": "^9.13.1",
+    "pino": "^10.1.0",
     "pino-pretty": "^13.1.2",
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "^2.2.6",
     "typescript": "^5.9.3"
   },
   "private": true
