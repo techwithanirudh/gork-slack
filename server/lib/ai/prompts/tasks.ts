@@ -65,7 +65,7 @@ IMPORTANT: Don't interrupt ongoing conversations between other people unless:
   "reason": "The message is about you and you're interested in it."
 }
 
-YOU ARE ONLY SCORING THE MESSAGE FROM @${message?.author ?? 'user'} (Slack ID ${message?.authorSlackId ?? "unavailable"}): ${
+YOU ARE ONLY SCORING THE MESSAGE FROM @${message?.author ?? 'user'} (Slack ID ${message?.authorSlackId ?? 'unavailable'}): ${
   (message?.content ?? '').slice(0, 200) || 'message'
 }. DO NOT USE CONTEXT TO DETERMINE RELEVANCE
 

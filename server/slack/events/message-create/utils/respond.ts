@@ -37,7 +37,11 @@ export async function generateResponse(
       selectedChatModel: 'chat-model',
       requestHints: hints,
       memories,
-      message: { author: authorName, authorSlackId: userId, content: messageText },
+      message: {
+        author: authorName,
+        authorSlackId: userId,
+        content: messageText,
+      },
     });
 
     const { toolCalls } = await generateText({

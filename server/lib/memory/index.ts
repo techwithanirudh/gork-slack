@@ -2,7 +2,6 @@ import { addMemory } from '~/lib/pinecone/queries';
 import { getConversationMessages } from '~/slack/conversations';
 import type { SlackMessageContext } from '~/types';
 import { buildHistorySnippet } from '~/utils/messages';
-import logger from '../logger';
 
 async function buildLocationFromMessage(message: SlackMessageContext) {
   const channelId =

@@ -1,7 +1,6 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
 import { city, country, memories as memoriesConfig, timezone } from '~/config';
-import logger from '~/lib/logger';
 import { queryMemories } from '~/lib/pinecone/operations';
 import { getConversationMessages } from '~/slack/conversations';
 import type {
