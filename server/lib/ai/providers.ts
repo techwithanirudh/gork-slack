@@ -22,9 +22,9 @@ const cohere = createCohere({
 
 const chatModel = createFallback({
   models: [
+    openrouter('google/gemini-2.5-flash'),
     openrouter('x-ai/grok-4-fast'),
     openrouter('openai/gpt-oss-120b'),
-    openrouter('google/gemini-2.5-flash'),
     // hackclub?
   ],
   onError: (_error, modelId) => {
