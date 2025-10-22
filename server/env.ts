@@ -26,8 +26,6 @@ export const env = createEnv({
     // Pinecone
     PINECONE_API_KEY: z.string().min(1),
     PINECONE_INDEX: z.string().min(1),
-    // Cohere (for embedding),
-    COHERE_API_KEY: z.string().min(1),
   },
 
   /**

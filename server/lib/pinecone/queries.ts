@@ -1,11 +1,9 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import { embed } from 'ai';
 import { MD5 } from 'bun';
 import logger from '~/lib/logger';
 import { PineconeMetadataSchema } from '~/lib/validators/pinecone';
 import type { PineconeMetadataInput, PineconeMetadataOutput } from '~/types';
-import { provider } from '../ai/providers';
-import { getIndex } from './index';
+import { getIndex, pinecone } from './index';
 
 export interface MemorySearchOptions {
   namespace?: string;
@@ -18,14 +16,19 @@ export const searchMemories = async (
   { namespace = 'default', topK = 5, filter }: MemorySearchOptions = {},
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
   try {
-    const { embedding } = await embed({
-      model: provider.textEmbeddingModel('small-model'),
-      value: query,
-    });
+    const embeddings = await pinecone.inference.embed(
+      'llama-text-embed-v2',
+      [query],
+      { inputType: 'query', truncate: 'END' },
+    );
+
+    if (!embeddings.data[0]) throw logger.error('No embeddings data');
+    if (embeddings.data[0].vectorType !== 'dense')
+      throw logger.error('Embedding is not dense');
 
     const index = (await getIndex()).namespace(namespace);
     const result = await index.query({
-      vector: embedding,
+      vector: embeddings.data[0].values ?? [],
       topK,
       includeMetadata: true,
       filter,
@@ -74,16 +77,21 @@ export const addMemory = async (
       throw new Error('Invalid metadata schema');
     }
 
-    const { embedding } = await embed({
-      model: provider.textEmbeddingModel('small-model'),
-      value: text,
-    });
+    const embeddings = await pinecone.inference.embed(
+      'llama-text-embed-v2',
+      [text],
+      { inputType: 'passage', truncate: 'END' },
+    );
+
+    if (!embeddings.data[0]) throw logger.error('No embeddings data');
+    if (embeddings.data[0].vectorType !== 'dense')
+      throw logger.error('Embedding is not dense');
 
     const index = (await getIndex()).namespace(namespace);
     await index.upsert([
       {
         id,
-        values: embedding,
+        values: embeddings.data[0].values ?? [],
         metadata: parsed.data,
       },
     ]);

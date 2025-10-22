@@ -1,4 +1,3 @@
-import { createCohere } from '@ai-sdk/cohere';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { customProvider } from 'ai';
 import { createFallback } from 'ai-fallback';
@@ -14,10 +13,6 @@ import logger from '~/lib/logger';
 
 const openrouter = createOpenRouter({
   apiKey: env.OPENROUTER_API_KEY,
-});
-
-const cohere = createCohere({
-  apiKey: env.COHERE_API_KEY,
 });
 
 const chatModel = createFallback({
@@ -49,10 +44,5 @@ export const provider = customProvider({
   languageModels: {
     'chat-model': chatModel,
     'relevance-model': relevanceModel,
-  },
-  textEmbeddingModels: {
-    // TODO
-    'small-model': cohere.embedding('embed-english-v3.0'),
-    'large-model': cohere.embedding('embed-english-v3.0'),
   },
 });

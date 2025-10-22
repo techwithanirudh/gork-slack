@@ -14,7 +14,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@ai-sdk/cohere": "^2.0.14",
     "@date-fns/tz": "^1.4.1",
     "@mem0/vercel-ai-provider": "^2.0.4",
     "@openrouter/ai-sdk-provider": "^1.2.0",
