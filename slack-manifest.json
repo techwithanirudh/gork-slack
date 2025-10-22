@@ -1,0 +1,52 @@
+{
+  "display_information": {
+    "name": "gork"
+  },
+  "features": {
+    "bot_user": {
+      "display_name": "gork",
+      "always_online": true
+    }
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": [
+        "app_mentions:read",
+        "channels:history",
+        "channels:join",
+        "channels:read",
+        "channels:write.invites",
+        "chat:write",
+        "groups:history",
+        "groups:read",
+        "groups:write",
+        "im:history",
+        "im:write",
+        "mpim:history",
+        "mpim:write",
+        "reactions:read",
+        "reactions:write",
+        "team:read",
+        "users:read",
+        "users.profile:read"
+      ]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "bot_events": [
+        "app_mention",
+        "message.channels",
+        "message.groups",
+        "message.im",
+        "message.mpim"
+      ]
+    },
+    "interactivity": {
+      "is_enabled": true
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": true,
+    "token_rotation_enabled": false
+  }
+}
