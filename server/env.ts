@@ -21,6 +21,13 @@ export const env = createEnv({
       .default('info'),
     // Mem0
     MEM0_API_KEY: z.string().min(1).startsWith('m0-'),
+    // Exa
+    EXA_API_KEY: z.string().min(1),
+    // Pinecone
+    PINECONE_API_KEY: z.string().min(1),
+    PINECONE_INDEX: z.string().min(1),
+    // Cohere (for embedding),
+    COHERE_API_KEY: z.string().min(1),
   },
 
   /**

@@ -1,12 +1,20 @@
 import { App, ExpressReceiver, LogLevel } from '@slack/bolt';
 import { env } from '~/env';
 import logger from '~/lib/logger';
-import { registerMessageEvents } from './events/message';
+import { events } from './events';
 
 export interface SlackApp {
   app: App;
   receiver?: ExpressReceiver;
   socketMode: boolean;
+}
+
+function registerMessageEvents(app: App) {
+  Object.keys(events).forEach((key) => {
+    const event = events[key as keyof typeof events];
+
+    app.event(event.name, event.execute);
+  });
 }
 
 export function createSlackApp(): SlackApp {
