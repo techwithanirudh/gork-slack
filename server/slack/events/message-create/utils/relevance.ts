@@ -76,6 +76,10 @@ export async function assessRelevance(
         }
       },
       mode: 'json',
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: `relevance`,
+      },
     });
     return object;
   } catch (error) {
