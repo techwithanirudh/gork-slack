@@ -19,7 +19,6 @@ const chatModel = createFallback({
   models: [
     openrouter('google/gemini-2.5-flash'),
     openrouter('x-ai/grok-4-fast'),
-    openrouter('openai/gpt-oss-120b'),
     // hackclub?
   ],
   onError: (_error, modelId) => {
@@ -30,7 +29,6 @@ const chatModel = createFallback({
 
 const relevanceModel = createFallback({
   models: [
-    openrouter('openai/gpt-oss-120b'),
     openrouter('google/gemini-2.5-flash-lite'),
     openrouter('x-ai/grok-4-fast'),
   ],
