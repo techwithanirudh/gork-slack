@@ -3,24 +3,20 @@ import { z } from 'zod';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
 
+// TODO: Add offset or timestamp support so that the bot can react to previous messages?
 export const react = ({ context }: { context: SlackMessageContext }) =>
   tool({
     description:
-      'Add emoji reactions to a Slack message. Provide emoji names without surrounding colons.',
+      'Add emoji reactions to the current Slack message. Provide emoji names without surrounding colons.',
     inputSchema: z.object({
       emojis: z
         .array(z.string().min(1))
         .nonempty()
-        .describe('Emoji names to react with (unicode or custom names).'),
-      id: z
-        .string()
-        .trim()
-        .optional()
-        .describe('Optional timestamp of the message to react to.'),
+        .describe('Emoji names to react with (unicode or custom names).')
     }),
-    execute: async ({ id, emojis }) => {
+    execute: async ({ emojis }) => {
       const channelId = (context.event as { channel?: string }).channel;
-      const messageTs = id ?? (context.event as { ts?: string }).ts;
+      const messageTs = (context.event as { ts?: string }).ts;
 
       if (!channelId || !messageTs) {
         return { success: false, error: 'Missing Slack channel or message id' };
