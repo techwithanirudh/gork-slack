@@ -14,6 +14,7 @@ import {
 import { getTrigger } from '~/utils/triggers';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
+import { env } from '~/env';
 
 export const name = 'message';
 
@@ -109,6 +110,22 @@ export async function execute(args: MessageEventArgs) {
   const { messages, hints, memories } = await buildChatContext(messageContext);
 
   if (trigger.type) {
+    if (
+      (trigger.type === 'ping' || trigger.type === 'dm') &&
+      env.AUTO_ADD_CHANNEL &&
+      args.context.userId
+    ) {
+      try {
+        await args.client.conversations.invite({
+          channel: env.AUTO_ADD_CHANNEL,
+          users: args.context.userId,
+        });
+        logger.info(
+          `Added ${args.context.userId} to channel ${env.AUTO_ADD_CHANNEL}`,
+        );
+      } catch {}
+    }
+
     await resetMessageCount(ctxId);
 
     logger.info(
