@@ -12,7 +12,7 @@ export const react = ({ context }: { context: SlackMessageContext }) =>
       emojis: z
         .array(z.string().min(1))
         .nonempty()
-        .describe('Emoji names to react with (unicode or custom names).')
+        .describe('Emoji names to react with (unicode or custom names).'),
     }),
     execute: async ({ emojis }) => {
       const channelId = (context.event as { channel?: string }).channel;
