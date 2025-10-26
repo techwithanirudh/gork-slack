@@ -1,86 +1,73 @@
-# AI SDK Slack Chatbot
+<h1 align="center">Gork (for Slack)</h4>
 
-This project is a Slack Bolt chatbot powered by the [Vercel AI SDK](https://sdk.vercel.ai/docs). It listens for direct messages and mentions in Slack, keeps conversational context within threads, and replies in-character using large language models.
+## 📋 Table of Contents
 
-## Features
+1. 🤖 [Introduction](#introduction)
+2. 🚀 [Tech Stack](#tech-stack)
+3. 📚 [Getting Started](#getting-started)
+4. 🧠 [Memory](#memory)
+5. 📝 [License](#license)
 
-- Built on [@slack/bolt](https://slack.dev/bolt-js) with support for both Socket Mode and HTTP receivers
-- Uses the Vercel AI SDK so you can swap LLM providers without rewriting business logic
-- Maintains context within direct messages and public channel threads
-- Includes example tools such as real-time weather lookup
-- Opinionated personality prompt for "Zenix" that can be customized easily
+## <a name="introduction">🤖 Introduction</a>
 
-## Prerequisites
+A human-like bot (called Gork) that is almost indistinguishable from a real person. This is a port of the original [Gork for Discord](https://github.com/techwithanirudh/gork) to Slack.
 
-- [Node.js](https://nodejs.org/) 18 or newer
-- Slack workspace with permissions to install custom apps
-- `SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET`
-- Optional: `SLACK_APP_TOKEN` if you prefer Socket Mode
-- Optional: `OPENAI_API_KEY`, `HACKCLUB_API_KEY`, `OPENROUTER_API_KEY` depending on which AI provider you enable
+## <a name="tech-stack">🚀 Tech Stack</a>
 
-## Environment Variables
+This project was developed with the following technologies:
 
-Create a `.env` file (or configure your secrets in your host) with at least:
+- [Vercel AI SDK][ai-sdk]
+- [Exa AI][exa]
+- [Pinecone][pinecone]
+- [Upstash][upstash]
+- [Slack Bolt SDK][slack-bolt]
+- [TypeScript][ts]
+- [Bun][bun]
+- [Biome][biome]
 
-```
-SLACK_BOT_TOKEN=xoxb-...
-SLACK_SIGNING_SECRET=...
+## <a name="getting-started">📚 Getting Started</a>
 
-# Optional
-SLACK_APP_TOKEN=xapp-...
-SLACK_SOCKET_MODE=true        # set to "true" to use Socket Mode
-OPENAI_API_KEY=...
-HACKCLUB_API_KEY=...
-OPENROUTER_API_KEY=...
-UPSTASH_REDIS_REST_URL=...
-UPSTASH_REDIS_REST_TOKEN=...
-LOG_DIRECTORY=logs
-LOG_LEVEL=info
-MEM0_API_KEY=m0-...
-```
+To clone and run this application, first you need to create a new [Slack App](https://api.slack.com/apps) with the [provided manifest](slack-manifest.json). Afterwards, you will need [Git][git] and [Bun][bun] installed on your computer.
 
-## Slack App Setup (summary)
-
-1. Visit [api.slack.com/apps](https://api.slack.com/apps) and create a new app.
-2. Under **Basic Information**, copy the Signing Secret.
-3. Under **OAuth & Permissions**, add the bot scopes:
-   - `app_mentions:read`
-   - `chat:write`
-   - `im:history`
-   - `im:read`
-   - `im:write`
-4. Install the app to your workspace and copy the Bot User OAuth token.
-5. If you deploy with HTTP events, enable **Event Subscriptions** and point the Request URL to your deployment (e.g. `https://your-domain.com/slack/events`). Subscribe to `app_mention` and `message.im`.
-6. If you prefer Socket Mode, create an App-Level Token with the `connections:write` scope and set `SLACK_SOCKET_MODE=true`.
-
-## Development
+From your command line:
 
 ```bash
-npm install
-npm run dev
+# Clone this repository
+$ git clone https://github.com/techwithanirudh/gork-slack.git
+
+# Install dependencies
+$ bun install
 ```
 
-The development command runs the Bolt app with `tsx` and watches for file changes. Socket Mode is the easiest option locally—set `SLACK_SOCKET_MODE=true` and provide `SLACK_APP_TOKEN`.
-
-To build the project:
+Next, copy the .env.example file, rename it to .env, and add your environment variables.
+Great! Now you just need to start the development server.
 
 ```bash
-npm run build
+# Start server
+$ bun run dev
 ```
 
-Compiled JavaScript is emitted to `dist/`. Start the compiled build with `npm start`.
+## <a name="memory">🧠 Memory</a>
 
-## Deployment
+This bot uses [Pinecone][pinecone] to store memory. You can set the `PINECONE_INDEX` environment variable to the name of your Pinecone index.
 
-The bundled Bolt app is a plain Node.js process. Any platform that can run Node (Fly.io, Render, Railway, Vercel functions, etc.) will work. For serverless platforms make sure you use Socket Mode or provide an HTTP entrypoint and route Slack requests to the process.
+Set the `PINECONE_API_KEY` environment variable to your Pinecone API key.
 
-## Customisation
+Then, create a Pinecone index and set the `PINECONE_INDEX` environment variable to the name of your Pinecone index.
 
-- Modify the persona prompt in `server/utils/generate-response.ts`.
-- Adjust keyword detection or rate limits in `server/config.ts` and `server/lib/kv.ts`.
-- Extend `server/slack/events/message.ts` to handle more event types.
-- Add new tools for the LLM inside `server/utils/generate-response.ts` or create new utility modules.
+We use the `llama-text-embed-v2` integrated embedding option for our instances.
 
-## License
+## <a name="license">📝 License</a>
 
-MIT
+This project is under the MIT license. See the [LICENSE](LICENSE) for details.
+
+[git]: https://git-scm.com/
+[node]: https://nodejs.org/
+[ts]: https://www.typescriptlang.org/
+[slack-bolt]: https://docs.slack.dev/tools/bolt-js/
+[biome]: https://biomejs.dev/
+[ai-sdk]: https://ai-sdk.dev/
+[bun]: https://bun.sh/
+[exa]: https://exa.ai/
+[pinecone]: https://www.pinecone.io/
+[upstash]: https://upstash.com/
