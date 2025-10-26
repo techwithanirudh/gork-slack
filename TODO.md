@@ -1,5 +1,4 @@
 # TODO
 
-- Enrich conversation context with display names via `users.info` caching.
+- **Port from Upstash to Redis**
 - Add AI SDK Agents
-- Port from upstash to redis
