@@ -13,6 +13,8 @@ export const env = createEnv({
     PORT: z.coerce.number().default(3000),
     // Channel to add user to automatically
     AUTO_ADD_CHANNEL: z.string().optional(),
+    // Channel required for keywords / relevance check
+    OPT_IN_CHANNEL: z.string().optional(),
     // AI
     OPENROUTER_API_KEY: z.string().min(1),
     // Logging

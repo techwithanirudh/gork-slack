@@ -1,5 +1,7 @@
 import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
 import { keywords, messageThreshold } from '~/config';
+import { env } from '~/env';
+import { isUserAllowed } from '~/lib/allowed-users';
 import { ratelimit, redisKeys } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
@@ -14,7 +16,6 @@ import {
 import { getTrigger } from '~/utils/triggers';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
-import { env } from '~/env';
 
 export const name = 'message';
 
@@ -37,20 +38,22 @@ function isProcessableMessage(
 ): SlackMessageContext | null {
   const { event, context, client, body } = args;
 
-  const subtype = 'subtype' in event ? event.subtype : undefined;
-  if (subtype && subtype !== 'thread_broadcast') return null;
+  if (
+    event.subtype &&
+    event.subtype !== 'thread_broadcast' &&
+    event.subtype !== 'file_share'
+  )
+    return null;
 
   if ('bot_id' in event && event.bot_id) return null;
 
-  if (
-    context.botUserId &&
-    'user' in event &&
-    event.user === context.botUserId
-  ) {
+  if (context.botUserId && event.user === context.botUserId) {
     return null;
   }
 
   if (!('text' in event)) return null;
+
+  if (!isUserAllowed(event.user)) return null;
 
   return {
     event: event as SlackMessageContext['event'],

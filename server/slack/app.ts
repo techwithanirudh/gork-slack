@@ -1,5 +1,6 @@
 import { App, ExpressReceiver, LogLevel } from '@slack/bolt';
 import { env } from '~/env';
+import { buildCache } from '~/lib/allowed-users';
 import logger from '~/lib/logger';
 import { events } from './events';
 
@@ -9,7 +10,8 @@ export interface SlackApp {
   socketMode: boolean;
 }
 
-function registerMessageEvents(app: App) {
+function registerApp(app: App) {
+  buildCache(app);
   Object.keys(events).forEach((key) => {
     const event = events[key as keyof typeof events];
 
@@ -33,7 +35,7 @@ export function createSlackApp(): SlackApp {
       logLevel: LogLevel.INFO,
     });
 
-    registerMessageEvents(app);
+    registerApp(app);
 
     logger.info('Initialized Slack app in socket mode');
 
@@ -50,7 +52,7 @@ export function createSlackApp(): SlackApp {
     logLevel: LogLevel.INFO,
   });
 
-  registerMessageEvents(app);
+  registerApp(app);
 
   logger.info('Initialized Slack app with HTTP receiver');
 
