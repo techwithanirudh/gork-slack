@@ -79,23 +79,3 @@ export async function saveChatMemory(
 
   await addMemory(data, metadata);
 }
-
-export async function saveToolMemory(
-  message: SlackMessageContext,
-  toolName: string,
-  result: unknown,
-) {
-  const data = JSON.stringify({ toolName, result }, null, 2);
-  const { guild, channel } = await buildLocationFromMessage(message);
-
-  const metadata = {
-    type: 'tool' as const,
-    name: toolName,
-    response: result,
-    createdAt: Date.now(),
-    guild,
-    channel,
-  };
-
-  await addMemory(data, metadata);
-}

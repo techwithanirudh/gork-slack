@@ -30,14 +30,6 @@ export function formatMemories(
           context: metadata.context,
           createdAt,
         });
-      } else if (metadata.type === 'tool') {
-        return formatToolMemory({
-          guild,
-          channel,
-          name: metadata.name,
-          response: metadata.response,
-          createdAt,
-        });
       }
 
       return null;
@@ -72,40 +64,6 @@ function formatChatMemory({
     `  name: ${channel?.name ?? 'null'}`,
     'context: |',
     ...context.split('\n').map((l) => `  ${l}`),
-    '---',
-  ];
-  return lines.join('\n');
-}
-
-function formatToolMemory({
-  guild,
-  channel,
-  name,
-  response,
-  createdAt,
-}: {
-  guild: { id?: string | null; name?: string | null } | null;
-  channel: { id: string; name: string } | null;
-  name: string;
-  response: unknown;
-  createdAt: string | null;
-}) {
-  const responseText =
-    typeof response === 'string' ? response : JSON.stringify(response, null, 2);
-
-  const lines = [
-    '---',
-    'type: tool',
-    `createdAt: ${createdAt ?? 'unknown'}`,
-    'guild:',
-    `  id: ${guild?.id ?? 'null'}`,
-    `  name: ${guild?.name ?? 'null'}`,
-    'channel:',
-    `  id: ${channel?.id ?? 'null'}`,
-    `  name: ${channel?.name ?? 'null'}`,
-    `toolName: ${name ?? 'unknown'}`,
-    'result: |',
-    ...responseText.split('\n').map((l) => `  ${l}`),
     '---',
   ];
   return lines.join('\n');

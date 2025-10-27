@@ -12,7 +12,6 @@ import { searchWeb } from '~/lib/ai/tools/search-web';
 import { skip } from '~/lib/ai/tools/skip';
 import { startDM } from '~/lib/ai/tools/start-dm';
 import { successToolCall } from '~/lib/ai/utils';
-import { saveToolMemory } from '~/lib/memory';
 import type {
   PineconeMetadataOutput,
   RequestHints,
@@ -81,24 +80,6 @@ export async function generateResponse(
         // successToolCall('react'),
         successToolCall('skip'),
       ],
-      onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
-        if (!toolCalls.length) return;
-
-        await Promise.all(
-          toolCalls.map(async (call, i) => {
-            const result = toolResults[i];
-            if (!call || !result) return;
-            if (
-              ['searchMemories', 'reply', 'skip', 'react'].includes(
-                call.toolName,
-              )
-            )
-              return;
-
-            await saveToolMemory(context, call.toolName, result);
-          }),
-        );
-      },
       experimental_telemetry: {
         isEnabled: true,
         functionId: `chat`,
