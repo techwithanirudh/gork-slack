@@ -88,7 +88,7 @@ export async function generateResponse(
           toolCalls.map(async (call, i) => {
             const result = toolResults[i];
             if (!call || !result) return;
-            if (call.toolName === 'searchMemories') return;
+            if (["searchMemories", "reply", "skip", "react"].includes(call.toolName)) return;
 
             await saveToolMemory(context, call.toolName, result);
           }),
