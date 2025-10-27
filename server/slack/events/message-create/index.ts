@@ -22,7 +22,7 @@ export const name = 'message';
 type MessageEventArgs = SlackEventMiddlewareArgs<'message'> & AllMiddlewareArgs;
 
 async function canReply(ctxId: string): Promise<boolean> {
-  const { success } = await ratelimit.limit(redisKeys.channelCount(ctxId));
+  const { success } = await ratelimit(redisKeys.channelCount(ctxId));
   if (!success) {
     logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
   }

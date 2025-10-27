@@ -1,9 +1,8 @@
 import { createEnv } from '@t3-oss/env-core';
-import { upstashRedis, vercel } from '@t3-oss/env-core/presets-zod';
 import { z } from 'zod';
 
 export const env = createEnv({
-  extends: [vercel(), upstashRedis()],
+  extends: [],
   server: {
     // Slack
     SLACK_BOT_TOKEN: z.string().min(1),
@@ -15,6 +14,8 @@ export const env = createEnv({
     AUTO_ADD_CHANNEL: z.string().optional(),
     // Channel required for keywords / relevance check
     OPT_IN_CHANNEL: z.string().optional(),
+    // Redis
+    REDIS_URL: z.string().min(1),
     // AI
     OPENROUTER_API_KEY: z.string().min(1),
     // Logging
