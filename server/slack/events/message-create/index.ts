@@ -38,6 +38,7 @@ function isProcessableMessage(
 ): SlackMessageContext | null {
   const { event, context, client, body } = args;
 
+  // has to be done again for type things
   if (
     event.subtype &&
     event.subtype !== 'thread_broadcast' &&
@@ -52,8 +53,6 @@ function isProcessableMessage(
   }
 
   if (!('text' in event)) return null;
-
-  if (!isUserAllowed(event.user)) return null;
 
   return {
     event: event as SlackMessageContext['event'],
@@ -95,6 +94,13 @@ function getContextId(ctx: SlackMessageContext): string {
 }
 
 export async function execute(args: MessageEventArgs) {
+  if (
+    args.event.subtype &&
+    args.event.subtype !== 'thread_broadcast' &&
+    args.event.subtype !== 'file_share'
+  )
+    return;
+
   const messageContext = isProcessableMessage(args);
   if (!messageContext) return;
 
@@ -113,6 +119,16 @@ export async function execute(args: MessageEventArgs) {
   const { messages, hints, memories } = await buildChatContext(messageContext);
 
   if (trigger.type) {
+    if (!isUserAllowed(args.event.user)) {
+      if (trigger.type === 'keyword') return;
+      await args.client.chat.postMessage({
+        channel: args.event.channel,
+        thread_ts: args.event.thread_ts || args.event.ts,
+        markdown_text: `sorry bro <@${args.event.user}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
+      });
+      return;
+    }
+
     if (
       (trigger.type === 'ping' || trigger.type === 'dm') &&
       env.AUTO_ADD_CHANNEL &&
@@ -152,6 +168,8 @@ export async function execute(args: MessageEventArgs) {
     }
     return;
   }
+
+  if (!isUserAllowed(args.event.user)) return;
 
   const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
 
