@@ -19,7 +19,7 @@ This project was developed with the following technologies:
 - [Vercel AI SDK][ai-sdk]
 - [Exa AI][exa]
 - [Pinecone][pinecone]
-- [Upstash][upstash]
+- [Redis][redis]
 - [Slack Bolt SDK][slack-bolt]
 - [TypeScript][ts]
 - [Bun][bun]
@@ -70,4 +70,4 @@ This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 [bun]: https://bun.sh/
 [exa]: https://exa.ai/
 [pinecone]: https://www.pinecone.io/
-[upstash]: https://upstash.com/
+[redis]: https://redis.io/
