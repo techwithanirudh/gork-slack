@@ -55,9 +55,9 @@ export async function generateResponse(
       providerOptions: {
         openrouter: {
           reasoning: {
-            max_tokens: 250
-          }
-        }
+            max_tokens: 250,
+          },
+        },
       },
       activeTools: [
         'getWeather',
