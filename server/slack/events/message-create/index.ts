@@ -33,9 +33,9 @@ async function onSuccess(context: SlackMessageContext) {
   await saveChatMemory(context, 5);
 }
 
-async function isProcessableMessage(
+function isProcessableMessage(
   args: MessageEventArgs,
-): Promise<SlackMessageContext | null> {
+): SlackMessageContext | null {
   const { event, context, client, body } = args;
 
   if (
@@ -53,14 +53,7 @@ async function isProcessableMessage(
 
   if (!('text' in event)) return null;
 
-  if (!isUserAllowed(event.user)) {
-    await client.chat.postMessage({
-      channel: event.channel,
-      thread_ts: event.thread_ts || event.ts,
-      markdown_text: `sorry bro <@${event.user}> you gotta be in ${env.OPT_IN_CHANNEL} to talk to me alr? i'm exclusive yk`,
-    });
-    return null;
-  }
+  if (!isUserAllowed(event.user)) return null;
 
   return {
     event: event as SlackMessageContext['event'],
@@ -102,7 +95,7 @@ function getContextId(ctx: SlackMessageContext): string {
 }
 
 export async function execute(args: MessageEventArgs) {
-  const messageContext = await isProcessableMessage(args);
+  const messageContext = isProcessableMessage(args);
   if (!messageContext) return;
 
   const ctxId = getContextId(messageContext);
