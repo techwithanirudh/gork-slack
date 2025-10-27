@@ -1,3 +1,4 @@
 # TODO
 
-- Add AI SDK Agents
+- Migrate to AI SDK Agents
+- Migrate to Honcho (?)
