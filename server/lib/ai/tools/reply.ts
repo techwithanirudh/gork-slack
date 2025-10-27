@@ -60,7 +60,7 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
         .min(0)
         .optional()
         .describe(
-          'Number of messages to go back from the triggering message. 0 or omitted means reply to the triggering message.',
+          `Number of messages to go back from the triggering message. 0 or omitted means that you will reply to the message that you were triggered by. This would usually stay as 0. ${(context.event as { thread_ts?: string }).thread_ts ? 'NOTE: YOU ARE IN A THREAD - THE OFFSET WILL RESPOND TO A DIFFERENT THREAD. Change the offset only if you are sure.' : ''}`.trim(),
         ),
       content: z
         .array(z.string())
