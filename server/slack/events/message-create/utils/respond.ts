@@ -52,6 +52,13 @@ export async function generateResponse(
           content: `You are replying to the following message: ${messageText}`,
         },
       ],
+      providerOptions: {
+        openrouter: {
+          reasoning: {
+            max_tokens: 250
+          }
+        }
+      },
       activeTools: [
         'getWeather',
         'searchWeb',
