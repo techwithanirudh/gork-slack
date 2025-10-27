@@ -78,7 +78,7 @@ export async function generateResponse(
       stopWhen: [
         stepCountIs(10),
         successToolCall('reply'),
-        successToolCall('react'),
+        // successToolCall('react'),
         successToolCall('skip'),
       ],
       onStepFinish: async ({ toolCalls = [], toolResults = [] }) => {
@@ -88,7 +88,12 @@ export async function generateResponse(
           toolCalls.map(async (call, i) => {
             const result = toolResults[i];
             if (!call || !result) return;
-            if (["searchMemories", "reply", "skip", "react"].includes(call.toolName)) return;
+            if (
+              ['searchMemories', 'reply', 'skip', 'react'].includes(
+                call.toolName,
+              )
+            )
+              return;
 
             await saveToolMemory(context, call.toolName, result);
           }),
