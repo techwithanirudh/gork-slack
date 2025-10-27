@@ -24,8 +24,6 @@ export const env = createEnv({
       .enum(['debug', 'info', 'warn', 'error'])
       .optional()
       .default('info'),
-    // Mem0
-    MEM0_API_KEY: z.string().min(1).startsWith('m0-'),
     // Exa
     EXA_API_KEY: z.string().min(1),
     // Pinecone

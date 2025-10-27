@@ -15,7 +15,6 @@
   "license": "MIT",
   "dependencies": {
     "@date-fns/tz": "^1.4.1",
-    "@mem0/vercel-ai-provider": "^2.0.4",
     "@openrouter/ai-sdk-provider": "^1.2.0",
     "@opentelemetry/api-logs": "^0.206.0",
     "@opentelemetry/auto-instrumentations-node": "^0.65.0",
