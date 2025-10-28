@@ -1,5 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod/v4';
+import { env } from '~/env';
+import { isUserAllowed } from '~/lib/allowed-users';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
 import { getSlackUserName, normalizeSlackUserId } from '~/utils/users';
@@ -19,6 +21,13 @@ export const startDM = ({ context }: { context: SlackMessageContext }) =>
           return {
             success: false,
             error: 'User not found. Provide a Slack user ID.',
+          };
+        }
+
+        if (!isUserAllowed(targetId)) {
+          return {
+            success: false,
+            error: `This user is not allowed to communicate with you. They need to join <#${env.OPT_IN_CHANNEL}> to allow you.`,
           };
         }
 
