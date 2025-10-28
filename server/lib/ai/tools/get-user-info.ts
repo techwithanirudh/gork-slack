@@ -7,12 +7,12 @@ import { normalizeSlackUserId } from '~/utils/users';
 export const getUserInfo = ({ context }: { context: SlackMessageContext }) =>
   tool({
     description:
-      'Get details about a Slack user by ID or exact username (display name).',
+      'Get details about a Slack user by ID.',
     inputSchema: z.object({
       userId: z
         .string()
         .min(1)
-        .describe('The Slack user ID (e.g. U123) or exact display name.'),
+        .describe('The Slack user ID (e.g. U123) of the user.'),
     }),
     execute: async ({ userId }) => {
       try {
