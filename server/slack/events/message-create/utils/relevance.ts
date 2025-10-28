@@ -29,6 +29,7 @@ export async function assessRelevance(
       model: provider.languageModel('relevance-model'),
       messages,
       schema: probabilitySchema,
+      temperature: 0.9,
       system: systemPrompt({
         selectedChatModel: 'relevance-model',
         requestHints: hints,

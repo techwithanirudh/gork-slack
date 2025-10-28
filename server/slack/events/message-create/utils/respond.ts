@@ -59,6 +59,7 @@ export async function generateResponse(
           },
         },
       },
+      temperature: 1.1,
       activeTools: [
         'getWeather',
         'searchWeb',
