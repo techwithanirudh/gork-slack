@@ -9,15 +9,19 @@ export async function buildCache(app: App) {
 
   app.event('member_joined_channel', async ({ event }) => {
     if (event.channel !== env.OPT_IN_CHANNEL) return;
+    logger.debug(event.user + ' joined opt-in channel');
     allowedUsers.add(event.user);
   });
 
   app.event('member_left_channel', async ({ event }) => {
     if (event.channel !== env.OPT_IN_CHANNEL) return;
+    logger.debug(event.user + ' left opt-in channel');
     allowedUsers.delete(event.user);
   });
 
   let cursor: string | undefined;
+
+  logger.info('Building opt-in user cache');
   do {
     const req = await app.client.conversations.members({
       channel: env.OPT_IN_CHANNEL,
@@ -30,6 +34,7 @@ export async function buildCache(app: App) {
     if (!req.members) continue;
     for (const member of req.members) allowedUsers.add(member);
   } while (cursor);
+  logger.info(allowedUsers.size + ' users added to opt-in cache');
 }
 
 export function isUserAllowed(userId: string) {
