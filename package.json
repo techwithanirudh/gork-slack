@@ -25,7 +25,7 @@
     "@slack/bolt": "^4.5.0",
     "@t3-oss/env-core": "^0.13.8",
     "@vercel/otel": "^2.1.0",
-    "ai": "^5.0.80",
+    "ai": "^5.0.81",
     "ai-fallback": "^1.0.7",
     "compromise": "^14.14.4",
     "date-fns": "^4.1.0",
