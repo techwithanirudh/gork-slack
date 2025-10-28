@@ -6,8 +6,7 @@ import { normalizeSlackUserId } from '~/utils/users';
 
 export const getUserInfo = ({ context }: { context: SlackMessageContext }) =>
   tool({
-    description:
-      'Get details about a Slack user by ID.',
+    description: 'Get details about a Slack user by ID.',
     inputSchema: z.object({
       userId: z
         .string()
