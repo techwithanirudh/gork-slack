@@ -15,22 +15,33 @@ async function resolveTargetMessage(
 ): Promise<SlackHistoryMessage | null> {
   const channelId = (ctx.event as { channel?: string }).channel;
   const messageTs = (ctx.event as { ts?: string }).ts;
+  const threadTs = (ctx.event as { thread_ts?: string }).thread_ts;
 
   if (!channelId || !messageTs) return null;
 
   if (offset <= 0) {
     return {
       ts: messageTs,
-      thread_ts: (ctx.event as { thread_ts?: string }).thread_ts,
+      thread_ts: threadTs,
     };
   }
 
-  const history = await ctx.client.conversations.history({
-    channel: channelId,
-    latest: messageTs,
-    inclusive: false,
-    limit: offset,
-  });
+  // If we're in a thread, use conversations.replies to get thread messages
+  // Otherwise, use conversations.history to get channel messages
+  const history = threadTs
+    ? await ctx.client.conversations.replies({
+        channel: channelId,
+        ts: threadTs,
+        latest: messageTs,
+        inclusive: false,
+        limit: offset,
+      })
+    : await ctx.client.conversations.history({
+        channel: channelId,
+        latest: messageTs,
+        inclusive: false,
+        limit: offset,
+      });
 
   const sorted = ((history.messages ?? []) as SlackHistoryMessage[])
     .filter((msg) => Boolean(msg.ts))
