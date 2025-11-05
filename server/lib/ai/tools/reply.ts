@@ -66,8 +66,8 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
         .array(z.string())
         .nonempty()
         .describe(
-          'Lines of text to send. Do NOT include trailing signatures; bots should sound natural.',
-        ),
+          'Lines of text to send. Do NOT include trailing signatures; bots should sound natural. Send at most 4 lines.',
+        ).max(4),
       type: z
         .enum(['reply', 'message'])
         .default('reply')
