@@ -8,6 +8,7 @@ import { getWeather } from '~/lib/ai/tools/get-weather';
 import { react } from '~/lib/ai/tools/react';
 import { reply } from '~/lib/ai/tools/reply';
 import { searchMemories } from '~/lib/ai/tools/search-memories';
+import { leaveChannel } from '~/lib/ai/tools/leave-channel';
 import { searchWeb } from '~/lib/ai/tools/search-web';
 import { skip } from '~/lib/ai/tools/skip';
 import { startDM } from '~/lib/ai/tools/start-dm';
@@ -66,6 +67,7 @@ export async function generateResponse(
         'startDM',
         'getUserInfo',
         'searchMemories',
+        'leaveChannel',
         'react',
         'reply',
         'skip',
@@ -77,6 +79,7 @@ export async function generateResponse(
         startDM: startDM({ context }),
         getUserInfo: getUserInfo({ context }),
         searchMemories: searchMemories(),
+        leaveChannel: leaveChannel({ context }),
         react: react({ context }),
         reply: reply({ context }),
         skip: skip({ context }),
@@ -84,6 +87,7 @@ export async function generateResponse(
       system,
       stopWhen: [
         stepCountIs(10),
+        successToolCall('leave-channel'),
         successToolCall('reply'),
         // successToolCall('react'),
         successToolCall('skip'),

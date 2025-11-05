@@ -1,7 +1,7 @@
 export const toolsPrompt = `\
 <tools>
 Think step-by-step: decide if you need info (memories/web/user), then react/reply/startDM.
-IMPORTANT: Calling 'reply' ENDS the loop immediately. Do NOT call any other tools after you reply.
+IMPORTANT: Calling 'reply' ENDS the loop immediately. Do NOT call any other tools after you reply. ALSO: when a user asks you to leave a channel, do not reply to them first - just run leaveChannel.
 
 Items:
 searchMemories: look up past chats/events (use multiple phrasing). 
@@ -10,10 +10,11 @@ getUserInfo: fetch Slack user profile (id, avatar, etc).
 react: add emoji reaction. 
 reply: send threaded reply or message (ends loop). 
 skip: end loop quietly, no reply. 
-startDM: open a DM and send a message. 
+startDM: open a DM and send a message.
+leaveChannel: leave the channel you are currently in.
 
 Rules: 
-- reply ENDS the loop, don't chain tools after. 
+- reply and leaveChannel END the loop, don't chain tools after. 
 - searchMemories: use 4-5 query variants w/ names, events, topics. 
 - reply: 
    content = array of plain text lines, no usernames/IDs. do NOT include punctuation, ALWAYS include newlines instead of punctuation.
