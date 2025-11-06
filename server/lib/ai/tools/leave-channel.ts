@@ -6,7 +6,7 @@ import type { SlackMessageContext } from '~/types';
 export const leaveChannel = ({ context }: { context: SlackMessageContext }) =>
   tool({
     description:
-      'Leave the channel you are currently in. Use this carefully and only if the user asks.',
+      'Leave the channel you are currently in. Use this carefully and only if the user asks. If the user asks you to leave a channel, you MUST run this tool.',
     inputSchema: z.object({
       reason: z
         .string()
