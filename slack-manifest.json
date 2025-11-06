@@ -23,13 +23,14 @@
         "im:history",
         "im:write",
         "mpim:history",
+        "mpim:read",
         "mpim:write",
         "reactions:read",
         "reactions:write",
         "team:read",
         "users.profile:read",
         "users:read",
-        "mpim:read"
+        "channels:manage"
       ]
     }
   },
