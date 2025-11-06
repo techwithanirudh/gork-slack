@@ -19,9 +19,21 @@ export const leaveChannel = ({ context }: { context: SlackMessageContext }) =>
         { reason, authorId, channel: context.event.channel },
         'Leaving channel',
       );
-      await context.client.conversations.leave({
-        channel: context.event.channel,
-      });
+
+      try {
+        await context.client.conversations.leave({
+          channel: context.event.channel,
+        });
+      } catch (error) {
+        logger.error(
+          { error, channel: context.event.channel },
+          'Failed to leave channel',
+        );
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
 
       return {
         success: true,
