@@ -51,7 +51,6 @@ export async function getConversationMessages({
 
     const messages = (response.messages as SlackMessage[] | undefined) ?? [];
 
-    // TODO: Implement opt-in filter so only opted-in users can use Gork
     const filteredMessages = latest
       ? messages.filter((message) => {
           if (!message.ts) return false;
