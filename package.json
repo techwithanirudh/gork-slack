@@ -14,6 +14,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^1.0.27",
     "@date-fns/tz": "^1.4.1",
     "@openrouter/ai-sdk-provider": "^1.2.2",
     "@opentelemetry/api-logs": "^0.206.0",

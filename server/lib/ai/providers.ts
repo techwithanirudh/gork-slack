@@ -1,15 +1,15 @@
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { customProvider } from 'ai';
 import { createFallback } from 'ai-fallback';
 import { env } from '~/env';
 import logger from '~/lib/logger';
 
-// import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-// const hackclub = createOpenAICompatible({
-//   name: 'hackclub',
-//   apiKey: env.HACKCLUB_API_KEY,
-//   baseURL: 'https://ai.hackclub.com',
-// });
+const hackclub = createOpenAICompatible({
+  name: 'hackclub',
+  apiKey: env.HACKCLUB_API_KEY,
+  baseURL: 'https://ai.hackclub.com/proxy/v1',
+});
 
 const openrouter = createOpenRouter({
   apiKey: env.OPENROUTER_API_KEY,
@@ -17,8 +17,10 @@ const openrouter = createOpenRouter({
 
 const chatModel = createFallback({
   models: [
+    hackclub('google/gemini-2.5-flash'),
+    hackclub('openai/gpt-5-mini'),
     openrouter('google/gemini-2.5-flash'),
-    openrouter('x-ai/grok-4-fast'),
+    openrouter('openai/gpt-5-mini'),
     // hackclub?
   ],
   onError: (_error, modelId) => {
@@ -29,8 +31,10 @@ const chatModel = createFallback({
 
 const relevanceModel = createFallback({
   models: [
+    hackclub('openai/gpt-5-mini'),
+    hackclub('google/gemini-2.5-flash'),
     openrouter('google/gemini-2.5-flash-lite'),
-    openrouter('x-ai/grok-4-fast'),
+    openrouter('openai/gpt-5-mini'),
   ],
   onError: (_error, modelId) => {
     logger.error(`error with model ${modelId}, switching to next model`);
