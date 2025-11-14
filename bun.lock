@@ -5,9 +5,8 @@
     "": {
       "name": "ai-sdk-slack-chatbot",
       "dependencies": {
-        "@ai-sdk/openai-compatible": "^1.0.27",
         "@date-fns/tz": "^1.4.1",
-        "@openrouter/ai-sdk-provider": "^1.2.2",
+        "@openrouter/ai-sdk-provider": "^1.2.0",
         "@opentelemetry/api-logs": "^0.206.0",
         "@opentelemetry/auto-instrumentations-node": "^0.65.0",
         "@opentelemetry/instrumentation": "^0.206.0",
@@ -17,7 +16,7 @@
         "@slack/bolt": "^4.6.0",
         "@t3-oss/env-core": "^0.13.8",
         "@vercel/otel": "^2.1.0",
-        "ai": "^5.0.93",
+        "ai": "^5.0.88",
         "ai-fallback": "^1.0.8",
         "compromise": "^14.14.4",
         "date-fns": "^4.1.0",
@@ -29,16 +28,14 @@
         "zod": "^4.1.12",
       },
       "devDependencies": {
-        "@biomejs/biome": "^2.3.5",
-        "@types/bun": "^1.3.2",
+        "@biomejs/biome": "^2.3.4",
+        "@types/bun": "^1.3.1",
         "typescript": "^5.9.3",
       },
     },
   },
   "packages": {
     "@ai-sdk/gateway": ["@ai-sdk/gateway@2.0.9", "", { "dependencies": { "@ai-sdk/provider": "2.0.0", "@ai-sdk/provider-utils": "3.0.17", "@vercel/oidc": "3.0.3" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-E6x4h5CPPPJ0za1r5HsLtHbeI+Tp3H+YFtcH8G3dSSPFE6w+PZINzB4NxLZmg1QqSeA5HTP3ZEzzsohp0o2GEw=="],
-
-    "@ai-sdk/openai-compatible": ["@ai-sdk/openai-compatible@1.0.27", "", { "dependencies": { "@ai-sdk/provider": "2.0.0", "@ai-sdk/provider-utils": "3.0.17" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-bpYruxVLhrTbVH6CCq48zMJNeHu6FmHtEedl9FXckEgcIEAi036idFhJlcRwC1jNCwlacbzb8dPD7OAH1EKJaQ=="],
 
     "@ai-sdk/provider": ["@ai-sdk/provider@2.0.0", "", { "dependencies": { "json-schema": "^0.4.0" } }, "sha512-6o7Y2SeO9vFKB8lArHXehNuusnpddKPk7xqL7T2/b+OvXMRIXUO1rR4wcv1hAFUAT9avGZshty3Wlua/XA7TvA=="],
 
