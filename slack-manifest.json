@@ -30,7 +30,9 @@
         "team:read",
         "users.profile:read",
         "users:read",
-        "channels:manage"
+        "channels:manage",
+        "files:read",
+        "files:write"
       ]
     }
   },

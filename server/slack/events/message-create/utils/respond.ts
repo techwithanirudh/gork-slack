@@ -1,5 +1,5 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import type { ModelMessage } from 'ai';
+import type { ModelMessage, UserContent } from 'ai';
 import { generateText, stepCountIs } from 'ai';
 import { systemPrompt } from '~/lib/ai/prompts';
 import { provider } from '~/lib/ai/providers';
@@ -18,6 +18,7 @@ import type {
   RequestHints,
   SlackMessageContext,
 } from '~/types';
+import { processSlackFiles, type SlackFile } from '~/utils/images';
 import { getSlackUserName } from '~/utils/users';
 
 export async function generateResponse(
@@ -29,6 +30,7 @@ export async function generateResponse(
   try {
     const userId = (context.event as { user?: string }).user;
     const messageText = (context.event as { text?: string }).text ?? '';
+    const files = (context.event as { files?: SlackFile[] }).files;
     const authorName = userId
       ? await getSlackUserName(context.client, userId)
       : 'user';
@@ -44,13 +46,30 @@ export async function generateResponse(
       },
     });
 
+    // Process images from the current message
+    const imageContents = await processSlackFiles(files);
+
+    // Build the current message content
+    let currentMessageContent: UserContent;
+    const replyPrompt = `You are replying to the following message from ${authorName} (${userId}): ${messageText}`;
+
+    if (imageContents.length > 0) {
+      // Include images with the reply prompt
+      currentMessageContent = [
+        { type: 'text' as const, text: replyPrompt },
+        ...imageContents,
+      ];
+    } else {
+      currentMessageContent = replyPrompt;
+    }
+
     const { toolCalls } = await generateText({
       model: provider.languageModel('chat-model'),
       messages: [
         ...messages,
         {
           role: 'user',
-          content: `You are replying to the following message: ${messageText}`,
+          content: currentMessageContent,
         },
       ],
       providerOptions: {
