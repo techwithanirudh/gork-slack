@@ -15,8 +15,10 @@ const openrouter = createOpenRouter({
 
 const chatModel = createFallback({
   models: [
+    hackclub('google/gemini-3-flash-preview'),
     hackclub('google/gemini-2.5-flash'),
     hackclub('openai/gpt-5-mini'),
+    openrouter('google/gemini-3-flash-preview'),
     openrouter('google/gemini-2.5-flash'),
     openrouter('openai/gpt-5-mini'),
     // hackclub?
