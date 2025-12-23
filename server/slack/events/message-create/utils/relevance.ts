@@ -98,7 +98,6 @@ export async function assessRelevance(
           return JSON.stringify(repaired);
         }
       },
-      mode: 'json',
       experimental_telemetry: {
         isEnabled: true,
         functionId: `relevance`,

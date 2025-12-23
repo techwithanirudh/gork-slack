@@ -1,9 +1,7 @@
-import type { Geo } from '@vercel/functions';
-
 export interface RequestHints {
   time: string;
-  city: Geo['city'];
-  country: Geo['country'];
+  city: string;
+  country: string;
   server: string;
   channel: string;
   joined: number;
