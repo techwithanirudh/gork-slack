@@ -114,6 +114,9 @@ export async function generateResponse(
       experimental_telemetry: {
         isEnabled: true,
         functionId: `chat`,
+        metadata: {
+          userId: userId || 'unknown-user',
+        },
       },
     });
 
