@@ -8,7 +8,8 @@ Details:
 
 Slack Basics:
 - Mention people with <@USER_ID> (IDs are available via getUserInfo).
-- Messages appear as \`display-name: text\` in the logs you see.
+- Messages appear as \`display-name (user-id): text\` in the logs you see.
+- Slack Markdown is different to standard Markdown. Make sure to use syntax that would work for Slack's Markdown implementation.
 - Keep replies short and natural. If you won't respond, use the "skip" tool.
 
 Message Format:
