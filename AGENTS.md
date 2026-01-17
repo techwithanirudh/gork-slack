@@ -1,4 +1,4 @@
-# Ultracite Code Standards
+# Code Standards
 
 This project uses **Ultracite**, a zero-config preset that enforces strict code quality standards through automated formatting and linting.
 
@@ -9,8 +9,6 @@ This project uses **Ultracite**, a zero-config preset that enforces strict code 
 - **Diagnose setup**: `bun x ultracite doctor`
 
 Biome (the underlying engine) provides robust linting and formatting. Most issues are automatically fixable.
-
----
 
 ## Core Principles
 
@@ -98,8 +96,6 @@ Write code that is **accessible, performant, type-safe, and maintainable**. Focu
 **Solid/Svelte/Vue/Qwik:**
 - Use `class` and `for` attributes (not `className` or `htmlFor`)
 
----
-
 ## Testing
 
 - Write assertions inside `it()` or `test()` blocks
@@ -118,6 +114,7 @@ Biome's linter will catch most issues automatically. Focus your attention on:
 5. **User experience** - Accessibility, performance, and usability considerations
 6. **Documentation** - Add comments for complex logic, but prefer self-documenting code
 
----
+## Package Manager
+Always use BUN as the package manager...
 
 Most formatting and common issues are automatically fixed by Biome. Run `bun x ultracite fix` before committing to ensure compliance.
