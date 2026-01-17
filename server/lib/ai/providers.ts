@@ -14,12 +14,10 @@ const openrouter = createOpenRouter({
 });
 
 const hackclub = (modelId: string) => {
-  const customModelId = modelId + '-hackclub';
-
   return wrapLanguageModel({
     model: hackclubBase(modelId),
     middleware: {},
-    modelId: customModelId,
+    modelId,
     providerId: 'hackclub',
   });
 };
