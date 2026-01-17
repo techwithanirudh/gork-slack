@@ -8,14 +8,18 @@ export interface MemoryRecord {
 }
 
 export function formatMemories(
-  memories: ScoredPineconeRecord<PineconeMetadataOutput>[],
+  memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
 ): string {
-  if (memories.length === 0) return '';
+  if (memories.length === 0) {
+    return '';
+  }
 
   const processedMemories = memories
     .map((memory) => {
       const { metadata } = memory;
-      if (!metadata) return null;
+      if (!metadata) {
+        return null;
+      }
 
       const guild = metadata.guild ? JSON.parse(metadata.guild) : null;
       const channel = metadata.channel ? JSON.parse(metadata.channel) : null;
@@ -36,7 +40,9 @@ export function formatMemories(
     })
     .filter(Boolean) as string[];
 
-  if (processedMemories.length === 0) return '';
+  if (processedMemories.length === 0) {
+    return '';
+  }
 
   return processedMemories.join('\n\n');
 }

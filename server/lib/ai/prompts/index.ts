@@ -46,7 +46,8 @@ export const systemPrompt = ({
       .filter(Boolean)
       .join('\n')
       .trim();
-  } else if (selectedChatModel === 'relevance-model') {
+  }
+  if (selectedChatModel === 'relevance-model') {
     return [
       corePrompt,
       personalityPrompt,

@@ -20,7 +20,7 @@ export const queryMemories = async (
     ageLimit,
     ignoreRecent = true,
     onlyTools = false,
-  }: QueryMemoriesOptions = {},
+  }: QueryMemoriesOptions = {}
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
   if (!query || query.trim().length === 0) {
     return [];
@@ -54,8 +54,8 @@ export const queryMemories = async (
     const index = (await getIndex()).namespace(namespace);
     await Promise.all(
       results.map(({ id }: { id: string }) =>
-        index.update({ id, metadata: { lastRetrievalTime: Date.now() } }),
-      ),
+        index.update({ id, metadata: { lastRetrievalTime: Date.now() } })
+      )
     );
 
     return results;

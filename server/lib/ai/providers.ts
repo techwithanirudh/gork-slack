@@ -26,7 +26,7 @@ const chatModel = createFallback({
   onError: (_error, modelId) => {
     logger.error(`error with model ${modelId}, switching to next model`);
   },
-  modelResetInterval: 60000,
+  modelResetInterval: 60_000,
 });
 
 const relevanceModel = createFallback({
@@ -39,7 +39,7 @@ const relevanceModel = createFallback({
   onError: (_error, modelId) => {
     logger.error(`error with model ${modelId}, switching to next model`);
   },
-  modelResetInterval: 60000,
+  modelResetInterval: 60_000,
 });
 
 const sfwFilterModel = createFallback({
@@ -52,7 +52,7 @@ const sfwFilterModel = createFallback({
   onError: (_error, modelId) => {
     logger.error(`error with model ${modelId}, switching to next model`);
   },
-  modelResetInterval: 60000,
+  modelResetInterval: 60_000,
 });
 
 export const provider = customProvider({

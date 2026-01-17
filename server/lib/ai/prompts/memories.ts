@@ -3,9 +3,11 @@ import { formatMemories } from '~/lib/ai/memory/text';
 import type { PineconeMetadataOutput } from '~/types';
 
 export const memoriesPrompt = (
-  memories: ScoredPineconeRecord<PineconeMetadataOutput>[],
+  memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
 ) => {
   const text = formatMemories(memories);
-  if (!text) return '';
+  if (!text) {
+    return '';
+  }
   return `<memories>\n${text}\n</memories>`;
 };

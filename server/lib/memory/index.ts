@@ -44,13 +44,15 @@ async function buildLocationFromMessage(message: SlackMessageContext) {
 
 export async function saveChatMemory(
   message: SlackMessageContext,
-  contextLimit = 5,
+  contextLimit = 5
 ) {
   const channelId = (message.event as { channel?: string }).channel;
   const messageTs = (message.event as { ts?: string }).ts;
   const threadTs = (message.event as { thread_ts?: string }).thread_ts;
 
-  if (!channelId || !messageTs) return;
+  if (!(channelId && messageTs)) {
+    return;
+  }
 
   const history = await getConversationMessages({
     client: message.client,
@@ -64,7 +66,9 @@ export async function saveChatMemory(
 
   const data = buildHistorySnippet(history, contextLimit);
 
-  if (!data) return;
+  if (!data) {
+    return;
+  }
 
   const { guild, channel } = await buildLocationFromMessage(message);
 

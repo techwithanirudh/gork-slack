@@ -4,7 +4,7 @@ import { primeSlackUserName } from '~/utils/users';
 export type TriggerType = 'ping' | 'keyword' | 'dm' | null;
 
 function isPlainMessage(
-  event: SlackMessageEvent,
+  event: SlackMessageEvent
 ): event is SlackMessageEvent & { text: string; user: string } {
   const subtype = 'subtype' in event ? event.subtype : undefined;
   return (
@@ -19,7 +19,7 @@ function isPlainMessage(
 export async function getTrigger(
   message: SlackMessageContext,
   keywords: string[],
-  botId?: string,
+  botId?: string
 ): Promise<{ type: TriggerType; info: string | string[] | null }> {
   const { event, client } = message;
 
@@ -45,7 +45,7 @@ export async function getTrigger(
 
   const lowercase = content.toLowerCase();
   const matchedKeywords = keywords.filter((k) =>
-    lowercase.includes(k.toLowerCase()),
+    lowercase.includes(k.toLowerCase())
   );
   if (matchedKeywords.length > 0) {
     return { type: 'keyword', info: matchedKeywords };
