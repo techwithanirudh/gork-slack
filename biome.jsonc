@@ -45,6 +45,17 @@
       "correctness": {
         "noUnusedImports": "error"
       },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 25
+          }
+        }
+      },
+      "performance": {
+        "noBarrelFile": "off"
+      },
       "recommended": true
     }
   },
