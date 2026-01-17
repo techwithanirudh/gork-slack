@@ -1,5 +1,5 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { customProvider } from 'ai';
+import { customProvider, wrapLanguageModel } from 'ai';
 import { createRetryable } from 'ai-retry';
 import { env } from '~/env';
 import logger from '~/lib/logger';
@@ -13,10 +13,16 @@ const openrouter = createOpenRouter({
   apiKey: env.OPENROUTER_API_KEY,
 });
 
-const hackclub = (modelId: string) =>
-  Object.create(hackclubBase(modelId), {
-    provider: { value: 'hackclub', enumerable: true },
+const hackclub = (modelId: string) => {
+  const customModelId = modelId + '-hackclub';
+
+  return wrapLanguageModel({
+    model: hackclubBase(modelId),
+    middleware: {},
+    modelId: customModelId,
+    providerId: 'hackclub',
   });
+};
 
 const chatModel = createRetryable({
   model: hackclub('google/gemini-3-flash-preview'),
