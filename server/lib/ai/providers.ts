@@ -54,7 +54,7 @@ const relevanceModel = createRetryable({
   },
 });
 
-const sfwFilterModel = createRetryable({
+const contentFilterModel = createRetryable({
   model: hackclub('openai/gpt-5-nano'),
   retries: [
     hackclub('google/gemini-2.5-flash-lite'),
@@ -73,6 +73,6 @@ export const provider = customProvider({
   languageModels: {
     'chat-model': chatModel,
     'relevance-model': relevanceModel,
-    'sfw-filter-model': sfwFilterModel,
+    'content-filter-model': contentFilterModel,
   },
 });

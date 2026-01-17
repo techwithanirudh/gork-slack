@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const sfwFilterSchema = z.object({
+export const contentFilterSchema = z.object({
   safe: z.boolean().describe('Whether the content is safe for work'),
   reason: z
     .string()
@@ -8,4 +8,4 @@ export const sfwFilterSchema = z.object({
     .describe('Explanation for why the content is safe or unsafe'),
 });
 
-export type SfwFilterResult = z.infer<typeof sfwFilterSchema>;
+export type contentFilterResult = z.infer<typeof contentFilterSchema>;

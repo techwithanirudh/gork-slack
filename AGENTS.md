@@ -133,7 +133,7 @@ Models are configured in `server/lib/ai/providers.ts` using ai-retry for automat
 
 - **chat-model**: Primary conversation model (Gemini 3 Flash → Gemini 2.5 Flash → GPT-5 Mini)
 - **relevance-model**: Fast model for relevance assessment
-- **sfw-filter-model**: Lightweight model for content filtering
+- **content-filter-model**: Lightweight model for content filtering
 
 ### Personality
 

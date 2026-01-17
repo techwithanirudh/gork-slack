@@ -1,9 +1,9 @@
 import { generateObject, tool } from 'ai';
 import { z } from 'zod';
-import { sfwFilterPrompt } from '~/lib/ai/prompts/tasks';
+import { contentFilterPrompt } from '~/lib/ai/prompts/tasks';
 import { provider } from '~/lib/ai/providers';
 import logger from '~/lib/logger';
-import { sfwFilterSchema } from '~/lib/validators';
+import { contentFilterSchema } from '~/lib/validators';
 import type { SlackMessageContext } from '~/types';
 import { getSlackUserName } from '~/utils/users';
 
@@ -60,20 +60,19 @@ function resolveThreadTs(
   return undefined;
 }
 
-async function checkSfwContent(
+async function checkContent(
   content: string[]
 ): Promise<{ safe: boolean; reason: string }> {
   try {
     const { object } = await generateObject({
-      model: provider.languageModel('sfw-filter-model'),
-      schema: sfwFilterSchema,
-      prompt: sfwFilterPrompt(content),
+      model: provider.languageModel('content-filter-model'),
+      schema: contentFilterSchema,
+      prompt: contentFilterPrompt(content),
       temperature: 0.3,
     });
     return object;
   } catch (error) {
     logger.error({ error, content }, 'SFW filter check failed');
-    // Fail closed - if the filter fails, treat as unsafe
     return { safe: false, reason: 'SFW filter check failed' };
   }
 }
@@ -114,19 +113,17 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
       }
 
       try {
-        // Check if content is SFW before sending
-        const sfwCheck = await checkSfwContent(content);
-        if (!sfwCheck.safe) {
+        const contentCheck = await checkContent(content);
+        if (!contentCheck.safe) {
           logger.warn(
-            { content, reason: sfwCheck.reason },
+            { content, reason: contentCheck.reason },
             'Blocked NSFW content from being sent'
           );
-          // Return success: true to stop the agent loop and prevent retries
-          // The blocked flag indicates the message was not actually sent
+
           return {
             success: true,
             blocked: true,
-            content: `Message blocked by SFW filter: ${sfwCheck.reason}. Do not retry.`,
+            content: `Message blocked by filter: ${contentCheck.reason}. Do NOT retry.`,
           };
         }
 
