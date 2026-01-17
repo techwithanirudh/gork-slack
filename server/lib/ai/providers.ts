@@ -1,11 +1,13 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { customProvider } from 'ai';
 import { createRetryable } from 'ai-retry';
 import { env } from '~/env';
 import logger from '~/lib/logger';
 
-const hackclub = createOpenRouter({
+const hackclub = createOpenAICompatible({
   apiKey: env.HACKCLUB_API_KEY,
+  name: 'hackclub',
   baseURL: 'https://ai.hackclub.com/proxy/v1',
 });
 
