@@ -1,3 +1,4 @@
+import { webSearch } from '@exalabs/ai-sdk';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage, UserContent } from 'ai';
 import { generateText, stepCountIs } from 'ai';
@@ -9,7 +10,6 @@ import { leaveChannel } from '~/lib/ai/tools/leave-channel';
 import { react } from '~/lib/ai/tools/react';
 import { reply } from '~/lib/ai/tools/reply';
 import { searchMemories } from '~/lib/ai/tools/search-memories';
-import { searchWeb } from '~/lib/ai/tools/search-web';
 import { skip } from '~/lib/ai/tools/skip';
 import { successToolCall } from '~/lib/ai/utils';
 import type {
@@ -82,7 +82,10 @@ export async function generateResponse(
       toolChoice: 'required',
       tools: {
         getWeather,
-        searchWeb,
+        searchWeb: webSearch({
+          numResults: 10,
+          type: 'auto',
+        }),
         getUserInfo: getUserInfo({ context }),
         searchMemories: searchMemories(),
         leaveChannel: leaveChannel({ context }),
