@@ -48,7 +48,10 @@
       "recommended": true
     }
   },
-  "extends": [
-    "ultracite/biome/core"
-  ]
+  "json": {
+    "parser": {
+      "allowComments": true
+    }
+  },
+  "extends": ["ultracite/biome/core"]
 }

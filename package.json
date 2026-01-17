@@ -7,11 +7,10 @@
   "scripts": {
     "dev": "bun run --watch server/index.ts",
     "start": "bun run server/index.ts",
-    "format": "biome format --write .",
-    "check": "biome check .",
+    "check": "ultracite check .",
     "check:spelling": "cspell -c .cspell.jsonc --no-progress --no-summary --no-must-find-files --unique --cache",
-    "check:unsafe": "biome fix --unsafe true .",
-    "check:write": "biome fix .",
+    "check:unsafe": "ultracite fix --unsafe true .",
+    "check:write": "ultracite fix .",
     "typecheck": "tsc --noEmit",
     "prepare": "lefthook install"
   },
