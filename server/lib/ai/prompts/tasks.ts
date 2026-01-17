@@ -73,4 +73,30 @@ Do NOT return anything else than the JSON object, LIKE the suggested reply. Do N
 ONLY return the JSON Object, nothing ELSE.
 </task>`;
 
+export const sfwFilterPrompt = (content: string[]) => `\
+<task>
+You are a content moderation filter. Analyze the following message(s) that are about to be sent and determine if they are Safe For Work (SFW).
+
+Content to analyze:
+${content.map((line, i) => `${i + 1}. "${line}"`).join('\n')}
+
+Evaluate each line for:
+- Sexual or sexually suggestive content
+- Explicit violence or gore
+- Hate speech, slurs, or discriminatory language
+- Profanity or vulgar language
+- Drug references or promotion
+- Any other NSFW (Not Safe For Work) content
+
+IMPORTANT: Be strict but reasonable. Mild humor, casual language, and general banter are acceptable. Only flag content that would be genuinely inappropriate.
+
+Respond with a JSON object:
+{
+  "safe": boolean,
+  "reason": "Brief explanation if unsafe, or 'Content is appropriate' if safe"
+}
+
+Do NOT return anything else than the JSON object. Do NOT wrap the JSON object in quotes or a codeblock.
+</task>`;
+
 // TODO: the response format manually needs to be passed due to https://github.com/OpenRouterTeam/ai-sdk-provider/issues/120, this issue.

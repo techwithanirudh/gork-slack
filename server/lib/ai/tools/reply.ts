@@ -1,6 +1,9 @@
-import { tool } from 'ai';
+import { generateObject, tool } from 'ai';
 import { z } from 'zod';
+import { sfwFilterPrompt } from '~/lib/ai/prompts/tasks';
+import { provider } from '~/lib/ai/providers';
 import logger from '~/lib/logger';
+import { sfwFilterSchema } from '~/lib/validators';
 import type { SlackMessageContext } from '~/types';
 import { getSlackUserName } from '~/utils/users';
 
@@ -49,6 +52,24 @@ function resolveThreadTs(
   return undefined;
 }
 
+async function checkSfwContent(
+  content: string[],
+): Promise<{ safe: boolean; reason: string }> {
+  try {
+    const { object } = await generateObject({
+      model: provider.languageModel('sfw-filter-model'),
+      schema: sfwFilterSchema,
+      prompt: sfwFilterPrompt(content),
+      temperature: 0.3,
+    });
+    return object;
+  } catch (error) {
+    logger.error({ error, content }, 'SFW filter check failed');
+    // Fail closed - if the filter fails, treat as unsafe
+    return { safe: false, reason: 'SFW filter check failed' };
+  }
+}
+
 export const reply = ({ context }: { context: SlackMessageContext }) =>
   tool({
     description:
@@ -85,6 +106,22 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
       }
 
       try {
+        // Check if content is SFW before sending
+        const sfwCheck = await checkSfwContent(content);
+        if (!sfwCheck.safe) {
+          logger.warn(
+            { content, reason: sfwCheck.reason },
+            'Blocked NSFW content from being sent',
+          );
+          // Return success: true to stop the agent loop and prevent retries
+          // The blocked flag indicates the message was not actually sent
+          return {
+            success: true,
+            blocked: true,
+            content: `Message blocked by SFW filter: ${sfwCheck.reason}. Do not retry.`,
+          };
+        }
+
         const target = await resolveTargetMessage(context, offset);
         const threadTs =
           type === 'reply'

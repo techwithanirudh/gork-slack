@@ -42,9 +42,23 @@ const relevanceModel = createFallback({
   modelResetInterval: 60000,
 });
 
+const sfwFilterModel = createFallback({
+  models: [
+    hackclub('openai/gpt-5-nano'),
+    hackclub('google/gemini-2.5-flash-lite'),
+    openrouter('openai/gpt-5-nano'),
+    openrouter('google/gemini-2.5-flash-lite'),
+  ],
+  onError: (_error, modelId) => {
+    logger.error(`error with model ${modelId}, switching to next model`);
+  },
+  modelResetInterval: 60000,
+});
+
 export const provider = customProvider({
   languageModels: {
     'chat-model': chatModel,
     'relevance-model': relevanceModel,
+    'sfw-filter-model': sfwFilterModel,
   },
 });
