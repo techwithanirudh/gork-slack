@@ -1,19 +1,28 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { customProvider } from 'ai';
 import { createRetryable } from 'ai-retry';
 import { env } from '~/env';
 import logger from '~/lib/logger';
 
-const hackclub = createOpenAICompatible({
+const hackclubBase = createOpenRouter({
   apiKey: env.HACKCLUB_API_KEY,
-  name: 'hackclub',
   baseURL: 'https://ai.hackclub.com/proxy/v1',
 });
 
 const openrouter = createOpenRouter({
   apiKey: env.OPENROUTER_API_KEY,
 });
+
+/**
+ * Wraps a model from hackclub with a custom provider name.
+ * This is needed because ai-retry compares model.provider to track retries,
+ * and we need different names for hackclub vs openrouter backends.
+ */
+const hackclub = (modelId: string) => {
+  const model = hackclubBase(modelId);
+  Object.defineProperty(model, 'provider', { value: 'hackclub' });
+  return model;
+};
 
 const chatModel = createRetryable({
   model: hackclub('google/gemini-3-flash-preview'),
