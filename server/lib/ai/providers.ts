@@ -13,16 +13,10 @@ const openrouter = createOpenRouter({
   apiKey: env.OPENROUTER_API_KEY,
 });
 
-/**
- * Wraps a model from hackclub with a custom provider name.
- * This is needed because ai-retry compares model.provider to track retries,
- * and we need different names for hackclub vs openrouter backends.
- */
-const hackclub = (modelId: string) => {
-  const model = hackclubBase(modelId);
-  Object.defineProperty(model, 'provider', { value: 'hackclub' });
-  return model;
-};
+const hackclub = (modelId: string) =>
+  Object.create(hackclubBase(modelId), {
+    provider: { value: 'hackclub', enumerable: true },
+  });
 
 const chatModel = createRetryable({
   model: hackclub('google/gemini-3-flash-preview'),
