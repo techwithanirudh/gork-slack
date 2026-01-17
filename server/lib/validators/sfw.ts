@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 export const sfwFilterSchema = z.object({
   safe: z.boolean().describe('Whether the content is safe for work'),

@@ -11,7 +11,6 @@ import { reply } from '~/lib/ai/tools/reply';
 import { searchMemories } from '~/lib/ai/tools/search-memories';
 import { searchWeb } from '~/lib/ai/tools/search-web';
 import { skip } from '~/lib/ai/tools/skip';
-import { startDM } from '~/lib/ai/tools/start-dm';
 import { successToolCall } from '~/lib/ai/utils';
 import type {
   PineconeMetadataOutput,
@@ -80,22 +79,10 @@ export async function generateResponse(
         },
       },
       temperature: 1.1,
-      activeTools: [
-        'getWeather',
-        'searchWeb',
-        'startDM',
-        'getUserInfo',
-        'searchMemories',
-        'leaveChannel',
-        'react',
-        'reply',
-        'skip',
-      ],
       toolChoice: 'required',
       tools: {
         getWeather,
         searchWeb,
-        startDM: startDM({ context }),
         getUserInfo: getUserInfo({ context }),
         searchMemories: searchMemories(),
         leaveChannel: leaveChannel({ context }),
