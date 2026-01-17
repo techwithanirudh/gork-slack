@@ -9,20 +9,22 @@ export async function buildCache(app: App) {
     return;
   }
 
-  app.event('member_joined_channel', async ({ event }) => {
+  app.event('member_joined_channel', ({ event }) => {
     if (event.channel !== env.OPT_IN_CHANNEL) {
-      return;
+      return Promise.resolve();
     }
     logger.debug(`${event.user} joined opt-in channel`);
     allowedUsers.add(event.user);
+    return Promise.resolve();
   });
 
-  app.event('member_left_channel', async ({ event }) => {
+  app.event('member_left_channel', ({ event }) => {
     if (event.channel !== env.OPT_IN_CHANNEL) {
-      return;
+      return Promise.resolve();
     }
     logger.debug(`${event.user} left opt-in channel`);
     allowedUsers.delete(event.user);
+    return Promise.resolve();
   });
 
   let cursor: string | undefined;

@@ -1,3 +1,4 @@
+import type { UsersInfoResponse } from '@slack/web-api';
 import { tool } from 'ai';
 import { z } from 'zod';
 import logger from '~/lib/logger';
@@ -17,7 +18,7 @@ export const getUserInfo = ({ context }: { context: SlackMessageContext }) =>
       try {
         const targetId = normalizeSlackUserId(userId);
 
-        let user = null;
+        let user: UsersInfoResponse['user'] | null = null;
 
         if (targetId) {
           const info = await context.client.users.info({ user: targetId });
