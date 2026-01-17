@@ -9,6 +9,7 @@ import { getWeather } from '~/lib/ai/tools/get-weather';
 import { leaveChannel } from '~/lib/ai/tools/leave-channel';
 import { react } from '~/lib/ai/tools/react';
 import { reply } from '~/lib/ai/tools/reply';
+import { report } from '~/lib/ai/tools/report';
 import { searchMemories } from '~/lib/ai/tools/search-memories';
 import { skip } from '~/lib/ai/tools/skip';
 import { successToolCall } from '~/lib/ai/utils';
@@ -91,6 +92,7 @@ export async function generateResponse(
         leaveChannel: leaveChannel({ context }),
         react: react({ context }),
         reply: reply({ context }),
+        report: report({ context }),
         skip: skip({ context }),
       },
       system,

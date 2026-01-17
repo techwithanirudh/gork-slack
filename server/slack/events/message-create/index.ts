@@ -5,6 +5,7 @@ import { isUserAllowed } from '~/lib/allowed-users';
 import { ratelimit, redisKeys } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
+import { isUserBanned } from '~/lib/reports';
 import type { SlackMessageContext } from '~/types';
 import { buildChatContext } from '~/utils/context';
 import { logReply } from '~/utils/log';
@@ -111,6 +112,23 @@ export async function execute(args: MessageEventArgs) {
 
   const messageContext = isProcessableMessage(args);
   if (!messageContext) {
+    return;
+  }
+
+  const userId = args.event.user;
+  if (userId && (await isUserBanned(userId))) {
+    const channel = messageContext.event.channel;
+    const messageTs = messageContext.event.ts;
+
+    if (channel) {
+      await messageContext.client.chat.postMessage({
+        channel,
+        text: 'You have been banned from using Gork due to repeated violations. Please contact staff if you believe this is an error.',
+        thread_ts: messageTs,
+      });
+    }
+
+    logger.info({ userId }, 'Refused to respond to banned user');
     return;
   }
 
