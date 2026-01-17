@@ -24,7 +24,7 @@ export async function generateResponse(
   context: SlackMessageContext,
   messages: ModelMessage[],
   hints: RequestHints,
-  memories: ScoredPineconeRecord<PineconeMetadataOutput>[],
+  memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
 ) {
   try {
     const userId = (context.event as { user?: string }).user;
@@ -100,7 +100,7 @@ export async function generateResponse(
       ],
       experimental_telemetry: {
         isEnabled: true,
-        functionId: `chat`,
+        functionId: 'chat',
         metadata: {
           userId: userId || 'unknown-user',
         },

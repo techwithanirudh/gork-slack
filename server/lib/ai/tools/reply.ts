@@ -14,12 +14,14 @@ interface SlackHistoryMessage {
 
 async function resolveTargetMessage(
   ctx: SlackMessageContext,
-  offset: number,
+  offset: number
 ): Promise<SlackHistoryMessage | null> {
   const channelId = (ctx.event as { channel?: string }).channel;
   const messageTs = (ctx.event as { ts?: string }).ts;
 
-  if (!channelId || !messageTs) return null;
+  if (!(channelId && messageTs)) {
+    return null;
+  }
 
   if (offset <= 0) {
     return {
@@ -44,16 +46,22 @@ async function resolveTargetMessage(
 
 function resolveThreadTs(
   target: SlackHistoryMessage | null,
-  fallback?: string,
+  fallback?: string
 ) {
-  if (target?.thread_ts) return target.thread_ts;
-  if (target?.ts) return target.ts;
-  if (fallback) return fallback;
+  if (target?.thread_ts) {
+    return target.thread_ts;
+  }
+  if (target?.ts) {
+    return target.ts;
+  }
+  if (fallback) {
+    return fallback;
+  }
   return undefined;
 }
 
 async function checkSfwContent(
-  content: string[],
+  content: string[]
 ): Promise<{ safe: boolean; reason: string }> {
   try {
     const { object } = await generateObject({
@@ -81,13 +89,13 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
         .min(0)
         .optional()
         .describe(
-          `Number of messages to go back from the triggering message. 0 or omitted means that you will reply to the message that you were triggered by. This would usually stay as 0. ${(context.event as { thread_ts?: string }).thread_ts ? 'NOTE: YOU ARE IN A THREAD - THE OFFSET WILL RESPOND TO A DIFFERENT THREAD. Change the offset only if you are sure.' : ''}`.trim(),
+          `Number of messages to go back from the triggering message. 0 or omitted means that you will reply to the message that you were triggered by. This would usually stay as 0. ${(context.event as { thread_ts?: string }).thread_ts ? 'NOTE: YOU ARE IN A THREAD - THE OFFSET WILL RESPOND TO A DIFFERENT THREAD. Change the offset only if you are sure.' : ''}`.trim()
         ),
       content: z
         .array(z.string())
         .nonempty()
         .describe(
-          'Lines of text to send. Do NOT include trailing signatures; bots should sound natural. Send at most 4 lines.',
+          'Lines of text to send. Do NOT include trailing signatures; bots should sound natural. Send at most 4 lines.'
         )
         .max(4),
       type: z
@@ -101,7 +109,7 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
       const currentThread = (context.event as { thread_ts?: string }).thread_ts;
       const userId = (context.event as { user?: string }).user;
 
-      if (!channelId || !messageTs) {
+      if (!(channelId && messageTs)) {
         return { success: false, error: 'Missing Slack channel or timestamp' };
       }
 
@@ -111,7 +119,7 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
         if (!sfwCheck.safe) {
           logger.warn(
             { content, reason: sfwCheck.reason },
-            'Blocked NSFW content from being sent',
+            'Blocked NSFW content from being sent'
           );
           // Return success: true to stop the agent loop and prevent retries
           // The blocked flag indicates the message was not actually sent
@@ -148,7 +156,7 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
             author: authorName,
             content,
           },
-          'Sent Slack reply',
+          'Sent Slack reply'
         );
 
         return {
@@ -158,7 +166,7 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
       } catch (error) {
         logger.error(
           { error, channel: channelId, type, offset },
-          'Failed to send Slack reply',
+          'Failed to send Slack reply'
         );
         return {
           success: false,

@@ -14,13 +14,19 @@ import { getSlackUserName } from '~/utils/users';
 
 async function resolveChannelName(ctx: SlackMessageContext): Promise<string> {
   const channelId = (ctx.event as { channel?: string }).channel;
-  if (!channelId) return 'Unknown channel';
+  if (!channelId) {
+    return 'Unknown channel';
+  }
 
   try {
     const info = await ctx.client.conversations.info({ channel: channelId });
     const channel = info.channel;
-    if (!channel) return channelId;
-    if (channel.is_im) return 'Direct Message';
+    if (!channel) {
+      return channelId;
+    }
+    if (channel.is_im) {
+      return 'Direct Message';
+    }
     return channel.name_normalized ?? channel.name ?? channelId;
   } catch {
     return channelId;
@@ -37,7 +43,7 @@ async function resolveServerName(ctx: SlackMessageContext): Promise<string> {
 }
 
 async function resolveBotDetails(
-  ctx: SlackMessageContext,
+  ctx: SlackMessageContext
 ): Promise<{ joined: number; status: string; activity: string }> {
   const botId = ctx.botUserId;
   if (!botId) {
@@ -71,7 +77,7 @@ export async function buildChatContext(
     messages?: ModelMessage[];
     hints?: RequestHints;
     memories?: ScoredPineconeRecord<PineconeMetadataOutput>[];
-  },
+  }
 ) {
   let messages = opts?.messages;
   let hints = opts?.hints;
@@ -83,7 +89,7 @@ export async function buildChatContext(
   const text = (ctx.event as { text?: string }).text ?? '';
   const userId = (ctx.event as { user?: string }).user;
 
-  if (!channelId || !messageTs) {
+  if (!(channelId && messageTs)) {
     throw new Error('Slack message missing channel or timestamp');
   }
 
@@ -188,9 +194,13 @@ export async function buildChatContext(
         const list = memoryLists[j] ?? [];
         if (i < list.length && combined.length < memoriesConfig.maxMemories) {
           const mem = list[i];
-          if (!mem) continue;
+          if (!mem) {
+            continue;
+          }
           const id = mem.id ?? '';
-          if (!id) continue;
+          if (!id) {
+            continue;
+          }
           if (!seen.has(id)) {
             seen.add(id);
             combined.push(mem);
@@ -200,7 +210,9 @@ export async function buildChatContext(
           }
         }
       }
-      if (combined.length === memoriesConfig.maxMemories) break;
+      if (combined.length === memoriesConfig.maxMemories) {
+        break;
+      }
     }
 
     memories = combined;

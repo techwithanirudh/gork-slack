@@ -13,18 +13,21 @@ export interface MemorySearchOptions {
 
 export const searchMemories = async (
   query: string,
-  { namespace = 'default', topK = 5, filter }: MemorySearchOptions = {},
+  { namespace = 'default', topK = 5, filter }: MemorySearchOptions = {}
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
   try {
     const embeddings = await pinecone.inference.embed(
       'llama-text-embed-v2',
       [query],
-      { inputType: 'query', truncate: 'END' },
+      { inputType: 'query', truncate: 'END' }
     );
 
-    if (!embeddings.data[0]) throw logger.error('No embeddings data');
-    if (embeddings.data[0].vectorType !== 'dense')
+    if (!embeddings.data[0]) {
+      throw logger.error('No embeddings data');
+    }
+    if (embeddings.data[0].vectorType !== 'dense') {
       throw logger.error('Embedding is not dense');
+    }
 
     const index = (await getIndex()).namespace(namespace);
     const result = await index.query({
@@ -41,7 +44,7 @@ export const searchMemories = async (
       if (!parsed.success) {
         logger.warn(
           { id: match.id, issues: parsed.error.issues },
-          'Invalid metadata schema',
+          'Invalid metadata schema'
         );
         return [];
       }
@@ -60,7 +63,7 @@ export const searchMemories = async (
 export const addMemory = async (
   text: string,
   metadata: Omit<PineconeMetadataInput, 'hash'>,
-  namespace = 'default',
+  namespace = 'default'
 ): Promise<string> => {
   try {
     const id = new MD5().update(text).digest('hex');
@@ -72,7 +75,7 @@ export const addMemory = async (
     if (!parsed.success) {
       logger.warn(
         { id, issues: parsed.error.issues },
-        'Invalid metadata provided, skipping add',
+        'Invalid metadata provided, skipping add'
       );
       throw new Error('Invalid metadata schema');
     }
@@ -80,12 +83,15 @@ export const addMemory = async (
     const embeddings = await pinecone.inference.embed(
       'llama-text-embed-v2',
       [text],
-      { inputType: 'passage', truncate: 'END' },
+      { inputType: 'passage', truncate: 'END' }
     );
 
-    if (!embeddings.data[0]) throw logger.error('No embeddings data');
-    if (embeddings.data[0].vectorType !== 'dense')
+    if (!embeddings.data[0]) {
+      throw logger.error('No embeddings data');
+    }
+    if (embeddings.data[0].vectorType !== 'dense') {
       throw logger.error('Embedding is not dense');
+    }
 
     const index = (await getIndex()).namespace(namespace);
     await index.upsert([
@@ -106,7 +112,7 @@ export const addMemory = async (
 
 export const deleteMemory = async (
   id: string,
-  namespace = 'default',
+  namespace = 'default'
 ): Promise<void> => {
   try {
     const index = (await getIndex()).namespace(namespace);

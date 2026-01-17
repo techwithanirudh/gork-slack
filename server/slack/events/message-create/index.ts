@@ -34,7 +34,7 @@ async function onSuccess(context: SlackMessageContext) {
 }
 
 function isProcessableMessage(
-  args: MessageEventArgs,
+  args: MessageEventArgs
 ): SlackMessageContext | null {
   const { event, context, client, body } = args;
 
@@ -43,16 +43,21 @@ function isProcessableMessage(
     event.subtype &&
     event.subtype !== 'thread_broadcast' &&
     event.subtype !== 'file_share'
-  )
+  ) {
     return null;
+  }
 
-  if ('bot_id' in event && event.bot_id) return null;
+  if ('bot_id' in event && event.bot_id) {
+    return null;
+  }
 
   if (context.botUserId && event.user === context.botUserId) {
     return null;
   }
 
-  if (!('text' in event)) return null;
+  if (!('text' in event)) {
+    return null;
+  }
 
   return {
     event: event as SlackMessageContext['event'],
@@ -68,7 +73,9 @@ function isProcessableMessage(
 
 async function getAuthorName(ctx: SlackMessageContext): Promise<string> {
   const userId = (ctx.event as { user?: string }).user;
-  if (!userId) return 'unknown';
+  if (!userId) {
+    return 'unknown';
+  }
   try {
     const info = await ctx.client.users.info({ user: userId });
     return (
@@ -98,19 +105,24 @@ export async function execute(args: MessageEventArgs) {
     args.event.subtype &&
     args.event.subtype !== 'thread_broadcast' &&
     args.event.subtype !== 'file_share'
-  )
+  ) {
     return;
+  }
 
   const messageContext = isProcessableMessage(args);
-  if (!messageContext) return;
+  if (!messageContext) {
+    return;
+  }
 
   const ctxId = getContextId(messageContext);
-  if (!(await canReply(ctxId))) return;
+  if (!(await canReply(ctxId))) {
+    return;
+  }
 
   const trigger = await getTrigger(
     messageContext,
     keywords,
-    messageContext.botUserId,
+    messageContext.botUserId
   );
 
   const authorName = await getAuthorName(messageContext);
@@ -120,7 +132,9 @@ export async function execute(args: MessageEventArgs) {
 
   if (trigger.type) {
     if (!isUserAllowed(args.event.user)) {
-      if (trigger.type === 'keyword') return;
+      if (trigger.type === 'keyword') {
+        return;
+      }
       await args.client.chat.postMessage({
         channel: args.event.channel,
         thread_ts: args.event.thread_ts || args.event.ts,
@@ -140,7 +154,7 @@ export async function execute(args: MessageEventArgs) {
           users: args.context.userId,
         });
         logger.info(
-          `Added ${args.context.userId} to channel ${env.AUTO_ADD_CHANNEL}`,
+          `Added ${args.context.userId} to channel ${env.AUTO_ADD_CHANNEL}`
         );
       } catch {}
     }
@@ -151,14 +165,14 @@ export async function execute(args: MessageEventArgs) {
       {
         message: `${authorName}: ${content}`,
       },
-      `[${ctxId}] Triggered by ${trigger.type}`,
+      `[${ctxId}] Triggered by ${trigger.type}`
     );
 
     const result = await generateResponse(
       messageContext,
       messages,
       hints,
-      memories,
+      memories
     );
 
     logReply(ctxId, authorName, result, 'trigger');
@@ -169,13 +183,15 @@ export async function execute(args: MessageEventArgs) {
     return;
   }
 
-  if (!isUserAllowed(args.event.user)) return;
+  if (!isUserAllowed(args.event.user)) {
+    return;
+  }
 
   const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
 
   if (!hasQuota) {
     logger.debug(
-      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`,
+      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`
     );
     return;
   }
@@ -184,11 +200,11 @@ export async function execute(args: MessageEventArgs) {
     messageContext,
     messages,
     hints,
-    memories,
+    memories
   );
   logger.info(
     { reason, probability, message: `${authorName}: ${content}` },
-    `[${ctxId}] Relevance check`,
+    `[${ctxId}] Relevance check`
   );
 
   const willReply = probability > 0.5;
@@ -205,7 +221,7 @@ export async function execute(args: MessageEventArgs) {
     messageContext,
     messages,
     hints,
-    memories,
+    memories
   );
   logReply(ctxId, authorName, result, 'relevance');
   if (result.success && result.toolCalls) {

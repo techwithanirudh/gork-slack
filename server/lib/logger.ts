@@ -22,7 +22,7 @@ const isVercel = false;
 const logDir = env.LOG_DIRECTORY ?? 'logs';
 const logLevel = env.LOG_LEVEL ?? 'info';
 
-if (!isVercel && !(await exists(logDir))) {
+if (!(isVercel || (await exists(logDir)))) {
   await mkdir(logDir, { recursive: true });
 }
 
@@ -53,7 +53,7 @@ const transport = targets.length > 0 ? createTransport({ targets }) : undefined;
 const logger = transport
   ? pino(
       { level: logLevel, timestamp: pino.stdTimeFunctions.isoTime },
-      transport,
+      transport
     )
   : pino({ level: logLevel, timestamp: pino.stdTimeFunctions.isoTime });
 

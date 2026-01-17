@@ -17,7 +17,7 @@ export async function assessRelevance(
   context: SlackMessageContext,
   messages: ModelMessage[],
   hints: RequestHints,
-  memories: ScoredPineconeRecord<PineconeMetadataOutput>[],
+  memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
 ): Promise<Probability> {
   try {
     const userId = (context.event as { user?: string }).user;
@@ -61,7 +61,7 @@ export async function assessRelevance(
       experimental_repairText: async ({ text, error }) => {
         logger.info(
           { originalText: text, error },
-          '[experimental_repairText] invoked',
+          '[experimental_repairText] invoked'
         );
 
         try {
@@ -78,7 +78,7 @@ export async function assessRelevance(
         } catch (err) {
           logger.error(
             { err },
-            '[experimental_repairText] repair failed, falling back to model',
+            '[experimental_repairText] repair failed, falling back to model'
           );
 
           const { object: repaired } = await generateObject({
@@ -100,7 +100,7 @@ export async function assessRelevance(
       },
       experimental_telemetry: {
         isEnabled: true,
-        functionId: `relevance`,
+        functionId: 'relevance',
       },
     });
     return object;

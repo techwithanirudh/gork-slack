@@ -18,14 +18,14 @@ const GuildSchema = Jsonify(
   z.object({
     id: z.string().nullable().optional(),
     name: z.string().nullable().optional(),
-  }),
+  })
 );
 
 const ChannelSchema = Jsonify(
   z.object({
     id: z.string(),
     name: z.string(),
-  }),
+  })
 );
 
 const BaseMetadataSchema = z.object({

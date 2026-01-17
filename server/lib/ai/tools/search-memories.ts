@@ -25,7 +25,7 @@ export const searchMemories = () =>
             .positive()
             .optional()
             .describe(
-              'Number of days to limit results to (e.g. 7 for last week)',
+              'Number of days to limit results to (e.g. 7 for last week)'
             ),
           ignoreRecent: z
             .boolean()
