@@ -189,25 +189,21 @@ export async function buildChatContext(
 
     const combined: ScoredPineconeRecord<PineconeMetadataOutput>[] = [];
     const seen = new Set<string>();
+
     for (let i = 0; i < memoriesConfig.eachLimit; i++) {
-      for (let j = 0; j < memoryLists.length; j++) {
-        const list = memoryLists[j] ?? [];
-        if (i < list.length && combined.length < memoriesConfig.maxMemories) {
-          const mem = list[i];
-          if (!mem) {
-            continue;
-          }
-          const id = mem.id ?? '';
-          if (!id) {
-            continue;
-          }
-          if (!seen.has(id)) {
-            seen.add(id);
-            combined.push(mem);
-            if (combined.length === memoriesConfig.maxMemories) {
-              break;
-            }
-          }
+      for (const list of memoryLists) {
+        const mem = list?.[i];
+        if (!mem || combined.length >= memoriesConfig.maxMemories) {
+          continue;
+        }
+        const id = mem.id ?? '';
+        if (!id || seen.has(id)) {
+          continue;
+        }
+        seen.add(id);
+        combined.push(mem);
+        if (combined.length === memoriesConfig.maxMemories) {
+          break;
         }
       }
       if (combined.length === memoriesConfig.maxMemories) {

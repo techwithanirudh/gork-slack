@@ -156,7 +156,9 @@ export async function execute(args: MessageEventArgs) {
         logger.info(
           `Added ${args.context.userId} to channel ${env.AUTO_ADD_CHANNEL}`
         );
-      } catch {}
+      } catch (error) {
+        logger.error({ error }, 'Failed to add user to channel');
+      }
     }
 
     await resetMessageCount(ctxId);
