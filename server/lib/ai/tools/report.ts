@@ -40,12 +40,42 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
         }
 
         const reportCount = await addReport(userId, reason);
+        const isBanned = reportCount >= BAN_THRESHOLD;
 
         const threadTs = currentThread ?? messageTs;
         await context.client.chat.postMessage({
           channel: channelId,
-          text: `Warning: You have been reported for inappropriate content. Reason: ${reason}. You have ${reportCount} report(s) in the last 30 days. ${reportCount >= BAN_THRESHOLD ? 'You have been banned from using Gork.' : `${BAN_THRESHOLD - reportCount} more report(s) will result in a ban.`}`,
+          text: 'Warning: You have been reported for inappropriate content.',
           thread_ts: threadTs,
+          blocks: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: isBanned
+                  ? ':no_entry: *You have been banned from Gork*'
+                  : ':warning: *Content Warning*',
+              },
+            },
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `You have been reported for inappropriate content.\n\n*Reason:* ${reason}`,
+              },
+            },
+            {
+              type: 'context',
+              elements: [
+                {
+                  type: 'mrkdwn',
+                  text: isBanned
+                    ? `You have ${reportCount} report(s) in the last 30 days. You are now banned from using Gork.`
+                    : `You have ${reportCount} report(s) in the last 30 days. ${BAN_THRESHOLD - reportCount} more will result in a ban.`,
+                },
+              ],
+            },
+          ],
         });
 
         logger.info(
@@ -56,11 +86,10 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
         return {
           success: true,
           reportCount,
-          isBanned: reportCount >= BAN_THRESHOLD,
-          message:
-            reportCount >= BAN_THRESHOLD
-              ? 'User has been banned'
-              : `Report recorded. User has ${reportCount} report(s)`,
+          isBanned,
+          message: isBanned
+            ? 'User has been banned'
+            : `Report recorded. User has ${reportCount} report(s)`,
         };
       } catch (error) {
         logger.error({ error, userId, reason }, 'Failed to report user');
