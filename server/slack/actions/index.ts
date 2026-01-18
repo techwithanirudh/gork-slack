@@ -1,10 +1,15 @@
-import type { App } from '@slack/bolt';
-import { banUserAction } from './ban-user';
-import { removeReportAction } from './remove-report';
-import { unbanUserAction } from './unban-user';
+import { execute as banUserExecute, name as banUserName } from './ban-user';
+import {
+  execute as removeReportExecute,
+  name as removeReportName,
+} from './remove-report';
+import {
+  execute as unbanUserExecute,
+  name as unbanUserName,
+} from './unban-user';
 
-export function registerActions(app: App) {
-  app.action('ban_user', banUserAction);
-  app.action('unban_user', unbanUserAction);
-  app.action('remove_report', removeReportAction);
-}
+export const actions = [
+  { name: banUserName, execute: banUserExecute },
+  { name: unbanUserName, execute: unbanUserExecute },
+  { name: removeReportName, execute: removeReportExecute },
+] as const;

@@ -7,12 +7,14 @@ import type {
 import logger from '~/lib/logger';
 import { getReportCount, isAdmin, removeReport } from '~/lib/reports';
 
+export const name = 'remove_report';
+
 interface RemoveReportValue {
   userId: string;
   reportId: string;
 }
 
-export async function removeReportAction({
+export async function execute({
   ack,
   action,
   respond,

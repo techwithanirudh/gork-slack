@@ -2,6 +2,8 @@ import type { SlackCommandMiddlewareArgs } from '@slack/bolt';
 import type { Report } from '~/lib/reports';
 import { getUserReports, isAdmin, isUserBanned } from '~/lib/reports';
 
+export const name = '/reports';
+
 const USER_ID_REGEX = /^<@([A-Z0-9]+)\|?[^>]*>$/;
 
 function extractUserId(text: string): string | null {
@@ -107,7 +109,7 @@ function buildReportBlocks(
   return blocks;
 }
 
-export async function reports({
+export async function execute({
   command,
   ack,
   respond,

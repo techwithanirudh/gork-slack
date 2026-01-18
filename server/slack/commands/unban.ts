@@ -10,6 +10,8 @@ import {
   unbanUser,
 } from '~/lib/reports';
 
+export const name = '/unban';
+
 const USER_ID_REGEX = /^<@([A-Z0-9]+)\|?[^>]*>$/;
 
 function extractUserId(text: string): string | null {
@@ -17,7 +19,7 @@ function extractUserId(text: string): string | null {
   return match?.[1] ?? null;
 }
 
-export async function unban({
+export async function execute({
   command,
   ack,
   respond,

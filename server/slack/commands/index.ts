@@ -1,10 +1,9 @@
-import type { App } from '@slack/bolt';
-import { ban } from './ban';
-import { reports } from './reports';
-import { unban } from './unban';
+import { execute as banExecute, name as banName } from './ban';
+import { execute as reportsExecute, name as reportsName } from './reports';
+import { execute as unbanExecute, name as unbanName } from './unban';
 
-export function registerCommands(app: App) {
-  app.command('/ban', ban);
-  app.command('/unban', unban);
-  app.command('/reports', reports);
-}
+export const commands = [
+  { name: banName, execute: banExecute },
+  { name: unbanName, execute: unbanExecute },
+  { name: reportsName, execute: reportsExecute },
+] as const;

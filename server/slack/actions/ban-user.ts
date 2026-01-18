@@ -7,7 +7,9 @@ import type {
 import logger from '~/lib/logger';
 import { banUser, isAdmin, isUserBanned } from '~/lib/reports';
 
-export async function banUserAction({
+export const name = 'ban_user';
+
+export async function execute({
   ack,
   action,
   respond,
