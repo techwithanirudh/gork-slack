@@ -29,31 +29,38 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
       }
 
       try {
-        const messages = await getConversationMessages({
+        const allMessages = await getConversationMessages({
           client: context.client,
           channel: channelId,
           threadTs: currentThread,
           botUserId: context.botUserId,
-          limit: moderation.contextMessages,
+          limit: 50,
           latest: messageTs,
           inclusive: true,
         });
 
-        const messageContent = buildHistorySnippet(
-          messages,
-          moderation.contextMessages
-        );
+        const userMessages = allMessages
+          .filter((msg) => {
+            const content = typeof msg.content === 'string' ? msg.content : '';
+            return content.includes(`(${userId})`);
+          })
+          .slice(-moderation.contextMessages);
 
-        if (!messageContent) {
+        if (userMessages.length === 0) {
           logger.info(
             { userId, reason, channelId },
-            'Report rejected: no messages found'
+            'Report rejected: no messages found from user'
           );
           return {
             success: false,
-            error: 'No recent messages found to validate',
+            error: 'No recent messages found from user to validate',
           };
         }
+
+        const messageContent = buildHistorySnippet(
+          userMessages,
+          moderation.contextMessages
+        );
 
         const validation = await validateReport(messageContent);
         if (!validation.valid) {
