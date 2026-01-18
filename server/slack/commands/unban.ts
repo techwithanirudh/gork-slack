@@ -3,7 +3,7 @@ import type {
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
 
-export const name = 'gork-unban';
+export const name = 'unban';
 
 export async function execute({
   ack,
