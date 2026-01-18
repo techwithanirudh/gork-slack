@@ -7,7 +7,7 @@ import logger from '~/lib/logger';
 import {
   isAdmin,
   isUserBanned,
-  REPORTS_CHANNEL,
+  sendUnbanNotification,
   unbanUser,
 } from '~/lib/reports';
 
@@ -57,41 +57,10 @@ export async function execute({
   await ack();
   await unbanUser(userId);
 
-  await client.chat.postMessage({
-    channel: REPORTS_CHANNEL,
-    text: 'User unbanned by admin',
-    blocks: [
-      {
-        type: 'header',
-        text: {
-          type: 'plain_text',
-          text: '✅ User Unbanned',
-          emoji: true,
-        },
-      },
-      {
-        type: 'section',
-        fields: [
-          {
-            type: 'mrkdwn',
-            text: `*Unbanned User:*\n<@${userId}>`,
-          },
-          {
-            type: 'mrkdwn',
-            text: `*Unbanned By:*\n<@${adminId}>`,
-          },
-        ],
-      },
-      {
-        type: 'context',
-        elements: [
-          {
-            type: 'mrkdwn',
-            text: `Unbanned at <!date^${Math.floor(Date.now() / 1000)}^{date_short_pretty} at {time}|${new Date().toISOString()}>`,
-          },
-        ],
-      },
-    ],
+  await sendUnbanNotification({
+    client,
+    userId,
+    unbannedBy: adminId,
   });
 
   logger.info({ userId, unbannedBy: adminId }, 'User unbanned via modal');

@@ -11,6 +11,7 @@ import logger from './logger';
 export const REPORTS_CHANNEL = env.REPORTS_CHANNEL ?? 'C0A9ATPB2KF';
 
 const adminUserIds = new Set(env.ADMINS ?? []);
+const UUID_REGEX = /^[a-f0-9-]{36}$/;
 
 export function isAdmin(userId: string): boolean {
   return adminUserIds.has(userId);
@@ -131,14 +132,69 @@ export async function sendReportNotification({
   );
 }
 
+interface UnbanNotificationParams {
+  client: WebClient;
+  userId: string;
+  unbannedBy: string;
+}
+
+export async function sendUnbanNotification({
+  client,
+  userId,
+  unbannedBy,
+}: UnbanNotificationParams): Promise<void> {
+  await client.chat.postMessage({
+    channel: REPORTS_CHANNEL,
+    text: `User <@${userId}> has been unbanned`,
+    blocks: [
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: '✅ User Unbanned',
+          emoji: true,
+        },
+      },
+      {
+        type: 'section',
+        fields: [
+          {
+            type: 'mrkdwn',
+            text: `*Unbanned User:*\n<@${userId}>`,
+          },
+          {
+            type: 'mrkdwn',
+            text: `*Unbanned By:*\n<@${unbannedBy}>`,
+          },
+        ],
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'mrkdwn',
+            text: `Unbanned at <!date^${Math.floor(Date.now() / 1000)}^{date_short_pretty} at {time}|${new Date().toISOString()}>`,
+          },
+        ],
+      },
+    ],
+  });
+
+  logger.info(
+    { userId, unbannedBy },
+    'Unban notification sent to reports channel'
+  );
+}
+
 export async function addReport(
   userId: string,
   reason: string
 ): Promise<number> {
   const key = redisKeys.userReports(userId);
   const now = Date.now();
+  const uniqueId = crypto.randomUUID();
 
-  await redis.zadd(key, now, `${now}:${reason}`);
+  await redis.zadd(key, now, `${now}:${uniqueId}:${reason}`);
   await redis.zremrangebyscore(
     key,
     0,
@@ -213,11 +269,18 @@ export async function getUserReports(userId: string): Promise<Report[]> {
   const reports = await redis.zrange(key, 0, -1);
 
   return reports.map((report) => {
-    const [timestamp = '0', ...reasonParts] = report.split(':');
+    const parts = report.split(':');
+    // Format: timestamp:uniqueId:reason (new) or timestamp:reason (old)
+    const timestamp = Number.parseInt(parts[0] ?? '0', 10);
+    // Check if second part looks like a uniqueId (8 alphanumeric chars)
+    const hasUniqueId = parts[1] && UUID_REGEX.test(parts[1]);
+    const reason = hasUniqueId
+      ? parts.slice(2).join(':')
+      : parts.slice(1).join(':');
     return {
       id: report,
-      timestamp: Number.parseInt(timestamp, 10),
-      reason: reasonParts.join(':'),
+      timestamp,
+      reason,
     };
   });
 }

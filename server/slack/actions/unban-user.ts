@@ -5,58 +5,78 @@ import type {
   SlackActionMiddlewareArgs,
 } from '@slack/bolt';
 import logger from '~/lib/logger';
-import { isAdmin, isUserBanned, unbanUser } from '~/lib/reports';
+import {
+  getUserReports,
+  isAdmin,
+  isUserBanned,
+  sendUnbanNotification,
+  unbanUser,
+} from '~/lib/reports';
+import { buildReportBlocks } from '~/slack/views/view-reports';
 
 export const name = 'unban_user';
 
 export async function execute({
   ack,
   action,
-  respond,
   body,
+  client,
 }: SlackActionMiddlewareArgs<BlockAction<ButtonAction>> & AllMiddlewareArgs) {
   await ack();
 
   if (!isAdmin(body.user.id)) {
-    await respond({
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: 'You do not have permission to perform this action.',
-    });
     return;
   }
 
   const userId = action.value;
 
   if (!userId) {
-    await respond({
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: 'Error: No user ID provided.',
-    });
     return;
   }
 
   const isBanned = await isUserBanned(userId);
   if (!isBanned) {
-    await respond({
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: `<@${userId}> is not currently banned.`,
-    });
     return;
   }
 
   await unbanUser(userId);
 
-  await respond({
-    response_type: 'ephemeral',
-    replace_original: false,
-    text: `<@${userId}> has been unbanned by <@${body.user.id}>. Reports have been cleared.`,
+  await sendUnbanNotification({
+    client,
+    userId,
+    unbannedBy: body.user.id,
   });
 
   logger.info(
     { userId, unbannedBy: body.user.id },
     'User unbanned via button action'
   );
+
+  // Update the modal with refreshed data if triggered from a modal
+  if (body.view?.id) {
+    const [userReports, userIsBanned] = await Promise.all([
+      getUserReports(userId),
+      isUserBanned(userId),
+    ]);
+
+    const blocks = buildReportBlocks(userId, userReports, userIsBanned);
+
+    await client.views.update({
+      view_id: body.view.id,
+      view: {
+        type: 'modal',
+        callback_id: 'view_reports_result',
+        title: {
+          type: 'plain_text',
+          text: 'User Reports',
+        },
+        close: {
+          type: 'plain_text',
+          text: 'Close',
+        },
+        // biome-ignore lint/suspicious/noExplicitAny: Slack block types
+        blocks: blocks as any,
+      },
+    });
+  }
 }

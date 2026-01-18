@@ -5,7 +5,13 @@ import type {
   SlackActionMiddlewareArgs,
 } from '@slack/bolt';
 import logger from '~/lib/logger';
-import { getReportCount, isAdmin, removeReport } from '~/lib/reports';
+import {
+  getUserReports,
+  isAdmin,
+  isUserBanned,
+  removeReport,
+} from '~/lib/reports';
+import { buildReportBlocks } from '~/slack/views/view-reports';
 
 export const name = 'remove_report';
 
@@ -17,28 +23,18 @@ interface RemoveReportValue {
 export async function execute({
   ack,
   action,
-  respond,
   body,
+  client,
 }: SlackActionMiddlewareArgs<BlockAction<ButtonAction>> & AllMiddlewareArgs) {
   await ack();
 
   if (!isAdmin(body.user.id)) {
-    await respond({
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: 'You do not have permission to perform this action.',
-    });
     return;
   }
 
   const valueStr = action.value;
 
   if (!valueStr) {
-    await respond({
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: 'Error: No report data provided.',
-    });
     return;
   }
 
@@ -46,35 +42,45 @@ export async function execute({
   try {
     value = JSON.parse(valueStr);
   } catch {
-    await respond({
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: 'Error: Invalid report data.',
-    });
     return;
   }
 
   const removed = await removeReport(value.userId, value.reportId);
 
   if (!removed) {
-    await respond({
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: 'Report not found or already removed.',
-    });
     return;
   }
-
-  const remainingCount = await getReportCount(value.userId);
-
-  await respond({
-    response_type: 'ephemeral',
-    replace_original: false,
-    text: `Report removed by <@${body.user.id}>. <@${value.userId}> now has ${remainingCount} report(s).`,
-  });
 
   logger.info(
     { userId: value.userId, reportId: value.reportId, removedBy: body.user.id },
     'Report removed via button action'
   );
+
+  // Update the modal with refreshed data
+  if (body.view?.id) {
+    const [userReports, isBanned] = await Promise.all([
+      getUserReports(value.userId),
+      isUserBanned(value.userId),
+    ]);
+
+    const blocks = buildReportBlocks(value.userId, userReports, isBanned);
+
+    await client.views.update({
+      view_id: body.view.id,
+      view: {
+        type: 'modal',
+        callback_id: 'view_reports_result',
+        title: {
+          type: 'plain_text',
+          text: 'User Reports',
+        },
+        close: {
+          type: 'plain_text',
+          text: 'Close',
+        },
+        // biome-ignore lint/suspicious/noExplicitAny: Slack block types
+        blocks: blocks as any,
+      },
+    });
+  }
 }

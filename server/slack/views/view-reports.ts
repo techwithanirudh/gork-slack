@@ -8,11 +8,11 @@ import { getUserReports, isAdmin, isUserBanned } from '~/lib/reports';
 
 export const name = 'view_reports_modal';
 
-function formatReportDate(timestamp: number): string {
+export function formatReportDate(timestamp: number): string {
   return `<!date^${Math.floor(timestamp / 1000)}^{date_short_pretty} at {time}|${new Date(timestamp).toISOString()}>`;
 }
 
-function buildReportBlocks(
+export function buildReportBlocks(
   userId: string,
   reports: Report[],
   isBanned: boolean
