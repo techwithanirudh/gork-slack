@@ -40,6 +40,10 @@ export async function validateReport(
       schema: contentFilterSchema,
       prompt: contentFilterPrompt([messageContent]),
       temperature: 0.3,
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: 'report-filter',
+      },
     });
 
     return {
