@@ -14,6 +14,10 @@ export const env = createEnv({
     AUTO_ADD_CHANNEL: z.string().optional(),
     // Channel required for keywords / relevance check
     OPT_IN_CHANNEL: z.string().optional(),
+    // Channel for report notifications
+    REPORTS_CHANNEL: z.string().optional(),
+    // Comma-separated list of admin user IDs who can use /ban, /unban, /reports
+    ADMIN_USER_IDS: z.string().optional(),
     // Redis
     REDIS_URL: z.string().min(1),
     // AI

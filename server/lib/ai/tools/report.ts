@@ -2,7 +2,11 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { moderation } from '~/config';
 import logger from '~/lib/logger';
-import { addReport, validateReport } from '~/lib/reports';
+import {
+  addReport,
+  sendReportNotification,
+  validateReport,
+} from '~/lib/reports';
 import { getConversationMessages } from '~/slack/conversations';
 import type { SlackMessageContext } from '~/types';
 import { buildHistorySnippet } from '~/utils/messages';
@@ -111,6 +115,17 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
               ],
             },
           ],
+        });
+
+        // Send report notification to reports channel
+        await sendReportNotification({
+          client: context.client,
+          userId,
+          channelId,
+          messageTs,
+          reason,
+          reportCount,
+          isBanned,
         });
 
         logger.info(

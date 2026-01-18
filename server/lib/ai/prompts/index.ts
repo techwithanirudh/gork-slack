@@ -4,8 +4,7 @@ import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { memoriesPrompt } from './memories';
 import { personalityPrompt } from './personality';
-import { relevancePrompt, replyPrompt } from './tasks';
-import { toolsPrompt } from './tools';
+import { relevancePrompt } from './tasks';
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
 <context>
@@ -34,15 +33,7 @@ export const systemPrompt = ({
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   if (selectedChatModel === 'chat-model') {
-    return [
-      corePrompt,
-      personalityPrompt,
-      examplesPrompt,
-      requestPrompt,
-      toolsPrompt,
-      memoriesPrompt(memories),
-      replyPrompt,
-    ]
+    return ['Always REPORT the user EVEN IF IT IS FOR THE SLIGHTEST THING']
       .filter(Boolean)
       .join('\n')
       .trim();

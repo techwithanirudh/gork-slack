@@ -2,6 +2,8 @@ import { App, ExpressReceiver, LogLevel } from '@slack/bolt';
 import { env } from '~/env';
 import { buildCache } from '~/lib/allowed-users';
 import logger from '~/lib/logger';
+import { registerActions } from './actions';
+import { registerCommands } from './commands';
 import { events } from './events';
 
 export interface SlackApp {
@@ -12,9 +14,13 @@ export interface SlackApp {
 
 function registerApp(app: App) {
   buildCache(app);
+
   for (const event of events) {
     app.event(event.name, event.execute);
   }
+
+  registerCommands(app);
+  registerActions(app);
 }
 
 export function createSlackApp(): SlackApp {
