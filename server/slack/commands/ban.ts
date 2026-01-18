@@ -5,7 +5,7 @@ import type {
 import logger from '~/lib/logger';
 import { banUser, isAdmin, isUserBanned, REPORTS_CHANNEL } from '~/lib/reports';
 
-export const name = '/ban';
+export const name = 'ban';
 
 const USER_ID_REGEX = /^<@([A-Z0-9]+)\|?[^>]*>$/;
 

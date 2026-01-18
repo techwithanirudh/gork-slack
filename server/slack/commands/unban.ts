@@ -10,7 +10,7 @@ import {
   unbanUser,
 } from '~/lib/reports';
 
-export const name = '/unban';
+export const name = 'unban';
 
 const USER_ID_REGEX = /^<@([A-Z0-9]+)\|?[^>]*>$/;
 

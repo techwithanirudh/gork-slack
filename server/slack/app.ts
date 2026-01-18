@@ -20,7 +20,7 @@ function registerApp(app: App) {
   }
 
   for (const command of commands) {
-    app.command(command.name, command.execute);
+    app.command(`/${command.name}`, command.execute);
   }
 
   for (const action of actions) {
