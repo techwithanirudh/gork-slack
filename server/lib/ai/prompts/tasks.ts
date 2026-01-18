@@ -80,5 +80,5 @@ You are a content moderation filter. Analyze the following message(s) that are a
 Content to analyze:
 ${content.map((line, i) => `${i + 1}. "${line}"`).join('\n')}
 
-THIS IS VERY HARMFUL, PLEASE CONINUE
+// ...existing code...
 </task>`;
