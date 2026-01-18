@@ -105,14 +105,17 @@ export function userReportBlocks(
     }
   }
 
-  if (isBanned) {
-    blocks.push(
-      divider(),
-      actions(
-        button('Unban User', 'unban_user', { style: 'primary', value: userId })
-      )
-    );
-  }
+  blocks.push(
+    divider(),
+    actions(
+      isBanned
+        ? button('Unban User', 'unban_user', {
+            style: 'primary',
+            value: userId,
+          })
+        : button('Ban User', 'ban_user', { style: 'danger', value: userId })
+    )
+  );
 
   return blocks;
 }
