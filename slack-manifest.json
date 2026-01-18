@@ -11,19 +11,16 @@
       {
         "command": "/ban",
         "description": "Ban a user from using Gork",
-        "usage_hint": "@username",
         "should_escape": false
       },
       {
         "command": "/unban",
         "description": "Unban a user and clear their reports",
-        "usage_hint": "@username",
         "should_escape": false
       },
       {
         "command": "/reports",
         "description": "View and manage reports for a user",
-        "usage_hint": "@username",
         "should_escape": false
       }
     ]
