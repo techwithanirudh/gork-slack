@@ -1,32 +1,60 @@
 import { tool } from 'ai';
 import { z } from 'zod';
+import { moderation } from '~/config';
 import logger from '~/lib/logger';
 import { addReport, validateReport } from '~/lib/reports';
+import { getConversationMessages } from '~/slack/conversations';
 import type { SlackMessageContext } from '~/types';
-
-const BAN_THRESHOLD = 15;
+import { buildHistorySnippet } from '~/utils/messages';
 
 export const report = ({ context }: { context: SlackMessageContext }) =>
   tool({
     description:
-      'Report a user for inappropriate/suggestive content violations. Only use for genuine SFW violations.',
+      'Report the current user for inappropriate/suggestive content violations. Only use for genuine SFW violations. This reports the user who sent the triggering message.',
     inputSchema: z.object({
-      userId: z.string().describe('The Slack user ID to report'),
       reason: z.string().describe('Brief description of the violation'),
-      messageContent: z
-        .string()
-        .describe('The actual message content that violated rules'),
     }),
-    execute: async ({ userId, reason, messageContent }) => {
-      const channelId = (context.event as { channel?: string }).channel;
+    execute: async ({ reason }) => {
+      const channelId = context.event.channel;
       const messageTs = (context.event as { ts?: string }).ts;
       const currentThread = (context.event as { thread_ts?: string }).thread_ts;
+      const userId = (context.event as { user?: string }).user;
 
-      if (!channelId) {
-        return { success: false, error: 'Missing Slack channel' };
+      if (!(channelId && messageTs)) {
+        return { success: false, error: 'Missing Slack channel or timestamp' };
+      }
+
+      if (!userId) {
+        return { success: false, error: 'Missing user ID from context' };
       }
 
       try {
+        const messages = await getConversationMessages({
+          client: context.client,
+          channel: channelId,
+          threadTs: currentThread,
+          botUserId: context.botUserId,
+          limit: moderation.contextMessages,
+          latest: messageTs,
+          inclusive: true,
+        });
+
+        const messageContent = buildHistorySnippet(
+          messages,
+          moderation.contextMessages
+        );
+
+        if (!messageContent) {
+          logger.info(
+            { userId, reason, channelId },
+            'Report rejected: no messages found'
+          );
+          return {
+            success: false,
+            error: 'No recent messages found to validate',
+          };
+        }
+
         const validation = await validateReport(messageContent);
         if (!validation.valid) {
           logger.info(
@@ -40,7 +68,7 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
         }
 
         const reportCount = await addReport(userId, reason);
-        const isBanned = reportCount >= BAN_THRESHOLD;
+        const isBanned = reportCount >= moderation.banThreshold;
 
         const threadTs = currentThread ?? messageTs;
         await context.client.chat.postMessage({
@@ -71,7 +99,7 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
                   type: 'mrkdwn',
                   text: isBanned
                     ? `You have ${reportCount} report(s) in the last 30 days. You are now banned from using Gork.`
-                    : `You have ${reportCount} report(s) in the last 30 days. ${BAN_THRESHOLD - reportCount} more will result in a ban.`,
+                    : `You have ${reportCount} report(s) in the last 30 days. ${moderation.banThreshold - reportCount} more will result in a ban.`,
                 },
               ],
             },
