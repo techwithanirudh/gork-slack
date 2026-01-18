@@ -10,7 +10,7 @@ export const speed = {
   speedFactor: 180 * 180,
 };
 
-export const messageThreshold = 20;
+export const messageThreshold = 25;
 
 export const memories = {
   eachLimit: 2,
