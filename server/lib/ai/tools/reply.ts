@@ -72,8 +72,8 @@ async function checkContent(
     });
     return object;
   } catch (error) {
-    logger.error({ error, content }, 'SFW filter check failed');
-    return { safe: false, reason: 'SFW filter check failed' };
+    logger.error({ error, content }, 'Content filter check failed');
+    return { safe: false, reason: 'Content filter check failed' };
   }
 }
 
@@ -117,7 +117,7 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
         if (!contentCheck.safe) {
           logger.warn(
             { content, reason: contentCheck.reason },
-            'Blocked NSFW content from being sent'
+            'Blocked unsafe content from being sent'
           );
 
           return {
