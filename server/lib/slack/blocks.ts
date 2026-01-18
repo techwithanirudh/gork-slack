@@ -1,6 +1,9 @@
+import type {
+  ActionsBlockElement,
+  KnownBlock as Block,
+  Button,
+} from '@slack/types';
 import type { Report } from '~/lib/queries/reports';
-
-type Block = object;
 
 export function header(text: string): Block {
   return {
@@ -34,7 +37,7 @@ export function context(text: string): Block {
   };
 }
 
-export function actions(...elements: Block[]): Block {
+export function actions(...elements: ActionsBlockElement[]): Block {
   return { type: 'actions', elements };
 }
 
@@ -42,8 +45,8 @@ export function button(
   text: string,
   actionId: string,
   options?: { value?: string; style?: 'primary' | 'danger'; url?: string }
-): Block {
-  const btn: Record<string, unknown> = {
+): Button {
+  const btn: Button = {
     type: 'button',
     text: { type: 'plain_text', text, emoji: false },
     action_id: actionId,
@@ -160,7 +163,7 @@ export function reportNotificationBlocks(
   isBanned: boolean,
   messageLink?: string
 ): Block[] {
-  const actionButtons: Block[] = [];
+  const actionButtons: ActionsBlockElement[] = [];
 
   if (messageLink) {
     actionButtons.push(

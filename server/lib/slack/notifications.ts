@@ -45,8 +45,7 @@ export async function sendReportNotification({
   await client.chat.postMessage({
     channel: REPORTS_CHANNEL,
     text: `User <@${userId}> has been reported`,
-    // biome-ignore lint/suspicious/noExplicitAny: Slack block types
-    blocks: blocks as any,
+    blocks,
   });
 
   logger.info(
@@ -71,8 +70,7 @@ export async function sendBanNotification({
   await client.chat.postMessage({
     channel: REPORTS_CHANNEL,
     text: `User <@${userId}> has been banned`,
-    // biome-ignore lint/suspicious/noExplicitAny: Slack block types
-    blocks: blocks as any,
+    blocks,
   });
 
   logger.info({ userId, bannedBy }, 'Ban notification sent to reports channel');
@@ -94,8 +92,7 @@ export async function sendUnbanNotification({
   await client.chat.postMessage({
     channel: REPORTS_CHANNEL,
     text: `User <@${userId}> has been unbanned`,
-    // biome-ignore lint/suspicious/noExplicitAny: Slack block types
-    blocks: blocks as any,
+    blocks,
   });
 
   logger.info(

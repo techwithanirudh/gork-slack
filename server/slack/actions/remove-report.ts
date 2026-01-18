@@ -77,8 +77,7 @@ export async function execute({
           type: 'plain_text',
           text: 'Close',
         },
-        // biome-ignore lint/suspicious/noExplicitAny: Slack block types
-        blocks: blocks as any,
+        blocks,
       },
     });
   }
