@@ -27,6 +27,7 @@
     "@t3-oss/env-core": "^0.13.10",
     "ai": "^5.0.121",
     "ai-retry": "^0.12.0",
+    "chalk": "^5.6.2",
     "compromise": "^14.14.5",
     "date-fns": "^4.1.0",
     "jsonrepair": "^3.13.2",

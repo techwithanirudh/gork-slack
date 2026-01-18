@@ -55,7 +55,7 @@ const relevanceModel = createRetryable({
 });
 
 const contentFilterModel = createRetryable({
-  model: hackclub('openai/gpt-5-nano'),
+  model: hackclub('openai/gpt-5-mini'),
   retries: [
     hackclub('google/gemini-2.5-flash-lite'),
     openrouter('openai/gpt-5-nano'),

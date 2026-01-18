@@ -100,7 +100,7 @@ export async function generateResponse(
         stepCountIs(10),
         successToolCall('leave-channel'),
         successToolCall('reply'),
-        // successToolCall('react'),
+        successToolCall('report'),
         successToolCall('skip'),
       ],
       experimental_telemetry: {

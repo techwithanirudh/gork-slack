@@ -1,13 +1,10 @@
 import { generateObject } from 'ai';
+import { moderation } from '~/config';
 import { contentFilterPrompt } from '~/lib/ai/prompts/tasks';
 import { provider } from '~/lib/ai/providers';
 import { contentFilterSchema } from '~/lib/validators';
 import { redis, redisKeys } from './kv';
 import logger from './logger';
-
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-const THIRTY_DAYS_SECONDS = 30 * 24 * 60 * 60;
-const BAN_THRESHOLD = 15;
 
 export async function addReport(
   userId: string,
@@ -17,14 +14,18 @@ export async function addReport(
   const now = Date.now();
 
   await redis.zadd(key, now, `${now}:${reason}`);
-  await redis.zremrangebyscore(key, 0, now - THIRTY_DAYS_MS);
-  await redis.expire(key, THIRTY_DAYS_SECONDS);
+  await redis.zremrangebyscore(
+    key,
+    0,
+    now - moderation.reports.expiration * 1000
+  );
+  await redis.expire(key, moderation.reports.expiration);
 
   const count = await redis.zcard(key);
 
   logger.info({ userId, reason, reportCount: count }, 'Report added for user');
 
-  if (count >= BAN_THRESHOLD) {
+  if (count >= moderation.banThreshold) {
     await redis.set(redisKeys.userBanned(userId), '1');
     logger.warn({ userId, reportCount: count }, 'User has been banned');
   }
@@ -34,7 +35,11 @@ export async function addReport(
 
 export async function getReportCount(userId: string): Promise<number> {
   const key = redisKeys.userReports(userId);
-  await redis.zremrangebyscore(key, 0, Date.now() - THIRTY_DAYS_MS);
+  await redis.zremrangebyscore(
+    key,
+    0,
+    Date.now() - moderation.reports.expiration * 1000
+  );
   return await redis.zcard(key);
 }
 
@@ -45,7 +50,7 @@ export async function isUserBanned(userId: string): Promise<boolean> {
   }
 
   const count = await getReportCount(userId);
-  if (count >= BAN_THRESHOLD) {
+  if (count >= moderation.banThreshold) {
     await redis.set(redisKeys.userBanned(userId), '1');
     return true;
   }

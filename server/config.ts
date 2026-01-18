@@ -20,4 +20,7 @@ export const memories = {
 export const moderation = {
   banThreshold: 15,
   contextMessages: 3,
+  reports: {
+    expiration: 7 * 24 * 60 * 60, // Expiration time in seconds (7 days)
+  },
 };

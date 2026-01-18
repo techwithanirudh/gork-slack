@@ -10,7 +10,7 @@ import { buildHistorySnippet } from '~/utils/messages';
 export const report = ({ context }: { context: SlackMessageContext }) =>
   tool({
     description:
-      'Report the current user for inappropriate/suggestive content violations. Only use for genuine SFW violations. This reports the user who sent the triggering message.',
+      'Report the current user for sexual/NSFW content violations. ONLY use this for genuine sexual content requests. This reports the user who sent the triggering message.',
     inputSchema: z.object({
       reason: z.string().describe('Brief description of the violation'),
     }),
