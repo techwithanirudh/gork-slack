@@ -9,17 +9,17 @@
     },
     "slash_commands": [
       {
-        "command": "/ban",
+        "command": "/gork-ban",
         "description": "Ban a user from using Gork",
         "should_escape": false
       },
       {
-        "command": "/unban",
+        "command": "/gork-unban",
         "description": "Unban a user and clear their reports",
         "should_escape": false
       },
       {
-        "command": "/reports",
+        "command": "/gork-reports",
         "description": "View and manage reports for a user",
         "should_escape": false
       }

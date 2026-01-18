@@ -10,8 +10,8 @@ import {
   isAdmin,
   isUserBanned,
   removeReport,
+  userReportBlocks,
 } from '~/lib/reports';
-import { buildReportBlocks } from '~/slack/views/view-reports';
 
 export const name = 'remove_report';
 
@@ -56,14 +56,13 @@ export async function execute({
     'Report removed via button action'
   );
 
-  // Update the modal with refreshed data
   if (body.view?.id) {
     const [userReports, isBanned] = await Promise.all([
       getUserReports(value.userId),
       isUserBanned(value.userId),
     ]);
 
-    const blocks = buildReportBlocks(value.userId, userReports, isBanned);
+    const blocks = userReportBlocks(value.userId, userReports, isBanned);
 
     await client.views.update({
       view_id: body.view.id,

@@ -3,100 +3,14 @@ import type {
   SlackViewMiddlewareArgs,
   ViewSubmitAction,
 } from '@slack/bolt';
-import type { Report } from '~/lib/reports';
-import { getUserReports, isAdmin, isUserBanned } from '~/lib/reports';
+import {
+  getUserReports,
+  isAdmin,
+  isUserBanned,
+  userReportBlocks,
+} from '~/lib/reports';
 
 export const name = 'view_reports_modal';
-
-export function formatReportDate(timestamp: number): string {
-  return `<!date^${Math.floor(timestamp / 1000)}^{date_short_pretty} at {time}|${new Date(timestamp).toISOString()}>`;
-}
-
-export function buildReportBlocks(
-  userId: string,
-  reports: Report[],
-  isBanned: boolean
-) {
-  const blocks: object[] = [
-    {
-      type: 'section',
-      fields: [
-        {
-          type: 'mrkdwn',
-          text: `*User:*\n<@${userId}>`,
-        },
-        {
-          type: 'mrkdwn',
-          text: `*Status:*\n${isBanned ? '🚫 Banned' : '✅ Active'}`,
-        },
-        {
-          type: 'mrkdwn',
-          text: `*Total Reports:*\n${reports.length}`,
-        },
-      ],
-    },
-    {
-      type: 'divider',
-    },
-  ];
-
-  if (reports.length === 0) {
-    blocks.push({
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '_No reports found for this user._',
-      },
-    });
-  } else {
-    for (const report of reports) {
-      blocks.push({
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*Reason:* ${report.reason}\n*Date:* ${formatReportDate(report.timestamp)}`,
-        },
-        accessory: {
-          type: 'button',
-          text: {
-            type: 'plain_text',
-            text: '🗑️ Remove',
-            emoji: true,
-          },
-          style: 'danger',
-          action_id: 'remove_report',
-          value: JSON.stringify({ userId, reportId: report.id }),
-        },
-      });
-    }
-  }
-
-  if (isBanned) {
-    blocks.push(
-      {
-        type: 'divider',
-      },
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: '✅ Unban User',
-              emoji: true,
-            },
-            style: 'primary',
-            action_id: 'unban_user',
-            value: userId,
-          },
-        ],
-      }
-    );
-  }
-
-  return blocks;
-}
 
 export async function execute({
   ack,
@@ -132,7 +46,7 @@ export async function execute({
     isUserBanned(userId),
   ]);
 
-  const blocks = buildReportBlocks(userId, userReports, isBanned);
+  const blocks = userReportBlocks(userId, userReports, isBanned);
 
   await ack({
     response_action: 'update',

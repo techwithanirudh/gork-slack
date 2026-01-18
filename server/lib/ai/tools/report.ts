@@ -117,7 +117,6 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
           ],
         });
 
-        // Send report notification to reports channel
         await sendReportNotification({
           client: context.client,
           userId,

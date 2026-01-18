@@ -3,7 +3,7 @@ import type {
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
 
-export const name = 'reports';
+export const name = 'gork-reports';
 
 export async function execute({
   ack,

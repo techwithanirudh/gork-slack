@@ -21,7 +21,7 @@ function registerApp(app: App) {
   }
 
   for (const command of commands) {
-    app.command(`/${command.name}`, command.execute);
+    app.command(new RegExp(`^/${command.name}.*$`), command.execute);
   }
 
   for (const action of actions) {

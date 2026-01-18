@@ -4,7 +4,12 @@ import type {
   ViewSubmitAction,
 } from '@slack/bolt';
 import logger from '~/lib/logger';
-import { banUser, isAdmin, isUserBanned, REPORTS_CHANNEL } from '~/lib/reports';
+import {
+  banUser,
+  isAdmin,
+  isUserBanned,
+  sendBanNotification,
+} from '~/lib/reports';
 
 export const name = 'ban_user_modal';
 
@@ -52,57 +57,10 @@ export async function execute({
   await ack();
   await banUser(userId);
 
-  await client.chat.postMessage({
-    channel: REPORTS_CHANNEL,
-    text: 'User banned by admin',
-    blocks: [
-      {
-        type: 'header',
-        text: {
-          type: 'plain_text',
-          text: '🚫 Manual Ban',
-          emoji: true,
-        },
-      },
-      {
-        type: 'section',
-        fields: [
-          {
-            type: 'mrkdwn',
-            text: `*Banned User:*\n<@${userId}>`,
-          },
-          {
-            type: 'mrkdwn',
-            text: `*Banned By:*\n<@${adminId}>`,
-          },
-        ],
-      },
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: '✅ Unban User',
-              emoji: true,
-            },
-            style: 'primary',
-            action_id: 'unban_user',
-            value: userId,
-          },
-        ],
-      },
-      {
-        type: 'context',
-        elements: [
-          {
-            type: 'mrkdwn',
-            text: `Banned at <!date^${Math.floor(Date.now() / 1000)}^{date_short_pretty} at {time}|${new Date().toISOString()}>`,
-          },
-        ],
-      },
-    ],
+  await sendBanNotification({
+    client,
+    userId,
+    bannedBy: adminId,
   });
 
   logger.info({ userId, bannedBy: adminId }, 'User banned via modal');

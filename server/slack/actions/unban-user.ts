@@ -11,8 +11,8 @@ import {
   isUserBanned,
   sendUnbanNotification,
   unbanUser,
+  userReportBlocks,
 } from '~/lib/reports';
-import { buildReportBlocks } from '~/slack/views/view-reports';
 
 export const name = 'unban_user';
 
@@ -52,14 +52,13 @@ export async function execute({
     'User unbanned via button action'
   );
 
-  // Update the modal with refreshed data if triggered from a modal
   if (body.view?.id) {
     const [userReports, userIsBanned] = await Promise.all([
       getUserReports(userId),
       isUserBanned(userId),
     ]);
 
-    const blocks = buildReportBlocks(userId, userReports, userIsBanned);
+    const blocks = userReportBlocks(userId, userReports, userIsBanned);
 
     await client.views.update({
       view_id: body.view.id,
