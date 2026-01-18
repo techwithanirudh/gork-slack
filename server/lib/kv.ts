@@ -15,7 +15,7 @@ export async function ratelimit(contextId: string) {
   const results = await Promise.all([redis.zcard(key), redis.expire(key, 30)]);
 
   const count = results[0];
-  return { success: count <= 7 };
+  return { success: count <= 14 };
 }
 
 export const redisKeys = {
