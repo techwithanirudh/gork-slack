@@ -10,9 +10,7 @@ import logger from './logger';
 
 export const REPORTS_CHANNEL = env.REPORTS_CHANNEL ?? 'C0A9ATPB2KF';
 
-const adminUserIds = new Set(
-  env.ADMIN_USER_IDS?.split(',').map((id) => id.trim()) ?? []
-);
+const adminUserIds = new Set(env.ADMINS ?? []);
 
 export function isAdmin(userId: string): boolean {
   return adminUserIds.has(userId);

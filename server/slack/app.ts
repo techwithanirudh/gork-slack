@@ -5,6 +5,7 @@ import logger from '~/lib/logger';
 import { actions } from './actions';
 import { commands } from './commands';
 import { events } from './events';
+import { views } from './views';
 
 export interface SlackApp {
   app: App;
@@ -25,6 +26,10 @@ function registerApp(app: App) {
 
   for (const action of actions) {
     app.action(action.name, action.execute);
+  }
+
+  for (const view of views) {
+    app.view(view.name, view.execute);
   }
 }
 
