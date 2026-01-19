@@ -32,13 +32,14 @@ function parseSubcommand(text: string): {
 async function handleGorkCommand(
   context: Parameters<typeof banExecute>[0]
 ): Promise<void> {
-  const { command, say } = context;
+  const { command, respond } = context;
   const { subcommand, args } = parseSubcommand(command.text);
 
   if (!subcommand) {
     await context.ack();
-    await say({
-      text: `Available subcommands: ${subcommands.map((s) => s.name).join(', ')}\nUsage: \`/gork <subcommand> [args]\``,
+    await respond({
+      text: `Available subcommands: ${subcommands.map((s) => s.name).join(', ')}\nUsage: \`${command.command} <subcommand> [args]\``,
+      response_type: 'ephemeral',
     });
     return;
   }
@@ -47,8 +48,9 @@ async function handleGorkCommand(
 
   if (!handler) {
     await context.ack();
-    await say({
+    await respond({
       text: `Unknown subcommand: \`${subcommand}\`\nAvailable subcommands: ${subcommands.map((s) => s.name).join(', ')}`,
+      response_type: 'ephemeral',
     });
     return;
   }
