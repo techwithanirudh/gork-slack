@@ -75,7 +75,9 @@ export async function generateResponse(
       providerOptions: {
         openrouter: {
           reasoning: {
-            max_tokens: 250,
+            enabled: true,
+            exclude: false,
+            effort: 'medium',
           },
         },
       },
