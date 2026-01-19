@@ -2,6 +2,7 @@ import type {
   AllMiddlewareArgs,
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
+import { isAdmin } from '~/lib/reports';
 
 export const name = 'reports';
 
@@ -9,7 +10,19 @@ export async function execute({
   ack,
   body,
   client,
+  respond,
 }: SlackCommandMiddlewareArgs & AllMiddlewareArgs) {
+  const adminId = body.user_id;
+
+  if (!isAdmin(adminId)) {
+    await ack();
+    await respond({
+      text: 'You do not have permission for this command.',
+      response_type: 'ephemeral',
+    });
+    return;
+  }
+
   await ack();
 
   await client.views.open({
