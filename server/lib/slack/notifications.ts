@@ -7,8 +7,6 @@ import {
   unbanNotificationBlocks,
 } from './blocks';
 
-export const REPORTS_CHANNEL = env.REPORTS_CHANNEL ?? 'C0A9ATPB2KF';
-
 interface ReportNotificationParams {
   client: WebClient;
   userId: string;
@@ -28,6 +26,10 @@ export async function sendReportNotification({
   reportCount,
   isBanned,
 }: ReportNotificationParams): Promise<void> {
+  if (!env.REPORTS_CHANNEL) {
+    return;
+  }
+
   const permalinkResult = await client.chat.getPermalink({
     channel: channelId,
     message_ts: messageTs,
@@ -43,7 +45,7 @@ export async function sendReportNotification({
   );
 
   await client.chat.postMessage({
-    channel: REPORTS_CHANNEL,
+    channel: env.REPORTS_CHANNEL,
     text: `User <@${userId}> has been reported`,
     blocks,
   });
@@ -65,10 +67,14 @@ export async function sendBanNotification({
   userId,
   bannedBy,
 }: BanNotificationParams): Promise<void> {
+  if (!env.REPORTS_CHANNEL) {
+    return;
+  }
+
   const blocks = banNotificationBlocks(userId, bannedBy);
 
   await client.chat.postMessage({
-    channel: REPORTS_CHANNEL,
+    channel: env.REPORTS_CHANNEL,
     text: `User <@${userId}> has been banned`,
     blocks,
   });
@@ -87,10 +93,14 @@ export async function sendUnbanNotification({
   userId,
   unbannedBy,
 }: UnbanNotificationParams): Promise<void> {
+  if (!env.REPORTS_CHANNEL) {
+    return;
+  }
+
   const blocks = unbanNotificationBlocks(userId, unbannedBy);
 
   await client.chat.postMessage({
-    channel: REPORTS_CHANNEL,
+    channel: env.REPORTS_CHANNEL,
     text: `User <@${userId}> has been unbanned`,
     blocks,
   });

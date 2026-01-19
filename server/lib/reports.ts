@@ -19,7 +19,6 @@ export {
 export { userReportBlocks } from './slack/blocks';
 
 export {
-  REPORTS_CHANNEL,
   sendBanNotification,
   sendReportNotification,
   sendUnbanNotification,
