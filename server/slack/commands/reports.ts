@@ -3,27 +3,23 @@ import type {
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
 import { isAdmin } from '~/lib/reports';
+import { respondWithPermissionError } from '~/lib/slack/errors';
 
 export const name = 'reports';
 
-export async function execute({
-  ack,
-  body,
-  client,
-  respond,
-}: SlackCommandMiddlewareArgs & AllMiddlewareArgs) {
+export async function execute(
+  context: SlackCommandMiddlewareArgs & AllMiddlewareArgs
+) {
+  const { ack, body, client } = context;
+
   const adminId = body.user_id;
 
+  await ack();
+
   if (!isAdmin(adminId)) {
-    await ack();
-    await respond({
-      text: 'You do not have permission for this command.',
-      response_type: 'ephemeral',
-    });
+    await respondWithPermissionError(context);
     return;
   }
-
-  await ack();
 
   await client.views.open({
     trigger_id: body.trigger_id,

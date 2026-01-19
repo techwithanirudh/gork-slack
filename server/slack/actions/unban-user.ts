@@ -9,19 +9,18 @@ import {
   getUserReports,
   isAdmin,
   isUserBanned,
-  sendUnbanNotification,
-  unbanUser,
   userReportBlocks,
 } from '~/lib/reports';
+import { executeUnban } from '~/lib/slack/bans';
 
 export const name = 'unban_user';
 
-export async function execute({
-  ack,
-  action,
-  body,
-  client,
-}: SlackActionMiddlewareArgs<BlockAction<ButtonAction>> & AllMiddlewareArgs) {
+export async function execute(
+  context: SlackActionMiddlewareArgs<BlockAction<ButtonAction>> &
+    AllMiddlewareArgs
+) {
+  const { ack, action, body, client } = context;
+
   await ack();
 
   if (!isAdmin(body.user.id)) {
@@ -34,18 +33,7 @@ export async function execute({
     return;
   }
 
-  const isBanned = await isUserBanned(userId);
-  if (!isBanned) {
-    return;
-  }
-
-  await unbanUser(userId);
-
-  await sendUnbanNotification({
-    client,
-    userId,
-    unbannedBy: body.user.id,
-  });
+  await executeUnban(context, userId, body.user.id);
 
   logger.info(
     { userId, unbannedBy: body.user.id },

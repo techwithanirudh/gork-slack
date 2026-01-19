@@ -6,22 +6,21 @@ import type {
 } from '@slack/bolt';
 import logger from '~/lib/logger';
 import {
-  banUser,
   getUserReports,
   isAdmin,
   isUserBanned,
-  sendBanNotification,
   userReportBlocks,
 } from '~/lib/reports';
+import { executeBan } from '~/lib/slack/bans';
 
 export const name = 'ban_user';
 
-export async function execute({
-  ack,
-  action,
-  body,
-  client,
-}: SlackActionMiddlewareArgs<BlockAction<ButtonAction>> & AllMiddlewareArgs) {
+export async function execute(
+  context: SlackActionMiddlewareArgs<BlockAction<ButtonAction>> &
+    AllMiddlewareArgs
+) {
+  const { ack, action, body, client } = context;
+
   await ack();
 
   if (!isAdmin(body.user.id)) {
@@ -34,18 +33,7 @@ export async function execute({
     return;
   }
 
-  const alreadyBanned = await isUserBanned(userId);
-  if (alreadyBanned) {
-    return;
-  }
-
-  await banUser(userId);
-
-  await sendBanNotification({
-    client,
-    userId,
-    bannedBy: body.user.id,
-  });
+  await executeBan(context, userId, body.user.id);
 
   logger.info(
     { userId, bannedBy: body.user.id },

@@ -12,7 +12,7 @@
         "command": "/gork",
         "description": "Gork commands",
         "usage_hint": "<subcommand> [args]",
-        "should_escape": false
+        "should_escape": true
       }
     ]
   },

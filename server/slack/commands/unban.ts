@@ -3,27 +3,41 @@ import type {
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
 import { isAdmin } from '~/lib/reports';
+import { executeUnban } from '~/lib/slack/bans';
+import { respondWithPermissionError } from '~/lib/slack/errors';
+import { parseUserList } from '~/utils/users';
 
 export const name = 'unban';
 
-export async function execute({
-  ack,
-  body,
-  client,
-  respond,
-}: SlackCommandMiddlewareArgs & AllMiddlewareArgs) {
+export async function execute(
+  context: SlackCommandMiddlewareArgs & AllMiddlewareArgs
+) {
+  const { ack, body, client, command, respond } = context;
+
   const adminId = body.user_id;
 
+  await ack();
+
   if (!isAdmin(adminId)) {
-    await ack();
-    await respond({
-      text: 'You do not have permission for this command.',
-      response_type: 'ephemeral',
-    });
+    await respondWithPermissionError(context);
     return;
   }
 
-  await ack();
+  if (command.text) {
+    const userList = parseUserList(command.text);
+
+    const results: Awaited<ReturnType<typeof executeUnban>>[] = [];
+    for (const userId of userList) {
+      results.push(await executeUnban(context, userId, adminId));
+    }
+
+    await respond({
+      text: `${results.length} unban(s) processed. \n${results.map((result, i) => `<@${userList[i]}>: ${result}`).join('\n')}`,
+      response_type: 'ephemeral',
+    });
+
+    return;
+  }
 
   await client.views.open({
     trigger_id: body.trigger_id,
