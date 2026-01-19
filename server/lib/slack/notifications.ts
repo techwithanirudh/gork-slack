@@ -27,6 +27,9 @@ export async function sendReportNotification({
   isBanned,
 }: ReportNotificationParams): Promise<void> {
   if (!env.REPORTS_CHANNEL) {
+    logger.warn(
+      'Report notification not sent because REPORTS_CHANNEL is not configured'
+    );
     return;
   }
 
@@ -68,6 +71,9 @@ export async function sendBanNotification({
   bannedBy,
 }: BanNotificationParams): Promise<void> {
   if (!env.REPORTS_CHANNEL) {
+    logger.warn(
+      'Ban notification not sent because REPORTS_CHANNEL is not configured'
+    );
     return;
   }
 
@@ -94,6 +100,9 @@ export async function sendUnbanNotification({
   unbannedBy,
 }: UnbanNotificationParams): Promise<void> {
   if (!env.REPORTS_CHANNEL) {
+    logger.warn(
+      'Unban notification not sent because REPORTS_CHANNEL is not configured'
+    );
     return;
   }
 
