@@ -14,6 +14,30 @@ export const env = createEnv({
     AUTO_ADD_CHANNEL: z.string().optional(),
     // Channel required for keywords / relevance check
     OPT_IN_CHANNEL: z.string().optional(),
+    // Channel for report notifications
+    REPORTS_CHANNEL: z.string().optional(),
+    // Comma-separated or JSON array of admin user IDs who can use /ban, /unban, /reports
+    ADMINS: z.preprocess((val) => {
+      if (typeof val === 'string') {
+        const s = val.trim();
+        if (s === '') {
+          return undefined;
+        }
+        try {
+          const parsed = JSON.parse(s);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        } catch {
+          // ignore JSON parse errors
+        }
+        return s
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean);
+      }
+      return val;
+    }, z.array(z.string()).optional()),
     // Redis
     REDIS_URL: z.string().min(1),
     // AI

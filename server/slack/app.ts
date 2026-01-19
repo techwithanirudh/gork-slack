@@ -2,7 +2,10 @@ import { App, ExpressReceiver, LogLevel } from '@slack/bolt';
 import { env } from '~/env';
 import { buildCache } from '~/lib/allowed-users';
 import logger from '~/lib/logger';
+import { actions } from './actions';
+import { commands } from './commands';
 import { events } from './events';
+import { views } from './views';
 
 export interface SlackApp {
   app: App;
@@ -12,8 +15,21 @@ export interface SlackApp {
 
 function registerApp(app: App) {
   buildCache(app);
+
   for (const event of events) {
     app.event(event.name, event.execute);
+  }
+
+  for (const command of commands) {
+    app.command(command.pattern, command.execute);
+  }
+
+  for (const action of actions) {
+    app.action(action.name, action.execute);
+  }
+
+  for (const view of views) {
+    app.view(view.name, view.execute);
   }
 }
 

@@ -69,6 +69,10 @@ async function checkContent(
       schema: contentFilterSchema,
       prompt: contentFilterPrompt(content),
       temperature: 0.3,
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: 'filter',
+      },
     });
     return object;
   } catch (error) {
