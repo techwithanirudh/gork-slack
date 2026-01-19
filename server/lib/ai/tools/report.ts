@@ -9,7 +9,7 @@ import {
 } from '~/lib/reports';
 import { getConversationMessages } from '~/slack/conversations';
 import type { SlackMessageContext } from '~/types';
-import { buildHistorySnippet } from '~/utils/messages';
+import { buildHistorySnippet, getMessageText } from '~/utils/messages';
 
 export const report = ({ context }: { context: SlackMessageContext }) =>
   tool({
@@ -117,6 +117,12 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
           ],
         });
 
+        // Extract last 3 messages from user for moderator context
+        const messageContext = userMessages
+          .slice(-3)
+          .map((msg) => getMessageText(msg))
+          .filter(Boolean);
+
         await sendReportNotification({
           client: context.client,
           userId,
@@ -125,6 +131,7 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
           reason,
           reportCount,
           isBanned,
+          messageContext,
         });
 
         logger.info(

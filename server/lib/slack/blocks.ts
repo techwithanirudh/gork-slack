@@ -161,7 +161,9 @@ export function reportNotificationBlocks(
   reason: string,
   reportCount: number,
   isBanned: boolean,
-  messageLink?: string
+  messageLink?: string,
+  messageContext?: string[],
+  isPrivateChannel?: boolean
 ): Block[] {
   const actionButtons: ActionsBlockElement[] = [];
 
@@ -177,7 +179,7 @@ export function reportNotificationBlocks(
       : button('Ban User', 'ban_user', { style: 'danger', value: userId })
   );
 
-  return [
+  const blocks: Block[] = [
     header(isBanned ? 'User Banned' : 'New Report'),
     fields(
       `*Reported User:*\n${userMention(userId)}`,
@@ -185,8 +187,43 @@ export function reportNotificationBlocks(
       `*Channel:*\n${channelMention(channelId)}`,
       `*Status:*\n${isBanned ? 'Banned' : 'Warned'}`
     ),
-    section(`*Reason:*\n${reason}`),
-    actions(...actionButtons),
-    context(`Report submitted at ${formatDate(Date.now())}`),
   ];
+
+  // Warn moderators if this is from a private channel they may not have access to
+  if (isPrivateChannel) {
+    blocks.push(
+      context(
+        ':warning: This report is from a private channel. You may not have access to view the original message.'
+      )
+    );
+  }
+
+  blocks.push(section(`*Reason:*\n${reason}`));
+
+  // Include message context so moderators can see what was said
+  if (messageContext && messageContext.length > 0) {
+    const truncatedMessages = messageContext.map((msg) =>
+      msg.length > 300 ? `${msg.slice(0, 300)}...` : msg
+    );
+
+    const formattedMessages = truncatedMessages
+      .map((msg, i) => {
+        const isLastMessage = i === truncatedMessages.length - 1;
+        const prefix = isLastMessage ? ':arrow_right: ' : '';
+        return `${prefix}${msg}`;
+      })
+      .join('\n\n');
+
+    blocks.push(
+      divider(),
+      section(`*Recent Messages from User:*\n${formattedMessages}`)
+    );
+  }
+
+  blocks.push(
+    actions(...actionButtons),
+    context(`Report submitted at ${formatDate(Date.now())}`)
+  );
+
+  return blocks;
 }

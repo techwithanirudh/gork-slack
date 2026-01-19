@@ -15,6 +15,8 @@ interface ReportNotificationParams {
   reason: string;
   reportCount: number;
   isBanned: boolean;
+  /** Last few messages from the reported user for context */
+  messageContext?: string[];
 }
 
 export async function sendReportNotification({
@@ -25,6 +27,7 @@ export async function sendReportNotification({
   reason,
   reportCount,
   isBanned,
+  messageContext,
 }: ReportNotificationParams): Promise<void> {
   if (!env.REPORTS_CHANNEL) {
     logger.warn(
@@ -33,10 +36,34 @@ export async function sendReportNotification({
     return;
   }
 
-  const permalinkResult = await client.chat.getPermalink({
-    channel: channelId,
-    message_ts: messageTs,
-  });
+  // Check if channel is private (moderators may not have access)
+  let isPrivateChannel = false;
+  try {
+    const channelInfo = await client.conversations.info({ channel: channelId });
+    isPrivateChannel =
+      channelInfo.channel?.is_private ??
+      channelInfo.channel?.is_group ??
+      channelInfo.channel?.is_mpim ??
+      false;
+  } catch {
+    // If we can't get channel info, assume it might be private
+    isPrivateChannel = true;
+  }
+
+  // Get permalink with error handling (may fail for private channels)
+  let permalink: string | undefined;
+  try {
+    const permalinkResult = await client.chat.getPermalink({
+      channel: channelId,
+      message_ts: messageTs,
+    });
+    permalink = permalinkResult.permalink ?? undefined;
+  } catch (error) {
+    logger.warn(
+      { error, channelId, messageTs },
+      'Failed to get permalink for reported message'
+    );
+  }
 
   const blocks = reportNotificationBlocks(
     userId,
@@ -44,7 +71,9 @@ export async function sendReportNotification({
     reason,
     reportCount,
     isBanned,
-    permalinkResult.permalink ?? undefined
+    permalink,
+    messageContext,
+    isPrivateChannel
   );
 
   await client.chat.postMessage({
