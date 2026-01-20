@@ -44,7 +44,7 @@ export const systemPrompt = ({
       replyPrompt,
     ]
       .filter(Boolean)
-      .join('\n')
+      .join('\n\n')
       .trim();
   }
   if (selectedChatModel === 'relevance-model') {

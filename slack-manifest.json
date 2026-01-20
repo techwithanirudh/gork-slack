@@ -6,7 +6,15 @@
     "bot_user": {
       "display_name": "gork",
       "always_online": true
-    }
+    },
+    "slash_commands": [
+      {
+        "command": "/gork",
+        "description": "Gork commands",
+        "usage_hint": "<subcommand> [args]",
+        "should_escape": true
+      }
+    ]
   },
   "oauth_config": {
     "scopes": {
@@ -24,6 +32,7 @@
         "im:write",
         "mpim:history",
         "mpim:read",
+        "commands",
         "mpim:write",
         "reactions:read",
         "reactions:write",

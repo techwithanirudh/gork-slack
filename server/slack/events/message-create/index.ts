@@ -115,23 +115,6 @@ export async function execute(args: MessageEventArgs) {
     return;
   }
 
-  const userId = args.event.user;
-  if (userId && (await isUserBanned(userId))) {
-    const channel = messageContext.event.channel;
-    const messageTs = messageContext.event.ts;
-
-    if (channel) {
-      await messageContext.client.chat.postMessage({
-        channel,
-        text: 'You have been banned from using Gork due to repeated violations. Please contact staff if you believe this is an error.',
-        thread_ts: messageTs,
-      });
-    }
-
-    logger.info({ userId }, 'Refused to respond to banned user');
-    return;
-  }
-
   const ctxId = getContextId(messageContext);
   if (!(await canReply(ctxId))) {
     return;
@@ -158,6 +141,19 @@ export async function execute(args: MessageEventArgs) {
         thread_ts: args.event.thread_ts || args.event.ts,
         markdown_text: `sorry bro <@${args.event.user}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
       });
+      return;
+    }
+
+    const userId = args.event.user;
+    if (userId && (await isUserBanned(userId))) {
+      if (trigger.type === 'ping' || trigger.type === 'dm') {
+        await args.client.chat.postMessage({
+          channel: args.event.channel,
+          text: "nah bro you're banned lol. hit up staff if you think this is a mistake or whatever",
+          thread_ts: args.event.thread_ts || args.event.ts,
+        });
+      }
+      logger.info({ userId }, 'Refused to respond to banned user');
       return;
     }
 
@@ -204,6 +200,10 @@ export async function execute(args: MessageEventArgs) {
   }
 
   if (!isUserAllowed(args.event.user)) {
+    return;
+  }
+
+  if (args.event.user && (await isUserBanned(args.event.user))) {
     return;
   }
 

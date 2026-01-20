@@ -1,61 +1,33 @@
 import { generateObject } from 'ai';
-import { moderation } from '~/config';
+import { env } from '~/env';
 import { contentFilterPrompt } from '~/lib/ai/prompts/tasks';
 import { provider } from '~/lib/ai/providers';
 import { contentFilterSchema } from '~/lib/validators';
-import { redis, redisKeys } from './kv';
 import logger from './logger';
 
-export async function addReport(
-  userId: string,
-  reason: string
-): Promise<number> {
-  const key = redisKeys.userReports(userId);
-  const now = Date.now();
+export {
+  addReport,
+  banUser,
+  getReportCount,
+  getUserReports,
+  isUserBanned,
+  type Report,
+  removeReport,
+  unbanUser,
+} from './queries/reports';
 
-  await redis.zadd(key, now, `${now}:${reason}`);
-  await redis.zremrangebyscore(
-    key,
-    0,
-    now - moderation.reports.expiration * 1000
-  );
-  await redis.expire(key, moderation.reports.expiration);
+export { userReportBlocks } from './slack/blocks';
 
-  const count = await redis.zcard(key);
+export {
+  sendBanNotification,
+  sendReportNotification,
+  sendUnbanNotification,
+} from './slack/notifications';
 
-  logger.info({ userId, reason, reportCount: count }, 'Report added for user');
+const adminUserIds = new Set(env.ADMINS ?? []);
 
-  if (count >= moderation.banThreshold) {
-    await redis.set(redisKeys.userBanned(userId), '1');
-    logger.warn({ userId, reportCount: count }, 'User has been banned');
-  }
-
-  return count;
-}
-
-export async function getReportCount(userId: string): Promise<number> {
-  const key = redisKeys.userReports(userId);
-  await redis.zremrangebyscore(
-    key,
-    0,
-    Date.now() - moderation.reports.expiration * 1000
-  );
-  return await redis.zcard(key);
-}
-
-export async function isUserBanned(userId: string): Promise<boolean> {
-  const banned = await redis.get(redisKeys.userBanned(userId));
-  if (banned === '1') {
-    return true;
-  }
-
-  const count = await getReportCount(userId);
-  if (count >= moderation.banThreshold) {
-    await redis.set(redisKeys.userBanned(userId), '1');
-    return true;
-  }
-
-  return false;
+export function isAdmin(userId: string): boolean {
+  return adminUserIds.has(userId);
 }
 
 export async function validateReport(
@@ -67,6 +39,10 @@ export async function validateReport(
       schema: contentFilterSchema,
       prompt: contentFilterPrompt([messageContent]),
       temperature: 0.3,
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: 'report-filter',
+      },
     });
 
     return {
