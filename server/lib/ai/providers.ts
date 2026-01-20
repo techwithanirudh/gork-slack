@@ -58,8 +58,8 @@ const contentFilterModel = createRetryable({
   model: hackclub('openai/gpt-5-mini'),
   retries: [
     hackclub('google/gemini-2.5-flash-lite'),
-    openrouter('openai/gpt-5-nano'),
     openrouter('google/gemini-2.5-flash-lite'),
+    openrouter('openai/gpt-5-nano'),
   ],
   onError: (context) => {
     const { model } = context.current;
