@@ -5,6 +5,7 @@ import { isUserAllowed } from '~/lib/allowed-users';
 import { ratelimit, redisKeys } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
+import { getQueue } from '~/lib/queue';
 import { isUserBanned } from '~/lib/reports';
 import type { SlackMessageContext } from '~/types';
 import { buildChatContext } from '~/utils/context';
@@ -92,16 +93,21 @@ async function getAuthorName(ctx: SlackMessageContext): Promise<string> {
 }
 
 function getContextId(ctx: SlackMessageContext): string {
-  const channel = (ctx.event as { channel?: string }).channel;
+  const channel = ctx.event.channel ?? 'unknown-channel';
+  const channelType = ctx.event.channel_type;
   const userId = (ctx.event as { user?: string }).user;
-  const channelType = (ctx.event as { channel_type?: string }).channel_type;
+  const threadTs = (ctx.event as { thread_ts?: string }).thread_ts;
+
   if (channelType === 'im' && userId) {
     return `dm:${userId}`;
   }
-  return channel ?? 'unknown-channel';
+  if (threadTs) {
+    return `${channel}:${threadTs}`;
+  }
+  return channel;
 }
 
-export async function execute(args: MessageEventArgs) {
+async function handleMessage(args: MessageEventArgs) {
   if (
     args.event.subtype &&
     args.event.subtype !== 'thread_broadcast' &&
@@ -247,4 +253,26 @@ export async function execute(args: MessageEventArgs) {
   if (result.success && result.toolCalls) {
     await onSuccess(messageContext);
   }
+}
+
+export async function execute(args: MessageEventArgs) {
+  if (
+    args.event.subtype &&
+    args.event.subtype !== 'thread_broadcast' &&
+    args.event.subtype !== 'file_share'
+  ) {
+    return;
+  }
+
+  const messageContext = isProcessableMessage(args);
+  if (!messageContext) {
+    return;
+  }
+
+  const ctxId = getContextId(messageContext);
+  if (!(await canReply(ctxId))) {
+    return;
+  }
+
+  return await getQueue(ctxId).add(async () => handleMessage(args));
 }
