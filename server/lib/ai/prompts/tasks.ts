@@ -73,11 +73,21 @@ Do NOT return anything else than the JSON object, LIKE the suggested reply. Do N
 ONLY return the JSON Object, nothing ELSE.
 </task>`;
 
-export const contentFilterPrompt = (content: string[]) => `\
+export const contentFilterPrompt = (
+  content: string[],
+  contextMessages?: string[]
+) => `\
 <task>
 You are a content moderation filter. Analyze the following message(s) that are about to be sent and determine if they are Safe For Work (SFW).
-
-Content to analyze:
+${
+  contextMessages && contextMessages.length > 0
+    ? `
+Recent conversation context (for understanding intent only):
+${contextMessages.map((msg, i) => `${i + 1}. ${msg}`).join('\n')}
+`
+    : ''
+}
+Content to analyze (this is what will be sent):
 ${content.map((line, i) => `${i + 1}. "${line}"`).join('\n')}
 
 Evaluate each line for:
@@ -88,6 +98,7 @@ Evaluate each line for:
 - Drug references or promotion
 
 IMPORTANT: Humor, casual language, etc are ALWAYS acceptable. Don't over-correct. Only flag content that would be genuinely inappropriate.
+Use the context to understand if the response is appropriate for the conversation - context may reveal if something that seems appropriate is actually unsafe in context, or vice versa.
 
 Respond with a JSON object:
 {

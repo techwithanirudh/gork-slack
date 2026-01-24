@@ -61,7 +61,8 @@ function resolveThreadTs(
 }
 
 async function checkContent(
-  content: string[]
+  content: string[],
+  contextMessages?: string[]
 ): Promise<{ safe: boolean; reason: string }> {
   try {
     const { output } = await generateText({
@@ -69,7 +70,7 @@ async function checkContent(
       output: Output.object({
         schema: contentFilterSchema,
       }),
-      prompt: contentFilterPrompt(content),
+      prompt: contentFilterPrompt(content, contextMessages),
       temperature: 0.3,
       experimental_telemetry: {
         isEnabled: true,
@@ -80,6 +81,42 @@ async function checkContent(
   } catch (error) {
     logger.error({ error, content }, 'Content filter check failed');
     return { safe: false, reason: 'Content filter check failed' };
+  }
+}
+
+async function fetchRecentMessages(
+  ctx: SlackMessageContext,
+  limit = 5
+): Promise<string[]> {
+  const channelId = (ctx.event as { channel?: string }).channel;
+  const messageTs = (ctx.event as { ts?: string }).ts;
+
+  if (!(channelId && messageTs)) {
+    return [];
+  }
+
+  try {
+    const { messages } = await ctx.client.conversations.history({
+      channel: channelId,
+      latest: messageTs,
+      inclusive: true,
+      limit,
+    });
+
+    if (!messages) {
+      return [];
+    }
+
+    return messages
+      .filter((msg) => Boolean(msg.text))
+      .sort((a, b) => Number(a.ts ?? '0') - Number(b.ts ?? '0'))
+      .map((msg) => `${msg.user}: ${msg.text}`);
+  } catch (error) {
+    logger.error(
+      { error, channel: channelId },
+      'Failed to fetch recent messages for content filter'
+    );
+    return [];
   }
 }
 
@@ -119,7 +156,8 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
       }
 
       try {
-        const contentCheck = await checkContent(content);
+        const contextMessages = await fetchRecentMessages(context);
+        const contentCheck = await checkContent(content, contextMessages);
         if (!contentCheck.safe) {
           logger.warn(
             { content, reason: contentCheck.reason },
