@@ -16,7 +16,10 @@ const openrouter = createOpenRouter({
 const hackclub = (modelId: string) => {
   return wrapLanguageModel({
     model: hackclubBase(modelId),
-    middleware: {},
+    // middleware is required even though it's unnecessary
+    middleware: {
+      specificationVersion: 'v3',
+    },
     modelId,
     providerId: 'hackclub',
   });

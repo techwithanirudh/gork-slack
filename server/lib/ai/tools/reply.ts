@@ -1,4 +1,4 @@
-import { generateObject, tool } from 'ai';
+import { generateText, Output, tool } from 'ai';
 import { z } from 'zod';
 import { contentFilterPrompt } from '~/lib/ai/prompts/tasks';
 import { provider } from '~/lib/ai/providers';
@@ -64,9 +64,11 @@ async function checkContent(
   content: string[]
 ): Promise<{ safe: boolean; reason: string }> {
   try {
-    const { object } = await generateObject({
+    const { output } = await generateText({
       model: provider.languageModel('content-filter-model'),
-      schema: contentFilterSchema,
+      output: Output.object({
+        schema: contentFilterSchema,
+      }),
       prompt: contentFilterPrompt(content),
       temperature: 0.3,
       experimental_telemetry: {
@@ -74,7 +76,7 @@ async function checkContent(
         functionId: 'filter',
       },
     });
-    return object;
+    return output;
   } catch (error) {
     logger.error({ error, content }, 'Content filter check failed');
     return { safe: false, reason: 'Content filter check failed' };

@@ -1,4 +1,4 @@
-import { generateObject } from 'ai';
+import { generateText, Output } from 'ai';
 import { env } from '~/env';
 import { contentFilterPrompt } from '~/lib/ai/prompts/tasks';
 import { provider } from '~/lib/ai/providers';
@@ -34,9 +34,11 @@ export async function validateReport(
   messageContent: string
 ): Promise<{ valid: boolean; reason: string }> {
   try {
-    const { object } = await generateObject({
+    const { output } = await generateText({
       model: provider.languageModel('content-filter-model'),
-      schema: contentFilterSchema,
+      output: Output.object({
+        schema: contentFilterSchema,
+      }),
       prompt: contentFilterPrompt([messageContent]),
       temperature: 0.3,
       experimental_telemetry: {
@@ -46,8 +48,8 @@ export async function validateReport(
     });
 
     return {
-      valid: !object.safe,
-      reason: object.reason,
+      valid: !output.safe,
+      reason: output.reason,
     };
   } catch (error) {
     logger.error({ error, messageContent }, 'Report validation failed');
