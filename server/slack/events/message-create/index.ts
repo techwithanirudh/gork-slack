@@ -15,6 +15,7 @@ import {
   handleMessageCount,
   resetMessageCount,
 } from '~/utils/message-rate-limiter';
+import { shouldUse } from '~/utils/messages';
 import { getTrigger } from '~/utils/triggers';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
@@ -113,6 +114,10 @@ async function handleMessage(args: MessageEventArgs) {
     args.event.subtype !== 'thread_broadcast' &&
     args.event.subtype !== 'file_share'
   ) {
+    return;
+  }
+
+  if (!shouldUse(args.event.text || '')) {
     return;
   }
 

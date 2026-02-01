@@ -37,6 +37,11 @@ async function resolveTargetMessage(
     limit: offset,
   });
 
+  if (!history.messages) {
+    logger.error({ res: history }, 'Error fetching history');
+  }
+
+  // TODO: Integrate shouldUse with this to prevent offset mismatches
   const sorted = ((history.messages ?? []) as SlackHistoryMessage[])
     .filter((msg) => Boolean(msg.ts))
     .sort((a, b) => Number(b.ts ?? '0') - Number(a.ts ?? '0'));

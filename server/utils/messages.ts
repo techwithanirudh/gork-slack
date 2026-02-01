@@ -48,3 +48,10 @@ export function buildHistorySnippet(
     .filter(Boolean)
     .join('\n');
 }
+
+export function shouldUse(message: string) {
+  if (message.startsWith('##')) {
+    return false;
+  }
+  return true;
+}
