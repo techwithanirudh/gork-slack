@@ -24,7 +24,7 @@ export async function execute({
   if (!env.REPORTS_CHANNEL) {
     logger.warn(
       { userId, channelId },
-      'Bot-added notification not sent because REPORTS_CHANNEL is not configured'
+      'Bot added to channel notification not sent because REPORTS_CHANNEL is not configured'
     );
     return;
   }
@@ -36,12 +36,12 @@ export async function execute({
     });
     logger.info(
       { userId, channelId },
-      'Bot-added notification sent to reports channel'
+      'Bot added to channel notification sent to reports channel'
     );
   } catch (error) {
     logger.error(
       { error, userId, channelId },
-      'Failed to send bot-added notification'
+      'Failed to send bot added to channel notification'
     );
   }
 }
