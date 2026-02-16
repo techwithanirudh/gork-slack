@@ -21,17 +21,17 @@ export async function execute({
 
   logger.info({ userId, channelId }, 'Bot added to channel');
 
-  if (!env.REPORTS_CHANNEL) {
+  if (!env.BOT_JOIN_LOGS_CHANNEL) {
     logger.warn(
       { userId, channelId },
-      'Bot added to channel notification not sent because REPORTS_CHANNEL is not configured'
+      'Bot added to channel notification not sent because BOT_JOIN_LOGS_CHANNEL is not configured'
     );
     return;
   }
 
   try {
     await client.chat.postMessage({
-      channel: env.REPORTS_CHANNEL,
+      channel: env.BOT_JOIN_LOGS_CHANNEL,
       text: `<@${userId}> added the bot to <#${channelId}>`,
     });
     logger.info(
