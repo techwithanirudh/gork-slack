@@ -17,7 +17,19 @@ function registerApp(app: App) {
   buildCache(app);
 
   for (const event of events) {
-    app.event(event.name, event.execute);
+    switch (event.name) {
+      case 'member_joined_channel': {
+        app.event(event.name, event.execute);
+        break;
+      }
+      case 'message': {
+        app.event(event.name, event.execute);
+        break;
+      }
+      default: {
+        break;
+      }
+    }
   }
 
   for (const command of commands) {
