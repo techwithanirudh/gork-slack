@@ -16,6 +16,8 @@ export const env = createEnv({
     OPT_IN_CHANNEL: z.string().optional(),
     // Channel for report notifications
     REPORTS_CHANNEL: z.string().optional(),
+    // Channel for bot added-to-channel notifications
+    BOT_JOIN_LOGS_CHANNEL: z.string().optional(),
     // Comma-separated or JSON array of admin user IDs who can use /ban, /unban, /reports
     ADMINS: z.preprocess((val) => {
       if (typeof val === 'string') {

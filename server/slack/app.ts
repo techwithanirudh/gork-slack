@@ -4,7 +4,7 @@ import { buildCache } from '~/lib/allowed-users';
 import logger from '~/lib/logger';
 import { actions } from './actions';
 import { commands } from './commands';
-import { events } from './events';
+import { registerEvents } from './events';
 import { views } from './views';
 
 export interface SlackApp {
@@ -16,9 +16,7 @@ export interface SlackApp {
 function registerApp(app: App) {
   buildCache(app);
 
-  for (const event of events) {
-    app.event(event.name, event.execute);
-  }
+  registerEvents(app);
 
   for (const command of commands) {
     app.command(command.pattern, command.execute);
