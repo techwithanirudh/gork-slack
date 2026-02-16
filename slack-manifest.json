@@ -41,7 +41,8 @@
         "users:read",
         "channels:manage",
         "files:read",
-        "files:write"
+        "files:write",
+        "chat:write.public"
       ]
     }
   },
