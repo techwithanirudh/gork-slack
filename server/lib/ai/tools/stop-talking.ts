@@ -16,8 +16,7 @@ export const stopTalking = ({ context }: { context: SlackMessageContext }) =>
       if (!threadTs) {
         return {
           success: false,
-          error:
-            'stopTalking only works inside threads. stopTalking is specifically for when a user asks you to stop talking in a thread, it is not the same as skip. skip is for ignoring a single low-value message. use skip for this message instead.',
+          error: 'stopTalking only works inside threads.',
         };
       }
 
