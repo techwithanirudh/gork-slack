@@ -3,7 +3,7 @@
   "dictionaries": ["software-terms", "npm", "fullstack"],
   "files": ["**", ".vscode/**", ".github/**"],
   "ignorePaths": ["bun.lock", "bun.lockb"],
-  "ignoreRegExpList": ["apiKey='[a-zA-Z0-9-]{32}'"],
+  "ignoreRegExpList": ["apiKey='[a-zA-Z0-9-]{32}'", "\\bC[A-Z0-9]{10}\\b"],
   "import": ["@cspell/dict-bash/cspell-ext.json"],
   "useGitignore": true,
   "version": "0.2",
