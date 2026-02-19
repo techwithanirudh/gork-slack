@@ -16,7 +16,7 @@ export const stopTalking = ({ context }: { context: SlackMessageContext }) =>
       if (!threadTs) {
         return {
           success: false,
-          error: 'stopTalking only works inside threads — call skip instead',
+          error: 'stopTalking only works inside threads.',
         };
       }
 
