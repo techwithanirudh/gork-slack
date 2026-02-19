@@ -12,6 +12,7 @@ import { reply } from '~/lib/ai/tools/reply';
 import { report } from '~/lib/ai/tools/report';
 import { searchMemories } from '~/lib/ai/tools/search-memories';
 import { skip } from '~/lib/ai/tools/skip';
+import { stopTalking } from '~/lib/ai/tools/stop-talking';
 import { successToolCall } from '~/lib/ai/utils';
 import type {
   PineconeMetadataOutput,
@@ -96,6 +97,7 @@ export async function generateResponse(
         reply: reply({ context }),
         report: report({ context }),
         skip: skip({ context }),
+        stopTalking: stopTalking({ context }),
       },
       system,
       stopWhen: [

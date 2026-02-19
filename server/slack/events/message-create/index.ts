@@ -2,7 +2,7 @@ import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
 import { keywords, messageThreshold } from '~/config';
 import { env } from '~/env';
 import { isUserAllowed } from '~/lib/allowed-users';
-import { ratelimit, redisKeys } from '~/lib/kv';
+import { clearSilenced, isSilenced, ratelimit, redisKeys } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
 import { getQueue } from '~/lib/queue';
@@ -141,6 +141,17 @@ async function handleMessage(args: MessageEventArgs) {
   const content = (messageContext.event as { text?: string }).text ?? '';
 
   const { messages, hints, memories } = await buildChatContext(messageContext);
+
+  const silenced = await isSilenced(ctxId);
+  if (silenced) {
+    if (trigger.type === 'ping') {
+      await clearSilenced(ctxId);
+      logger.info(`[${ctxId}] Thread un-silenced by ping`);
+    } else {
+      logger.debug(`[${ctxId}] Thread is silenced — skipping`);
+      return;
+    }
+  }
 
   if (trigger.type) {
     if (!isUserAllowed(args.event.user)) {

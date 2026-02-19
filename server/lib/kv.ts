@@ -21,4 +21,18 @@ export const redisKeys = {
   channelCount: (contextId: string) => `ctx:channelCount:${contextId}`,
   userReports: (userId: string) => `user:reports:${userId}`,
   userBanned: (userId: string) => `user:banned:${userId}`,
+  silenced: (contextId: string) => `ctx:silenced:${contextId}`,
 };
+
+export async function setSilenced(contextId: string): Promise<void> {
+  await redis.set(redisKeys.silenced(contextId), '1', 'EX', 60 * 60 * 24 * 7);
+}
+
+export async function isSilenced(contextId: string): Promise<boolean> {
+  const result = await redis.exists(redisKeys.silenced(contextId));
+  return result === 1;
+}
+
+export async function clearSilenced(contextId: string): Promise<void> {
+  await redis.del(redisKeys.silenced(contextId));
+}
