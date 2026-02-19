@@ -19,6 +19,7 @@ export const memories = {
 
 export const leaveChannelBlocklist = [
   { id: 'C09P6S7H725', name: 'gork' },
+  { id: 'C09PNAM0M0Q', name: 'gork-spam' },
   { id: 'C0AEV1PCX1V', name: 'gork-logs' },
   { id: 'C0A9ATPB2KF', name: 'gork-reports' },
 ];
