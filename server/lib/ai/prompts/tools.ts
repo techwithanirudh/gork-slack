@@ -10,7 +10,7 @@ searchWeb: get fresh info from the internet.
 getUserInfo: fetch Slack user profile (id, avatar, etc).
 react: add emoji reaction.
 reply: send threaded reply or message (ends loop).
-skip: end loop quietly, no reply.
+skip: end loop quietly, no reply. only skips the current message, does NOT stop future replies in the thread.
 leaveChannel: leave the channel you are currently in.
 report: report a user for sexual/NSFW content ONLY.
    Use ONLY when users:
