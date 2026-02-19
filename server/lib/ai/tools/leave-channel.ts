@@ -1,5 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
+import { leaveChannelBlocklist } from '~/config';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
 
@@ -14,21 +15,28 @@ export const leaveChannel = ({ context }: { context: SlackMessageContext }) =>
         .describe('Optional short reason for leaving'),
     }),
     execute: async ({ reason }) => {
+      const channel = context.event.channel;
+      const blocked = leaveChannelBlocklist.find((c) => c.id === channel);
+      if (blocked) {
+        logger.info(
+          { channel, name: blocked.name },
+          'Blocked from leaving channel'
+        );
+        return {
+          success: false,
+          error: `Cannot leave #${blocked.name} — this channel is protected.`,
+        };
+      }
+
       const authorId = (context.event as { user?: string }).user;
-      logger.info(
-        { reason, authorId, channel: context.event.channel },
-        'Leaving channel'
-      );
+      logger.info({ reason, authorId, channel }, 'Leaving channel');
 
       try {
         await context.client.conversations.leave({
-          channel: context.event.channel,
+          channel,
         });
       } catch (error) {
-        logger.error(
-          { error, channel: context.event.channel },
-          'Failed to leave channel'
-        );
+        logger.error({ error, channel }, 'Failed to leave channel');
         return {
           success: false,
           error: error instanceof Error ? error.message : String(error),
