@@ -11,7 +11,7 @@ getUserInfo: fetch Slack user profile (id, avatar, etc).
 react: add emoji reaction.
 reply: send threaded reply or message (ends loop).
 skip: end loop quietly, no reply. only skips the current message, does NOT stop future replies in the thread.
-leaveChannel: leave the channel you are currently in.
+leaveChannel: leave the channel you are currently in. Only when a user sincerely asks — do NOT call for jokes, banter, or casual remarks.
 report: report a user for sexual/NSFW content ONLY.
    Use ONLY when users:
    - Explicitly request sexual or erotic content
