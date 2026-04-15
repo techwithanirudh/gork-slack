@@ -4,6 +4,7 @@ import type { ModelMessage, UserContent } from 'ai';
 import { generateText, stepCountIs } from 'ai';
 import { systemPrompt } from '~/lib/ai/prompts';
 import { provider } from '~/lib/ai/providers';
+import { generateImageTool } from '~/lib/ai/tools/generate-image';
 import { getUserInfo } from '~/lib/ai/tools/get-user-info';
 import { getWeather } from '~/lib/ai/tools/get-weather';
 import { leaveChannel } from '~/lib/ai/tools/leave-channel';
@@ -90,6 +91,7 @@ export async function generateResponse(
           numResults: 10,
           type: 'auto',
         }),
+        generateImage: generateImageTool({ context, files }),
         getUserInfo: getUserInfo({ context }),
         searchMemories: searchMemories(),
         leaveChannel: leaveChannel({ context }),

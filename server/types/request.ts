@@ -1,10 +1,10 @@
 export interface RequestHints {
-  time: string;
+  activity: string;
+  channel: string;
   city: string;
   country: string;
-  server: string;
-  channel: string;
   joined: number;
+  server: string;
   status: string;
-  activity: string;
+  time: string;
 }

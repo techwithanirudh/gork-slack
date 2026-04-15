@@ -6,9 +6,9 @@ import type { PineconeMetadataInput, PineconeMetadataOutput } from '~/types';
 import { getIndex, pinecone } from './index';
 
 export interface MemorySearchOptions {
+  filter?: Record<string, unknown>;
   namespace?: string;
   topK?: number;
-  filter?: Record<string, unknown>;
 }
 
 export const searchMemories = async (

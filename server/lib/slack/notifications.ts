@@ -8,15 +8,15 @@ import {
 } from './blocks';
 
 interface ReportNotificationParams {
-  client: WebClient;
-  userId: string;
   channelId: string;
-  messageTs: string;
-  reason: string;
-  reportCount: number;
+  client: WebClient;
   isBanned: boolean;
   /** Last few messages from the reported user for context */
   messageContext?: string[];
+  messageTs: string;
+  reason: string;
+  reportCount: number;
+  userId: string;
 }
 
 export async function sendReportNotification({
@@ -89,9 +89,9 @@ export async function sendReportNotification({
 }
 
 interface BanNotificationParams {
+  bannedBy: string;
   client: WebClient;
   userId: string;
-  bannedBy: string;
 }
 
 export async function sendBanNotification({
@@ -119,8 +119,8 @@ export async function sendBanNotification({
 
 interface UnbanNotificationParams {
   client: WebClient;
-  userId: string;
   unbannedBy: string;
+  userId: string;
 }
 
 export async function sendUnbanNotification({

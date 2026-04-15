@@ -5,10 +5,10 @@ import { getIndex } from './index';
 import { searchMemories } from './queries';
 
 export interface QueryMemoriesOptions {
-  namespace?: string;
-  limit?: number;
   ageLimit?: number;
   ignoreRecent?: boolean;
+  limit?: number;
+  namespace?: string;
   onlyTools?: boolean;
 }
 

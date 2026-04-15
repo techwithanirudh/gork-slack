@@ -1,5 +1,5 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { customProvider, wrapLanguageModel } from 'ai';
+import { customProvider, wrapProvider } from 'ai';
 import { createRetryable } from 'ai-retry';
 import { env } from '~/env';
 import logger from '~/lib/logger';
@@ -11,65 +11,72 @@ const hackclubBase = createOpenRouter({
 
 const openrouter = createOpenRouter({
   apiKey: env.OPENROUTER_API_KEY,
+  baseURL: env.OPENROUTER_BASE_URL ?? undefined,
 });
 
-const hackclub = (modelId: string) => {
-  return wrapLanguageModel({
-    model: hackclubBase(modelId),
-    // middleware is required even though it's unnecessary
-    middleware: {
-      specificationVersion: 'v3',
-    },
-    modelId,
-    providerId: 'hackclub',
-  });
+const hackclub = wrapProvider({
+  provider: hackclubBase,
+  languageModelMiddleware: {
+    specificationVersion: 'v3',
+    overrideProvider: () => 'hackclub',
+  },
+  imageModelMiddleware: {
+    specificationVersion: 'v3',
+    overrideProvider: () => 'hackclub',
+  },
+});
+
+const onModelError = (context: {
+  current: { model: { provider: string; modelId: string } };
+}) => {
+  const { model } = context.current;
+  logger.error(
+    `error with model ${model.provider}/${model.modelId}, switching to next model`
+  );
 };
 
 const chatModel = createRetryable({
-  model: hackclub('google/gemini-3-flash-preview'),
+  model: hackclub.languageModel('google/gemini-3-flash-preview'),
   retries: [
-    hackclub('google/gemini-2.5-flash'),
-    hackclub('openai/gpt-5-mini'),
-    openrouter('google/gemini-3-flash-preview'),
-    openrouter('google/gemini-2.5-flash'),
-    openrouter('openai/gpt-5-mini'),
+    hackclub.languageModel('google/gemini-2.5-flash'),
+    hackclub.languageModel('openai/gpt-5-mini'),
+    openrouter.languageModel('google/gemini-3-flash-preview'),
+    openrouter.languageModel('google/gemini-2.5-flash'),
+    openrouter.languageModel('openai/gpt-5-mini'),
   ],
-  onError: (context) => {
-    const { model } = context.current;
-    logger.error(
-      `error with model ${model.provider}/${model.modelId}, switching to next model`
-    );
-  },
+  onError: onModelError,
 });
 
 const relevanceModel = createRetryable({
-  model: hackclub('openai/gpt-5-mini'),
+  model: hackclub.languageModel('openai/gpt-5-mini'),
   retries: [
-    hackclub('google/gemini-2.5-flash'),
-    openrouter('google/gemini-2.5-flash-lite'),
-    openrouter('openai/gpt-5-mini'),
+    hackclub.languageModel('google/gemini-2.5-flash'),
+    openrouter.languageModel('google/gemini-2.5-flash-lite'),
+    openrouter.languageModel('openai/gpt-5-mini'),
   ],
-  onError: (context) => {
-    const { model } = context.current;
-    logger.error(
-      `error with model ${model.provider}/${model.modelId}, switching to next model`
-    );
-  },
+  onError: onModelError,
 });
 
 const contentFilterModel = createRetryable({
-  model: hackclub('openai/gpt-5-mini'),
+  model: hackclub.languageModel('openai/gpt-5-mini'),
   retries: [
-    hackclub('google/gemini-2.5-flash-lite'),
-    openrouter('google/gemini-2.5-flash-lite'),
-    openrouter('openai/gpt-5-nano'),
+    hackclub.languageModel('google/gemini-2.5-flash-lite'),
+    openrouter.languageModel('google/gemini-2.5-flash-lite'),
+    openrouter.languageModel('openai/gpt-5-nano'),
   ],
-  onError: (context) => {
-    const { model } = context.current;
-    logger.error(
-      `error with model ${model.provider}/${model.modelId}, switching to next model`
-    );
-  },
+  onError: onModelError,
+});
+
+const summariserModel = createRetryable({
+  model: hackclub.languageModel('google/gemini-3-flash-preview'),
+  retries: [
+    hackclub.languageModel('google/gemini-2.5-flash'),
+    hackclub.languageModel('openai/gpt-5-mini'),
+    openrouter.languageModel('google/gemini-3-flash-preview'),
+    openrouter.languageModel('google/gemini-2.5-flash'),
+    openrouter.languageModel('openai/gpt-5-nano'),
+  ],
+  onError: onModelError,
 });
 
 export const provider = customProvider({
@@ -77,5 +84,9 @@ export const provider = customProvider({
     'chat-model': chatModel,
     'relevance-model': relevanceModel,
     'content-filter-model': contentFilterModel,
+    'summariser-model': summariserModel,
+  },
+  imageModels: {
+    'image-model': hackclub.imageModel('google/gemini-3.1-flash-image-preview'),
   },
 });

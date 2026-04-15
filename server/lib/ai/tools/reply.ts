@@ -8,8 +8,8 @@ import type { SlackMessageContext } from '~/types';
 import { getSlackUserName } from '~/utils/users';
 
 interface SlackHistoryMessage {
-  ts?: string;
   thread_ts?: string;
+  ts?: string;
 }
 
 async function resolveTargetMessage(

@@ -16,8 +16,8 @@ import {
 export const name = 'remove_report';
 
 interface RemoveReportValue {
-  userId: string;
   reportId: string;
+  userId: string;
 }
 
 export async function execute({

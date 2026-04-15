@@ -6,8 +6,8 @@ const UUID_REGEX = /^[a-f0-9-]{36}$/;
 
 export interface Report {
   id: string;
-  timestamp: number;
   reason: string;
+  timestamp: number;
 }
 
 function parseReport(report: string): Report {
