@@ -1,8 +1,11 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { leaveChannelBlocklist } from '~/config';
+import { env } from '~/env';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
+
+const SLACK_USER_ID_REGEX = /^[UW][A-Z0-9]+$/;
 
 export const leaveChannel = ({ context }: { context: SlackMessageContext }) =>
   tool({
@@ -28,8 +31,28 @@ export const leaveChannel = ({ context }: { context: SlackMessageContext }) =>
         };
       }
 
-      const authorId = (context.event as { user?: string }).user;
-      logger.info({ reason, authorId, channel }, 'Leaving channel');
+      const triggerUserId = (context.event as { user?: string }).user;
+      const safeTriggerUserId =
+        triggerUserId && SLACK_USER_ID_REGEX.test(triggerUserId)
+          ? triggerUserId
+          : undefined;
+      logger.info({ reason, triggerUserId, channel }, 'Leaving channel');
+
+      if (env.BOT_JOIN_LOGS_CHANNEL) {
+        try {
+          await context.client.chat.postMessage({
+            channel: env.BOT_JOIN_LOGS_CHANNEL,
+            text: safeTriggerUserId
+              ? `<@${safeTriggerUserId}> asked the bot to leave <#${channel}>`
+              : `The bot was asked to leave <#${channel}>`,
+          });
+        } catch (error) {
+          logger.error(
+            { error, channel, triggerUserId },
+            'Failed to send leave-channel trigger notification'
+          );
+        }
+      }
 
       try {
         await context.client.conversations.leave({
