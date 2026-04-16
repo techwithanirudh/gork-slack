@@ -28,7 +28,7 @@ export const generateImageTool = ({
 }) =>
   tool({
     description:
-      'Generate one or more AI images and upload them directly to the current Slack thread. If image attachments are present, use them as source images for editing or transformation.',
+      'Generate one or more AI images and upload them directly to the current Slack thread. If image attachments are present, use them as source images for editing or transformation. A temporary status message is shown in Slack while generation is running and deleted after the images finish or fail.',
     inputSchema: z
       .object({
         prompt: z
@@ -36,6 +36,13 @@ export const generateImageTool = ({
           .min(1)
           .max(1500)
           .describe('Image prompt with the visual details to generate'),
+        status: z
+          .string()
+          .min(1)
+          .max(160)
+          .describe(
+            'Temporary status message shown in Slack while the image is generating. It should match your personality and will be deleted after generation finishes.'
+          ),
         n: z
           .number()
           .int()
@@ -63,11 +70,12 @@ export const generateImageTool = ({
         message: 'Provide either size or aspectRatio, not both',
         path: ['size'],
       }),
-    execute: async ({ prompt, n, size, aspectRatio, seed }) => {
+    execute: async ({ prompt, status, n, size, aspectRatio, seed }) => {
       const channelId = context.event.channel;
       const messageTs = context.event.ts;
       const threadTs =
         (context.event as { thread_ts?: string }).thread_ts ?? messageTs;
+      let statusMessageTs: string | undefined;
 
       if (!(channelId && threadTs)) {
         return {
@@ -77,6 +85,20 @@ export const generateImageTool = ({
       }
 
       try {
+        try {
+          const response = await context.client.chat.postMessage({
+            channel: channelId,
+            text: status,
+            thread_ts: threadTs,
+          });
+          statusMessageTs = response.ts;
+        } catch (error) {
+          logger.warn(
+            { ...toLogError(error), channel: channelId },
+            'Failed to post image generation status message'
+          );
+        }
+
         const inputImages = await processSlackFiles(files);
         const sourceImages = inputImages
           .map((item) => item.image)
@@ -135,6 +157,20 @@ export const generateImageTool = ({
           success: false,
           error: error instanceof Error ? error.message : String(error),
         };
+      } finally {
+        if (statusMessageTs) {
+          try {
+            await context.client.chat.delete({
+              channel: channelId,
+              ts: statusMessageTs,
+            });
+          } catch (error) {
+            logger.warn(
+              { ...toLogError(error), channel: channelId },
+              'Failed to delete image generation status message'
+            );
+          }
+        }
       }
     },
   });
