@@ -88,7 +88,7 @@ export const generateImageTool = ({
         try {
           const response = await context.client.chat.postMessage({
             channel: channelId,
-            text: status,
+            text: `${status} :thonk-spin:`,
             thread_ts: threadTs,
           });
           statusMessageTs = response.ts;
