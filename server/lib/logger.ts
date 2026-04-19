@@ -32,17 +32,15 @@ targets.push({
   level: logLevel,
 });
 
-if (!isProd) {
-  targets.push({
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'yyyy-mm-dd HH:MM:ss.l o',
-      ignore: 'pid,hostname',
-    },
-    level: logLevel,
-  });
-}
+targets.push({
+  target: 'pino-pretty',
+  options: {
+    colorize: !isProd,
+    translateTime: 'yyyy-mm-dd HH:MM:ss.l o',
+    ignore: 'pid,hostname',
+  },
+  level: logLevel,
+});
 
 const transport = targets.length > 0 ? createTransport({ targets }) : undefined;
 
