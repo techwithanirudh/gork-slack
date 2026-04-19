@@ -29,6 +29,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
+    "ignoreDeprecations": "6.0",
     "rootDir": "server",
     "baseUrl": ".",
     "paths": {
