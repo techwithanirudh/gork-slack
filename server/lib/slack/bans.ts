@@ -23,7 +23,7 @@ export async function executeBan(
 
   await Promise.all([
     sendBanNotification({ client, userId: targetUserId, bannedBy: adminId }),
-    sendBanLog({ client, userId: targetUserId, adminId }),
+    sendBanLog({ client, userId: targetUserId }),
   ]);
 
   return 'banned';
@@ -49,7 +49,7 @@ export async function executeUnban(
       userId: targetUserId,
       unbannedBy: adminId,
     }),
-    sendUnbanLog({ client, userId: targetUserId, adminId }),
+    sendUnbanLog({ client, userId: targetUserId }),
   ]);
 
   return 'unbanned';

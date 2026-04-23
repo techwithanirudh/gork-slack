@@ -1,13 +1,44 @@
+import type { KnownBlock } from '@slack/types';
 import type { WebClient } from '@slack/web-api';
 import { env } from '~/env';
 import logger from '~/lib/logger';
 
-async function postLog(client: WebClient, text: string): Promise<void> {
+function infoButton(value: string): KnownBlock {
+  return {
+    type: 'actions',
+    elements: [
+      {
+        type: 'button',
+        action_id: 'moderation_info',
+        text: { type: 'plain_text', text: 'More Info' },
+        value,
+      },
+    ],
+  };
+}
+
+function footerBlock(ts: number): KnownBlock {
+  return {
+    type: 'context',
+    elements: [
+      {
+        type: 'mrkdwn',
+        text: `<!date^${ts}^{date_long_pretty} at {time}|${new Date(ts * 1000).toUTCString()}>`,
+      },
+    ],
+  };
+}
+
+async function postLog(
+  client: WebClient,
+  text: string,
+  blocks?: KnownBlock[]
+): Promise<void> {
   if (!(env.LOGS_CHANNEL && env.BAN_LOGS)) {
     return;
   }
   try {
-    await client.chat.postMessage({ channel: env.LOGS_CHANNEL, text });
+    await client.chat.postMessage({ channel: env.LOGS_CHANNEL, text, blocks });
   } catch (error) {
     logger.warn({ error }, 'Failed to post to logs channel');
   }
@@ -30,21 +61,61 @@ export async function sendStrikeLog({
   banThreshold,
   isBanned,
 }: StrikeLogParams): Promise<void> {
+  const ts = Math.floor(Date.now() / 1000);
+
   if (isBanned) {
     await postLog(
       client,
-      `:no_entry: <@${userId}> has been auto-banned after ${reportCount} strikes. Last reason: ${reason}`
+      `${userId} auto-banned after ${reportCount} strikes`,
+      [
+        { type: 'header', text: { type: 'plain_text', text: 'Auto-Ban' } },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: 'A user has been automatically banned after hitting the strike threshold.',
+          },
+        },
+        {
+          type: 'section',
+          fields: [
+            { type: 'mrkdwn', text: `*User*\n<@${userId}>` },
+            { type: 'mrkdwn', text: `*Strikes*\n${reportCount}` },
+            { type: 'mrkdwn', text: `*Last Reason*\n${reason}` },
+          ],
+        },
+        infoButton('auto_ban'),
+        footerBlock(ts),
+      ]
     );
   } else {
     await postLog(
       client,
-      `:warning: <@${userId}> received a strike (${reportCount}/${banThreshold}). Reason: ${reason}`
+      `${userId} received a strike (${reportCount}/${banThreshold})`,
+      [
+        { type: 'header', text: { type: 'plain_text', text: 'Strike' } },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `A user has received a strike (${reportCount}/${banThreshold} before auto-ban).`,
+          },
+        },
+        {
+          type: 'section',
+          fields: [
+            { type: 'mrkdwn', text: `*User*\n<@${userId}>` },
+            { type: 'mrkdwn', text: `*Reason*\n${reason}` },
+          ],
+        },
+        infoButton('strike'),
+        footerBlock(ts),
+      ]
     );
   }
 }
 
 interface BanLogParams {
-  adminId: string;
   client: WebClient;
   userId: string;
 }
@@ -52,16 +123,27 @@ interface BanLogParams {
 export async function sendBanLog({
   client,
   userId,
-  adminId,
 }: BanLogParams): Promise<void> {
-  await postLog(
-    client,
-    `:hammer: <@${userId}> was manually banned by <@${adminId}>`
-  );
+  const ts = Math.floor(Date.now() / 1000);
+  await postLog(client, `${userId} was manually banned`, [
+    { type: 'header', text: { type: 'plain_text', text: 'Manual Ban' } },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: 'A user has been manually banned from Gork.',
+      },
+    },
+    {
+      type: 'section',
+      fields: [{ type: 'mrkdwn', text: `*Banned User*\n<@${userId}>` }],
+    },
+    infoButton('ban'),
+    footerBlock(ts),
+  ]);
 }
 
 interface UnbanLogParams {
-  adminId: string;
   client: WebClient;
   userId: string;
 }
@@ -69,10 +151,22 @@ interface UnbanLogParams {
 export async function sendUnbanLog({
   client,
   userId,
-  adminId,
 }: UnbanLogParams): Promise<void> {
-  await postLog(
-    client,
-    `:white_check_mark: <@${userId}> was unbanned by <@${adminId}>`
-  );
+  const ts = Math.floor(Date.now() / 1000);
+  await postLog(client, `${userId} was unbanned`, [
+    { type: 'header', text: { type: 'plain_text', text: 'Unban' } },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: 'A user has been unbanned and can use Gork again.',
+      },
+    },
+    {
+      type: 'section',
+      fields: [{ type: 'mrkdwn', text: `*User*\n<@${userId}>` }],
+    },
+    infoButton('unban'),
+    footerBlock(ts),
+  ]);
 }
