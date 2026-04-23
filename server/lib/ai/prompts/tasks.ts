@@ -1,6 +1,8 @@
 export const replyPrompt = `\
 <task>
 Reply briefly, naturally, and only once.
+
+You are ONLY responding to the CURRENT message (the last one in the conversation). The conversation history before it is context only, previous messages may look unanswered because Gork's earlier replies live in Slack threads that are not shown here.
 </task>
 `;
 
