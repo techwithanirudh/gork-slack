@@ -16,11 +16,11 @@ export const searchMemories = async (
   { namespace = 'default', topK = 5, filter }: MemorySearchOptions = {}
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
   try {
-    const embeddings = await pinecone.inference.embed(
-      'llama-text-embed-v2',
-      [query],
-      { inputType: 'query', truncate: 'END' }
-    );
+    const embeddings = await pinecone.inference.embed({
+      model: 'llama-text-embed-v2',
+      inputs: [query],
+      parameters: { inputType: 'query', truncate: 'END' },
+    });
 
     if (!embeddings.data[0]) {
       throw logger.error('No embeddings data');
@@ -80,11 +80,11 @@ export const addMemory = async (
       throw new Error('Invalid metadata schema');
     }
 
-    const embeddings = await pinecone.inference.embed(
-      'llama-text-embed-v2',
-      [text],
-      { inputType: 'passage', truncate: 'END' }
-    );
+    const embeddings = await pinecone.inference.embed({
+      model: 'llama-text-embed-v2',
+      inputs: [text],
+      parameters: { inputType: 'passage', truncate: 'END' },
+    });
 
     if (!embeddings.data[0]) {
       throw logger.error('No embeddings data');
@@ -94,13 +94,15 @@ export const addMemory = async (
     }
 
     const index = (await getIndex()).namespace(namespace);
-    await index.upsert([
-      {
-        id,
-        values: embeddings.data[0].values ?? [],
-        metadata: parsed.data,
-      },
-    ]);
+    await index.upsert({
+      records: [
+        {
+          id,
+          values: embeddings.data[0].values ?? [],
+          metadata: parsed.data,
+        },
+      ],
+    });
 
     logger.debug({ id, metadata }, 'Added memory');
     return id;
@@ -116,7 +118,7 @@ export const deleteMemory = async (
 ): Promise<void> => {
   try {
     const index = (await getIndex()).namespace(namespace);
-    await index.deleteOne(id);
+    await index.deleteOne({ id });
     logger.debug({ id }, 'Deleted memory');
   } catch (error) {
     logger.error({ error }, 'Error deleting memory');

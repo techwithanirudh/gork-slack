@@ -62,7 +62,7 @@ function resolveThreadTs(
   if (fallback) {
     return fallback;
   }
-  return undefined;
+  return;
 }
 
 async function checkContent(
