@@ -1,6 +1,11 @@
 import type { AllMiddlewareArgs } from '@slack/bolt';
 import { banUser, isUserBanned, unbanUser } from '../reports';
-import { sendBanNotification, sendUnbanNotification } from './notifications';
+import {
+  sendBanLog,
+  sendBanNotification,
+  sendUnbanLog,
+  sendUnbanNotification,
+} from './notifications';
 
 export async function executeBan(
   context: AllMiddlewareArgs,
@@ -16,11 +21,10 @@ export async function executeBan(
 
   await banUser(targetUserId);
 
-  await sendBanNotification({
-    client,
-    userId: targetUserId,
-    bannedBy: adminId,
-  });
+  await Promise.all([
+    sendBanNotification({ client, userId: targetUserId, bannedBy: adminId }),
+    sendBanLog({ client, userId: targetUserId, adminId }),
+  ]);
 
   return 'banned';
 }
@@ -39,11 +43,14 @@ export async function executeUnban(
 
   await unbanUser(targetUserId);
 
-  await sendUnbanNotification({
-    client,
-    userId: targetUserId,
-    unbannedBy: adminId,
-  });
+  await Promise.all([
+    sendUnbanNotification({
+      client,
+      userId: targetUserId,
+      unbannedBy: adminId,
+    }),
+    sendUnbanLog({ client, userId: targetUserId, adminId }),
+  ]);
 
   return 'unbanned';
 }

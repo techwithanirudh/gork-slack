@@ -20,17 +20,17 @@ export async function execute({
 
   logger.info({ channelId }, 'Bot removed from channel');
 
-  if (!env.BOT_JOIN_LOGS_CHANNEL) {
+  if (!env.LOGS_CHANNEL) {
     logger.warn(
       { channelId },
-      'Bot removed from channel notification not sent because BOT_JOIN_LOGS_CHANNEL is not configured'
+      'Bot removed from channel notification not sent because LOGS_CHANNEL is not configured'
     );
     return;
   }
 
   try {
     await client.chat.postMessage({
-      channel: env.BOT_JOIN_LOGS_CHANNEL,
+      channel: env.LOGS_CHANNEL,
       text: `Bot was removed from <#${channelId}>`,
     });
     logger.info(

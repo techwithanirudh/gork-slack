@@ -5,7 +5,7 @@ import {
   banNotificationBlocks,
   reportNotificationBlocks,
   unbanNotificationBlocks,
-} from './blocks';
+} from '../blocks';
 
 interface ReportNotificationParams {
   channelId: string;
@@ -36,7 +36,6 @@ export async function sendReportNotification({
     return;
   }
 
-  // Check if channel is private (moderators may not have access)
   let isPrivateChannel = false;
   try {
     const channelInfo = await client.conversations.info({ channel: channelId });
@@ -46,18 +45,16 @@ export async function sendReportNotification({
       channelInfo.channel?.is_mpim ??
       false;
   } catch {
-    // If we can't get channel info, assume it might be private
     isPrivateChannel = true;
   }
 
-  // Get permalink with error handling (may fail for private channels)
   let permalink: string | undefined;
   try {
-    const permalinkResult = await client.chat.getPermalink({
+    const result = await client.chat.getPermalink({
       channel: channelId,
       message_ts: messageTs,
     });
-    permalink = permalinkResult.permalink ?? undefined;
+    permalink = result.permalink ?? undefined;
   } catch (error) {
     logger.warn(
       { error, channelId, messageTs },
@@ -65,26 +62,24 @@ export async function sendReportNotification({
     );
   }
 
-  const blocks = reportNotificationBlocks(
-    userId,
-    channelId,
-    reason,
-    reportCount,
-    isBanned,
-    permalink,
-    messageContext,
-    isPrivateChannel
-  );
-
   await client.chat.postMessage({
     channel: env.REPORTS_CHANNEL,
     text: `User <@${userId}> has been reported`,
-    blocks,
+    blocks: reportNotificationBlocks(
+      userId,
+      channelId,
+      reason,
+      reportCount,
+      isBanned,
+      permalink,
+      messageContext,
+      isPrivateChannel
+    ),
   });
 
   logger.info(
     { userId, channelId, reportCount, isBanned },
-    'Report notification sent to reports channel'
+    'Report notification sent'
   );
 }
 
@@ -106,15 +101,13 @@ export async function sendBanNotification({
     return;
   }
 
-  const blocks = banNotificationBlocks(userId, bannedBy);
-
   await client.chat.postMessage({
     channel: env.REPORTS_CHANNEL,
     text: `User <@${userId}> has been banned`,
-    blocks,
+    blocks: banNotificationBlocks(userId, bannedBy),
   });
 
-  logger.info({ userId, bannedBy }, 'Ban notification sent to reports channel');
+  logger.info({ userId, bannedBy }, 'Ban notification sent');
 }
 
 interface UnbanNotificationParams {
@@ -135,16 +128,11 @@ export async function sendUnbanNotification({
     return;
   }
 
-  const blocks = unbanNotificationBlocks(userId, unbannedBy);
-
   await client.chat.postMessage({
     channel: env.REPORTS_CHANNEL,
     text: `User <@${userId}> has been unbanned`,
-    blocks,
+    blocks: unbanNotificationBlocks(userId, unbannedBy),
   });
 
-  logger.info(
-    { userId, unbannedBy },
-    'Unban notification sent to reports channel'
-  );
+  logger.info({ userId, unbannedBy }, 'Unban notification sent');
 }

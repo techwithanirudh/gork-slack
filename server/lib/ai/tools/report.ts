@@ -5,6 +5,7 @@ import logger from '~/lib/logger';
 import {
   addReport,
   sendReportNotification,
+  sendStrikeLog,
   validateReport,
 } from '~/lib/reports';
 import { getConversationMessages } from '~/slack/conversations';
@@ -123,16 +124,26 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
           .map((msg) => getMessageText(msg))
           .filter(Boolean);
 
-        await sendReportNotification({
-          client: context.client,
-          userId,
-          channelId,
-          messageTs,
-          reason,
-          reportCount,
-          isBanned,
-          messageContext,
-        });
+        await Promise.all([
+          sendReportNotification({
+            client: context.client,
+            userId,
+            channelId,
+            messageTs,
+            reason,
+            reportCount,
+            isBanned,
+            messageContext,
+          }),
+          sendStrikeLog({
+            client: context.client,
+            userId,
+            reason,
+            reportCount,
+            banThreshold: moderation.banThreshold,
+            isBanned,
+          }),
+        ]);
 
         logger.info(
           { userId, reason, reportCount, channelId },

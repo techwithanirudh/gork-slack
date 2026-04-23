@@ -22,6 +22,8 @@ import { generateResponse } from './utils/respond';
 
 export const name = 'message';
 
+const blockedChannels = new Set(env.BLOCKED_CHANNELS ?? []);
+
 type MessageEventArgs = SlackEventMiddlewareArgs<'message'> & AllMiddlewareArgs;
 
 async function canReply(ctxId: string): Promise<boolean> {
@@ -108,6 +110,26 @@ function getContextId(ctx: SlackMessageContext): string {
   return channel;
 }
 
+async function handleTriggerInBlockedChannel(
+  ctx: SlackMessageContext,
+  triggerType: string
+): Promise<void> {
+  if (triggerType !== 'ping' && triggerType !== 'dm') {
+    return;
+  }
+  const channelId = (ctx.event as { channel?: string }).channel;
+  const threadTs = (ctx.event as { thread_ts?: string }).thread_ts;
+  const messageTs = (ctx.event as { ts?: string }).ts;
+  if (!channelId) {
+    return;
+  }
+  await ctx.client.chat.postMessage({
+    channel: channelId,
+    thread_ts: threadTs ?? messageTs,
+    text: "sorry i'm not allowed to respond in this channel",
+  });
+}
+
 async function handleMessage(args: MessageEventArgs) {
   if (
     args.event.subtype &&
@@ -136,6 +158,11 @@ async function handleMessage(args: MessageEventArgs) {
     keywords,
     messageContext.botUserId
   );
+
+  if (blockedChannels.has(args.event.channel)) {
+    await handleTriggerInBlockedChannel(messageContext, trigger.type ?? '');
+    return;
+  }
 
   const authorName = await getAuthorName(messageContext);
   const content = (messageContext.event as { text?: string }).text ?? '';
@@ -200,9 +227,7 @@ async function handleMessage(args: MessageEventArgs) {
     await resetMessageCount(ctxId);
 
     logger.info(
-      {
-        message: `${authorName}: ${content}`,
-      },
+      { message: `${authorName}: ${content}` },
       `[${ctxId}] Triggered by ${trigger.type}`
     );
 

@@ -38,10 +38,10 @@ export const leaveChannel = ({ context }: { context: SlackMessageContext }) =>
           : undefined;
       logger.info({ reason, triggerUserId, channel }, 'Leaving channel');
 
-      if (env.BOT_JOIN_LOGS_CHANNEL) {
+      if (env.LOGS_CHANNEL) {
         try {
           await context.client.chat.postMessage({
-            channel: env.BOT_JOIN_LOGS_CHANNEL,
+            channel: env.LOGS_CHANNEL,
             text: safeTriggerUserId
               ? `<@${safeTriggerUserId}> asked the bot to leave <#${channel}>`
               : `The bot was asked to leave <#${channel}>`,

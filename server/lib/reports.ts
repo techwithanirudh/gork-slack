@@ -19,8 +19,11 @@ export {
 export { userReportBlocks } from './slack/blocks';
 
 export {
+  sendBanLog,
   sendBanNotification,
   sendReportNotification,
+  sendStrikeLog,
+  sendUnbanLog,
   sendUnbanNotification,
 } from './slack/notifications';
 
