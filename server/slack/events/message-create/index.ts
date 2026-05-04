@@ -2,7 +2,13 @@ import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
 import { keywords, messageThreshold } from '~/config';
 import { env } from '~/env';
 import { isUserAllowed } from '~/lib/allowed-users';
-import { clearSilenced, isSilenced, ratelimit, redisKeys } from '~/lib/kv';
+import {
+  clearSilenced,
+  isSilenced,
+  ratelimit,
+  redisKeys,
+  setSilenced,
+} from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
 import { getQueue } from '~/lib/queue';
@@ -150,6 +156,20 @@ async function handleMessage(args: MessageEventArgs) {
 
   const ctxId = getContextId(messageContext);
   if (!(await canReply(ctxId))) {
+    return;
+  }
+
+  const text = (messageContext.event as { text?: string }).text ?? '';
+
+  // biome-ignore lint/performance/useTopLevelRegex: one-off pattern
+  if (/^!stop\b/i.test(text)) {
+    await setSilenced(ctxId);
+    logger.info({ ctxId }, 'Thread silenced via !stop message');
+    await messageContext.client.chat.postMessage({
+      channel: messageContext.event.channel,
+      thread_ts: (messageContext.event as { thread_ts?: string }).thread_ts,
+      text: "aight, i'll shut up now. ping me if u wanna talk",
+    });
     return;
   }
 

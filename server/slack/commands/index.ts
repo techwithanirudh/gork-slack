@@ -1,14 +1,12 @@
 import { execute as banExecute, name as banName } from './ban';
 import { execute as leaveExecute, name as leaveName } from './leave';
 import { execute as reportsExecute, name as reportsName } from './reports';
-import { execute as stopExecute, name as stopName } from './stop';
 import { execute as unbanExecute, name as unbanName } from './unban';
 
 const subcommands = [
   { name: banName, execute: banExecute },
   { name: unbanName, execute: unbanExecute },
   { name: reportsName, execute: reportsExecute },
-  { name: stopName, execute: stopExecute },
   { name: leaveName, execute: leaveExecute },
 ] as const;
 
