@@ -3,7 +3,6 @@ import type {
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
 import { leaveChannelBlocklist } from '~/config';
-import { env } from '~/env';
 import logger from '~/lib/logger';
 
 export const name = 'leave';
@@ -16,7 +15,6 @@ export async function execute(
   await ack();
 
   const channelId = body.channel_id;
-  const userId = body.user_id;
 
   const blocked = leaveChannelBlocklist.find((c) => c.id === channelId);
   if (blocked) {
@@ -27,17 +25,14 @@ export async function execute(
     return;
   }
 
-  if (env.LOGS_CHANNEL) {
-    await client.chat.postMessage({
-      channel: env.LOGS_CHANNEL,
-      text: `<@${userId}> asked the bot to leave <#${channelId}> via /gork leave`,
-    }).catch((error) => logger.error({ error, channelId }, 'Failed to send leave-channel log'));
-  }
-
-  await client.chat.postMessage({
-    channel: channelId,
-    text: "aight, i'm out. ping me in another channel if u need me",
-  }).catch((error) => logger.warn({ error, channelId }, 'Failed to send leave acknowledgment'));
+  await client.chat
+    .postMessage({
+      channel: channelId,
+      text: "aight, i'm out. ping me in another channel if u need me",
+    })
+    .catch((error) =>
+      logger.warn({ error, channelId }, 'Failed to send leave acknowledgment')
+    );
 
   await client.conversations.leave({ channel: channelId }).catch((error) => {
     logger.error({ error, channelId }, 'Failed to leave channel');
@@ -46,6 +41,4 @@ export async function execute(
       response_type: 'ephemeral',
     });
   });
-
-  logger.info({ channelId, userId }, 'Left channel via /gork leave');
 }
