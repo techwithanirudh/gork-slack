@@ -159,21 +159,6 @@ async function handleMessage(args: MessageEventArgs) {
     return;
   }
 
-  const text = (messageContext.event as { text?: string }).text ?? '';
-
-  // biome-ignore lint/performance/useTopLevelRegex: one-off pattern
-  if (/^!stop\b/i.test(text)) {
-    await setSilenced(ctxId);
-    clearQueue(ctxId);
-    logger.info({ ctxId }, 'Thread silenced and queue cleared via !stop');
-    await messageContext.client.chat.postMessage({
-      channel: messageContext.event.channel,
-      thread_ts: (messageContext.event as { thread_ts?: string }).thread_ts,
-      text: "aight, i'll shut up now. ping me if u wanna talk",
-    });
-    return;
-  }
-
   const trigger = await getTrigger(
     messageContext,
     keywords,
@@ -333,6 +318,21 @@ export async function execute(args: MessageEventArgs) {
 
   const ctxId = getContextId(messageContext);
   if (!(await canReply(ctxId))) {
+    return;
+  }
+
+  const text = (messageContext.event as { text?: string }).text ?? '';
+
+  // biome-ignore lint/performance/useTopLevelRegex: one-off pattern
+  if (/^!stop\b/i.test(text)) {
+    await setSilenced(ctxId);
+    clearQueue(ctxId);
+    logger.info({ ctxId }, 'Thread silenced and queue cleared via !stop');
+    await messageContext.client.chat.postMessage({
+      channel: messageContext.event.channel,
+      thread_ts: (messageContext.event as { thread_ts?: string }).thread_ts,
+      text: "aight, i'll shut up now. ping me if u wanna talk",
+    });
     return;
   }
 
