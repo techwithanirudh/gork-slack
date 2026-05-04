@@ -11,7 +11,7 @@ import {
 } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
-import { getQueue } from '~/lib/queue';
+import { clearQueue, getQueue } from '~/lib/queue';
 import { isUserBanned } from '~/lib/reports';
 import type { SlackMessageContext } from '~/types';
 import { buildChatContext } from '~/utils/context';
@@ -164,7 +164,8 @@ async function handleMessage(args: MessageEventArgs) {
   // biome-ignore lint/performance/useTopLevelRegex: one-off pattern
   if (/^!stop\b/i.test(text)) {
     await setSilenced(ctxId);
-    logger.info({ ctxId }, 'Thread silenced via !stop message');
+    clearQueue(ctxId);
+    logger.info({ ctxId }, 'Thread silenced and queue cleared via !stop');
     await messageContext.client.chat.postMessage({
       channel: messageContext.event.channel,
       thread_ts: (messageContext.event as { thread_ts?: string }).thread_ts,

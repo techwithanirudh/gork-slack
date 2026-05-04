@@ -2,6 +2,7 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { setSilenced } from '~/lib/kv';
 import logger from '~/lib/logger';
+import { clearQueue } from '~/lib/queue';
 import type { SlackMessageContext } from '~/types';
 
 export const stopTalking = ({ context }: { context: SlackMessageContext }) =>
@@ -22,7 +23,11 @@ export const stopTalking = ({ context }: { context: SlackMessageContext }) =>
 
       const ctxId = `${channel}:${threadTs}`;
       await setSilenced(ctxId);
-      logger.info({ ctxId }, 'Thread silenced via stopTalking tool');
+      clearQueue(ctxId);
+      logger.info(
+        { ctxId },
+        'Thread silenced and queue cleared via stopTalking tool'
+      );
 
       return {
         success: true,
