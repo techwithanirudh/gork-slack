@@ -164,25 +164,32 @@ async function handleTriggeredMessage(
     return;
   }
 
-  if (!isUserAllowed(args.event.user)) {
+  const ev = args.event as {
+    user?: string;
+    channel: string;
+    thread_ts?: string;
+    ts?: string;
+  };
+
+  if (!isUserAllowed(ev.user ?? '')) {
     if (triggerType === 'keyword') {
       return;
     }
     await args.client.chat.postMessage({
-      channel: args.event.channel,
-      thread_ts: args.event.thread_ts || args.event.ts,
-      markdown_text: `sorry bro <@${args.event.user}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
+      channel: ev.channel,
+      thread_ts: ev.thread_ts || ev.ts,
+      markdown_text: `sorry bro <@${ev.user}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
     });
     return;
   }
 
-  const userId = args.event.user;
+  const userId = ev.user;
   if (userId && (await isUserBanned(userId))) {
     if (triggerType === 'ping' || triggerType === 'dm') {
       await args.client.chat.postMessage({
-        channel: args.event.channel,
+        channel: ev.channel,
         text: "nah bro you're banned lol. hit up staff if you think this is a mistake or whatever",
-        thread_ts: args.event.thread_ts || args.event.ts,
+        thread_ts: ev.thread_ts || ev.ts,
       });
     }
     logger.info({ userId }, 'Refused to respond to banned user');
@@ -245,10 +252,11 @@ async function handleRelevancePath(
     return;
   }
 
-  if (!isUserAllowed(args.event.user)) {
+  const userId = (args.event as { user?: string }).user;
+  if (!isUserAllowed(userId ?? '')) {
     return;
   }
-  if (args.event.user && (await isUserBanned(args.event.user))) {
+  if (userId && (await isUserBanned(userId))) {
     return;
   }
 
