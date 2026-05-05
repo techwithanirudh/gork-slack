@@ -4,8 +4,23 @@ import logger from '~/lib/logger';
 
 const adminUserIds = new Set(env.ADMINS ?? []);
 
+const CHANNEL_MANAGER_ROLE_ID = 'Rl0A';
+
 export function isAdmin(userId: string): boolean {
   return adminUserIds.has(userId);
+}
+
+async function isChannelManagerViaRoles(
+  userId: string,
+  channelId: string,
+  client: WebClient
+): Promise<boolean> {
+  const result = await client.admin.roles.listAssignments({
+    role_ids: [CHANNEL_MANAGER_ROLE_ID],
+    entity_ids: [channelId],
+    limit: 200,
+  });
+  return result.role_assignments?.some((a) => a.user_id === userId) ?? false;
 }
 
 export async function isChannelAdmin(
@@ -17,16 +32,18 @@ export async function isChannelAdmin(
     return true;
   }
   try {
-    const [userInfo, channelInfo] = await Promise.all([
-      client.users.info({ user: userId }),
-      client.conversations.info({ channel: channelId }),
-    ]);
-    const workspaceAdmin =
-      userInfo.user?.is_admin === true || userInfo.user?.is_owner === true;
-    const channelCreator =
-      (channelInfo.channel as { creator?: string } | undefined)?.creator ===
-      userId;
-    return workspaceAdmin || channelCreator;
+    return await isChannelManagerViaRoles(userId, channelId, client);
+  } catch (rolesError) {
+    logger.debug(
+      { rolesError, userId, channelId },
+      'admin.roles.listAssignments unavailable, falling back to creator check'
+    );
+  }
+  try {
+    const channelInfo = await client.conversations.info({ channel: channelId });
+    const creator = (channelInfo.channel as { creator?: string } | undefined)
+      ?.creator;
+    return creator === userId;
   } catch (error) {
     logger.warn(
       { error, userId, channelId },
