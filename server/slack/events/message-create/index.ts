@@ -1,20 +1,21 @@
 import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
-import { keywords, leaveChannelBlocklist, messageThreshold } from '~/config';
+import { keywords, messageThreshold } from '~/config';
 import { env } from '~/env';
 import { isUserAllowed } from '~/lib/allowed-users';
 import {
   clearSilenced,
+  getChannelMode,
   isSilenced,
   ratelimit,
   redisKeys,
-  setSilenced,
 } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
-import { clearQueue, getQueue } from '~/lib/queue';
+import { getQueue } from '~/lib/queue';
 import { isUserBanned } from '~/lib/reports';
 import type { SlackMessageContext } from '~/types';
 import { buildChatContext } from '~/utils/context';
+import { handleInlineCommand } from '~/utils/inline-commands';
 import { logReply } from '~/utils/log';
 import {
   checkMessageQuota,
@@ -136,6 +137,161 @@ async function handleTriggerInBlockedChannel(
   });
 }
 
+type ChatContext = Awaited<ReturnType<typeof buildChatContext>>;
+
+async function handleTriggeredMessage(
+  args: MessageEventArgs,
+  messageContext: SlackMessageContext,
+  ctxId: string,
+  triggerType: string,
+  channelMode: Awaited<ReturnType<typeof getChannelMode>>,
+  authorName: string,
+  content: string,
+  chatContext: ChatContext
+): Promise<void> {
+  if (
+    channelMode === 'none' &&
+    triggerType !== 'ping' &&
+    triggerType !== 'dm'
+  ) {
+    logger.debug(
+      `[${ctxId}] Channel mode 'none' — skipping trigger ${triggerType}`
+    );
+    return;
+  }
+  if (channelMode === 'ping' && triggerType === 'keyword') {
+    logger.debug(`[${ctxId}] Channel mode 'ping' — skipping keyword trigger`);
+    return;
+  }
+
+  if (!isUserAllowed(args.event.user)) {
+    if (triggerType === 'keyword') {
+      return;
+    }
+    await args.client.chat.postMessage({
+      channel: args.event.channel,
+      thread_ts: args.event.thread_ts || args.event.ts,
+      markdown_text: `sorry bro <@${args.event.user}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
+    });
+    return;
+  }
+
+  const userId = args.event.user;
+  if (userId && (await isUserBanned(userId))) {
+    if (triggerType === 'ping' || triggerType === 'dm') {
+      await args.client.chat.postMessage({
+        channel: args.event.channel,
+        text: "nah bro you're banned lol. hit up staff if you think this is a mistake or whatever",
+        thread_ts: args.event.thread_ts || args.event.ts,
+      });
+    }
+    logger.info({ userId }, 'Refused to respond to banned user');
+    return;
+  }
+
+  if (
+    (triggerType === 'ping' || triggerType === 'dm') &&
+    env.AUTO_ADD_CHANNEL &&
+    args.context.userId
+  ) {
+    try {
+      await args.client.conversations.invite({
+        channel: env.AUTO_ADD_CHANNEL,
+        users: args.context.userId,
+      });
+      logger.info(
+        `Added ${args.context.userId} to channel ${env.AUTO_ADD_CHANNEL}`
+      );
+    } catch (error) {
+      logger.error({ error }, 'Failed to add user to channel');
+    }
+  }
+
+  await resetMessageCount(ctxId);
+  logger.info(
+    { message: `${authorName}: ${content}` },
+    `[${ctxId}] Triggered by ${triggerType}`
+  );
+
+  const result = await generateResponse(
+    messageContext,
+    chatContext.messages,
+    chatContext.hints,
+    chatContext.memories
+  );
+  logReply(ctxId, authorName, result, 'trigger');
+  if (result.success && result.toolCalls) {
+    await onSuccess(messageContext);
+  }
+}
+
+async function handleRelevancePath(
+  args: MessageEventArgs,
+  messageContext: SlackMessageContext,
+  ctxId: string,
+  channelMode: Awaited<ReturnType<typeof getChannelMode>>,
+  authorName: string,
+  content: string,
+  chatContext: ChatContext
+): Promise<void> {
+  if (
+    channelMode === 'ping' ||
+    channelMode === 'ping+keyword' ||
+    channelMode === 'none'
+  ) {
+    logger.debug(
+      `[${ctxId}] Channel mode '${channelMode}' — skipping relevance`
+    );
+    return;
+  }
+
+  if (!isUserAllowed(args.event.user)) {
+    return;
+  }
+  if (args.event.user && (await isUserBanned(args.event.user))) {
+    return;
+  }
+
+  const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
+  if (!hasQuota) {
+    logger.debug(
+      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`
+    );
+    return;
+  }
+
+  const { probability, reason } = await assessRelevance(
+    messageContext,
+    chatContext.messages,
+    chatContext.hints,
+    chatContext.memories
+  );
+  logger.info(
+    { reason, probability, message: `${authorName}: ${content}` },
+    `[${ctxId}] Relevance check`
+  );
+
+  const willReply = probability > 0.5;
+  await handleMessageCount(ctxId, willReply);
+
+  if (!willReply) {
+    logger.debug(`[${ctxId}] Low relevance — ignoring`);
+    return;
+  }
+
+  logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
+  const result = await generateResponse(
+    messageContext,
+    chatContext.messages,
+    chatContext.hints,
+    chatContext.memories
+  );
+  logReply(ctxId, authorName, result, 'relevance');
+  if (result.success && result.toolCalls) {
+    await onSuccess(messageContext);
+  }
+}
+
 async function handleMessage(args: MessageEventArgs) {
   if (
     args.event.subtype &&
@@ -170,10 +326,10 @@ async function handleMessage(args: MessageEventArgs) {
     return;
   }
 
+  const channelMode = await getChannelMode(args.event.channel);
   const authorName = await getAuthorName(messageContext);
   const content = (messageContext.event as { text?: string }).text ?? '';
-
-  const { messages, hints, memories } = await buildChatContext(messageContext);
+  const chatContext = await buildChatContext(messageContext);
 
   const silenced = await isSilenced(ctxId);
   if (silenced) {
@@ -187,119 +343,28 @@ async function handleMessage(args: MessageEventArgs) {
   }
 
   if (trigger.type) {
-    if (!isUserAllowed(args.event.user)) {
-      if (trigger.type === 'keyword') {
-        return;
-      }
-      await args.client.chat.postMessage({
-        channel: args.event.channel,
-        thread_ts: args.event.thread_ts || args.event.ts,
-        markdown_text: `sorry bro <@${args.event.user}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
-      });
-      return;
-    }
-
-    const userId = args.event.user;
-    if (userId && (await isUserBanned(userId))) {
-      if (trigger.type === 'ping' || trigger.type === 'dm') {
-        await args.client.chat.postMessage({
-          channel: args.event.channel,
-          text: "nah bro you're banned lol. hit up staff if you think this is a mistake or whatever",
-          thread_ts: args.event.thread_ts || args.event.ts,
-        });
-      }
-      logger.info({ userId }, 'Refused to respond to banned user');
-      return;
-    }
-
-    if (
-      (trigger.type === 'ping' || trigger.type === 'dm') &&
-      env.AUTO_ADD_CHANNEL &&
-      args.context.userId
-    ) {
-      try {
-        await args.client.conversations.invite({
-          channel: env.AUTO_ADD_CHANNEL,
-          users: args.context.userId,
-        });
-        logger.info(
-          `Added ${args.context.userId} to channel ${env.AUTO_ADD_CHANNEL}`
-        );
-      } catch (error) {
-        logger.error({ error }, 'Failed to add user to channel');
-      }
-    }
-
-    await resetMessageCount(ctxId);
-
-    logger.info(
-      { message: `${authorName}: ${content}` },
-      `[${ctxId}] Triggered by ${trigger.type}`
-    );
-
-    const result = await generateResponse(
+    await handleTriggeredMessage(
+      args,
       messageContext,
-      messages,
-      hints,
-      memories
-    );
-
-    logReply(ctxId, authorName, result, 'trigger');
-
-    if (result.success && result.toolCalls) {
-      await onSuccess(messageContext);
-    }
-    return;
-  }
-
-  if (!isUserAllowed(args.event.user)) {
-    return;
-  }
-
-  if (args.event.user && (await isUserBanned(args.event.user))) {
-    return;
-  }
-
-  const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
-
-  if (!hasQuota) {
-    logger.debug(
-      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`
+      ctxId,
+      trigger.type,
+      channelMode,
+      authorName,
+      content,
+      chatContext
     );
     return;
   }
 
-  const { probability, reason } = await assessRelevance(
+  await handleRelevancePath(
+    args,
     messageContext,
-    messages,
-    hints,
-    memories
+    ctxId,
+    channelMode,
+    authorName,
+    content,
+    chatContext
   );
-  logger.info(
-    { reason, probability, message: `${authorName}: ${content}` },
-    `[${ctxId}] Relevance check`
-  );
-
-  const willReply = probability > 0.5;
-  await handleMessageCount(ctxId, willReply);
-
-  if (!willReply) {
-    logger.debug(`[${ctxId}] Low relevance — ignoring`);
-    return;
-  }
-
-  logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
-
-  const result = await generateResponse(
-    messageContext,
-    messages,
-    hints,
-    memories
-  );
-  logReply(ctxId, authorName, result, 'relevance');
-  if (result.success && result.toolCalls) {
-    await onSuccess(messageContext);
-  }
 }
 
 export async function execute(args: MessageEventArgs) {
@@ -322,37 +387,8 @@ export async function execute(args: MessageEventArgs) {
   }
 
   const text = (messageContext.event as { text?: string }).text ?? '';
-
-  // biome-ignore lint/performance/useTopLevelRegex: one-off pattern
-  if (/^!stop\b/i.test(text)) {
-    await setSilenced(ctxId);
-    clearQueue(ctxId);
-    logger.info({ ctxId }, 'Thread silenced and queue cleared via !stop');
-    await messageContext.client.chat.postMessage({
-      channel: messageContext.event.channel,
-      thread_ts: (messageContext.event as { thread_ts?: string }).thread_ts,
-      text: "aight, i'll shut up now. ping me if u wanna talk",
-    });
-    return;
-  }
-
-  // biome-ignore lint/performance/useTopLevelRegex: one-off pattern
-  if (/^!leave\b/i.test(text)) {
-    const channelId = messageContext.event.channel;
-    const blocked = leaveChannelBlocklist.find((c) => c.id === channelId);
-    if (!blocked) {
-      await messageContext.client.chat
-        .postMessage({ channel: channelId, text: 'leaving now, later' })
-        .catch((error) =>
-          logger.warn({ error, channelId }, 'Failed to send leave message')
-        );
-      await messageContext.client.conversations
-        .leave({ channel: channelId })
-        .catch((error) =>
-          logger.error({ error, channelId }, 'Failed to leave channel')
-        );
-      logger.info({ channelId }, 'Left channel via !leave');
-    }
+  const inlineResult = await handleInlineCommand(messageContext, ctxId, text);
+  if (inlineResult === 'handled') {
     return;
   }
 

@@ -45,6 +45,7 @@ Analyze the current message and provide a structured assessment:
    - Messages clearly not meant for conversation
    - Automated messages or system notifications
    - Pings to other users
+   - Sensitive or serious topics (mental health crises, self-harm, grief, suicide, medical emergencies, abuse): ALWAYS score 0.0 unless the user directly mentions Gork by name — these conversations should not be interrupted by a bot
 
 3. CONFIDENCE (0.0-1.0): How confident are you in your assessment?
    - 1.0: Very clear and obvious

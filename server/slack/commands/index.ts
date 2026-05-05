@@ -1,4 +1,6 @@
 import { execute as banExecute, name as banName } from './ban';
+import { execute as helpExecute, name as helpName } from './help';
+import { execute as modeExecute, name as modeName } from './mode';
 import { execute as reportsExecute, name as reportsName } from './reports';
 import { execute as unbanExecute, name as unbanName } from './unban';
 
@@ -6,6 +8,8 @@ const subcommands = [
   { name: banName, execute: banExecute },
   { name: unbanName, execute: unbanExecute },
   { name: reportsName, execute: reportsExecute },
+  { name: modeName, execute: modeExecute },
+  { name: helpName, execute: helpExecute },
 ] as const;
 
 const WHITESPACE_PATTERN = /\s+/;
@@ -38,7 +42,7 @@ async function handleGorkCommand(
   if (!subcommand) {
     await context.ack();
     await respond({
-      text: `Available subcommands: ${subcommands.map((s) => s.name).join(', ')}\nUsage: \`${command.command} <subcommand> [args]\``,
+      text: `Available subcommands: ${subcommands.map((s) => s.name).join(', ')}\nUsage: \`${command.command} <subcommand> [args]\`\n\nRun \`${command.command} help\` for detailed usage.`,
       response_type: 'ephemeral',
     });
     return;
@@ -49,13 +53,12 @@ async function handleGorkCommand(
   if (!handler) {
     await context.ack();
     await respond({
-      text: `Unknown subcommand: \`${subcommand}\`\nAvailable subcommands: ${subcommands.map((s) => s.name).join(', ')}`,
+      text: `Unknown subcommand: \`${subcommand}\`\nRun \`${command.command} help\` to see all available commands.`,
       response_type: 'ephemeral',
     });
     return;
   }
 
-  // Pass the remaining args in the text field for subcommands that need it
   const modifiedContext = {
     ...context,
     command: {
