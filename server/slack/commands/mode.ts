@@ -1,45 +1,45 @@
 import type {
   AllMiddlewareArgs,
+  RespondFn,
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
 import { modeHelp } from '~/constants/help';
-import {
-  clearChannelMode,
-  getChannelMode,
-  type ResponseMode,
-  setChannelMode,
-} from '~/lib/kv';
+import { clearChannelMode, getChannelMode, type ResponseMode } from '~/lib/kv';
 import { isAdmin } from '~/lib/reports';
 
 export const name = 'mode';
 
 const WHITESPACE_PATTERN = /\s+/;
 
-const MODE_LABELS: Record<ResponseMode, string> = {
+export const MODE_LABELS: Record<ResponseMode, string> = {
   ping: 'ping only',
   relevance: 'relevance (default)',
   'ping+keyword': 'ping + keyword',
   none: 'none',
 };
 
-const VALID_MODES = new Set<string>([
-  'ping',
-  'relevance',
-  'ping+keyword',
-  'none',
-]);
+async function showCurrentMode(
+  channelId: string,
+  respond: RespondFn
+): Promise<void> {
+  const mode = await getChannelMode(channelId);
+  await respond({
+    text: `current mode for this channel: *${MODE_LABELS[mode]}*`,
+    response_type: 'ephemeral',
+  });
+}
 
 export async function execute(
   context: SlackCommandMiddlewareArgs & AllMiddlewareArgs
 ) {
-  const { ack, body, respond } = context;
+  const { ack, body, client, respond } = context;
 
   await ack();
 
   const channelId = body.channel_id;
   const userId = body.user_id;
   const args = (body as { text?: string }).text?.trim() ?? '';
-  const [subcommand, modeArg] = args.split(WHITESPACE_PATTERN);
+  const [subcommand] = args.split(WHITESPACE_PATTERN);
 
   switch (subcommand?.toLowerCase()) {
     case 'set': {
@@ -50,27 +50,39 @@ export async function execute(
         });
         return;
       }
-      if (!(modeArg && VALID_MODES.has(modeArg))) {
-        await respond({
-          text: `invalid mode. valid options: ${[...VALID_MODES].join(', ')}\nusage: \`/gork mode set <mode>\``,
-          response_type: 'ephemeral',
-        });
-        return;
-      }
-      await setChannelMode(channelId, modeArg as ResponseMode);
-      await respond({
-        text: `cool, gork will now use **${MODE_LABELS[modeArg as ResponseMode]}** mode in this channel`,
-        response_type: 'ephemeral',
+      await client.views.open({
+        trigger_id: body.trigger_id,
+        view: {
+          type: 'modal',
+          callback_id: 'set_mode_modal',
+          private_metadata: channelId,
+          title: { type: 'plain_text', text: 'Set Channel Mode' },
+          submit: { type: 'plain_text', text: 'Set' },
+          close: { type: 'plain_text', text: 'Cancel' },
+          blocks: [
+            {
+              type: 'input',
+              block_id: 'mode_select',
+              label: { type: 'plain_text', text: 'Reply mode' },
+              element: {
+                type: 'static_select',
+                action_id: 'mode',
+                placeholder: { type: 'plain_text', text: 'Choose a mode…' },
+                options: (modeHelp.modes ?? []).map((m) => ({
+                  text: { type: 'plain_text', text: m.name },
+                  value: m.name,
+                  description: { type: 'plain_text', text: m.description },
+                })),
+              },
+            },
+          ],
+        },
       });
       break;
     }
 
     case 'show': {
-      const mode = await getChannelMode(channelId);
-      await respond({
-        text: `current mode for this channel: **${MODE_LABELS[mode]}**`,
-        response_type: 'ephemeral',
-      });
+      await showCurrentMode(channelId, respond);
       break;
     }
 
@@ -91,19 +103,8 @@ export async function execute(
     }
 
     default: {
-      const usage = modeHelp.subcommands
-        .map(
-          (s) =>
-            `• \`${s.usage}\` — ${s.description}${s.adminOnly ? ' _(admins only)_' : ''}`
-        )
-        .join('\n');
-      const modes = (modeHelp.modes ?? [])
-        .map((m) => `• *${m.name}* — ${m.description}`)
-        .join('\n');
-      await respond({
-        text: `*${modeHelp.description}*\n\n*Subcommands:*\n${usage}\n\n*Modes:*\n${modes}`,
-        response_type: 'ephemeral',
-      });
+      // bare /gork mode → show current status
+      await showCurrentMode(channelId, respond);
     }
   }
 }

@@ -2,13 +2,13 @@ import type {
   AllMiddlewareArgs,
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
-import { modeHelp } from '~/constants/help';
+import { banHelp, modeHelp, reportsHelp, unbanHelp } from '~/constants/help';
 
 export const name = 'help';
 
 const WHITESPACE_PATTERN = /\s+/;
 
-const commands = [modeHelp] as const;
+const commands = [banHelp, unbanHelp, reportsHelp, modeHelp] as const;
 
 function buildOverview(): string {
   const lines = commands.map((c) => `• *${c.name}* — ${c.description}`);

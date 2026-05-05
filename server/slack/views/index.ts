@@ -1,4 +1,5 @@
 import { execute as banUserExecute, name as banUserName } from './ban-user';
+import { execute as setModeExecute, name as setModeName } from './set-mode';
 import {
   execute as unbanUserExecute,
   name as unbanUserName,
@@ -12,4 +13,5 @@ export const views = [
   { name: banUserName, execute: banUserExecute },
   { name: unbanUserName, execute: unbanUserExecute },
   { name: viewReportsName, execute: viewReportsExecute },
+  { name: setModeName, execute: setModeExecute },
 ] as const;
