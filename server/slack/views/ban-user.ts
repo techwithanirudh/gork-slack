@@ -4,12 +4,8 @@ import type {
   ViewSubmitAction,
 } from '@slack/bolt';
 import logger from '~/lib/logger';
-import {
-  banUser,
-  isAdmin,
-  isUserBanned,
-  sendBanNotification,
-} from '~/lib/reports';
+import { isAdmin } from '~/lib/permissions';
+import { banUser, isUserBanned, sendBanNotification } from '~/lib/reports';
 
 export const name = 'ban_user_modal';
 

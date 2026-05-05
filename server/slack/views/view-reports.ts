@@ -3,12 +3,8 @@ import type {
   SlackViewMiddlewareArgs,
   ViewSubmitAction,
 } from '@slack/bolt';
-import {
-  getUserReports,
-  isAdmin,
-  isUserBanned,
-  userReportBlocks,
-} from '~/lib/reports';
+import { isAdmin } from '~/lib/permissions';
+import { getUserReports, isUserBanned, userReportBlocks } from '~/lib/reports';
 
 export const name = 'view_reports_modal';
 

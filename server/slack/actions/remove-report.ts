@@ -5,9 +5,9 @@ import type {
   SlackActionMiddlewareArgs,
 } from '@slack/bolt';
 import logger from '~/lib/logger';
+import { isAdmin } from '~/lib/permissions';
 import {
   getUserReports,
-  isAdmin,
   isUserBanned,
   removeReport,
   userReportBlocks,

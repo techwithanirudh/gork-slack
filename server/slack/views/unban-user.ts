@@ -4,12 +4,8 @@ import type {
   ViewSubmitAction,
 } from '@slack/bolt';
 import logger from '~/lib/logger';
-import {
-  isAdmin,
-  isUserBanned,
-  sendUnbanNotification,
-  unbanUser,
-} from '~/lib/reports';
+import { isAdmin } from '~/lib/permissions';
+import { isUserBanned, sendUnbanNotification, unbanUser } from '~/lib/reports';
 
 export const name = 'unban_user_modal';
 

@@ -5,12 +5,8 @@ import type {
   SlackActionMiddlewareArgs,
 } from '@slack/bolt';
 import logger from '~/lib/logger';
-import {
-  getUserReports,
-  isAdmin,
-  isUserBanned,
-  userReportBlocks,
-} from '~/lib/reports';
+import { isAdmin } from '~/lib/permissions';
+import { getUserReports, isUserBanned, userReportBlocks } from '~/lib/reports';
 import { executeUnban } from '~/lib/slack/bans';
 
 export const name = 'unban_user';

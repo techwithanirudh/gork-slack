@@ -2,7 +2,7 @@ import type {
   AllMiddlewareArgs,
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
-import { isAdmin } from '~/lib/reports';
+import { isAdmin } from '~/lib/permissions';
 import { executeUnban } from '~/lib/slack/bans';
 import { respondWithPermissionError } from '~/lib/slack/errors';
 import { parseUserList } from '~/utils/users';

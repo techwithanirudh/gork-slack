@@ -2,7 +2,7 @@ import type {
   AllMiddlewareArgs,
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
-import { isAdmin } from '~/lib/reports';
+import { isAdmin } from '~/lib/permissions';
 import { respondWithPermissionError } from '~/lib/slack/errors';
 
 export const name = 'reports';

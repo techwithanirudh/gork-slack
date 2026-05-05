@@ -1,5 +1,4 @@
 import { generateText, Output } from 'ai';
-import { env } from '~/env';
 import { contentFilterPrompt } from '~/lib/ai/prompts/tasks';
 import { provider } from '~/lib/ai/providers';
 import { contentFilterSchema } from '~/lib/validators';
@@ -26,12 +25,6 @@ export {
   sendUnbanLog,
   sendUnbanNotification,
 } from './slack/notifications';
-
-const adminUserIds = new Set(env.ADMINS ?? []);
-
-export function isAdmin(userId: string): boolean {
-  return adminUserIds.has(userId);
-}
 
 export async function validateReport(
   messageContent: string
