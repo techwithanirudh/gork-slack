@@ -1,6 +1,6 @@
 // biome-ignore lint/performance/noBarrelFile: intentional public API for kv module
 export { redis } from './client';
-export { redisKeys } from './keys';
+export { keys } from './keys';
 export {
   clearChannelMode,
   getChannelMode,

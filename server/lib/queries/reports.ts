@@ -1,5 +1,5 @@
 import { moderation } from '~/config';
-import { redis, redisKeys } from '~/lib/kv';
+import { keys, redis } from '~/lib/kv';
 import logger from '~/lib/logger';
 
 const UUID_REGEX = /^[a-f0-9-]{36}$/;
@@ -32,7 +32,7 @@ export async function addReport(
   userId: string,
   reason: string
 ): Promise<number> {
-  const key = redisKeys.userReports(userId);
+  const key = keys.userReports(userId);
   const now = Date.now();
   const uniqueId = crypto.randomUUID();
 
@@ -45,7 +45,7 @@ export async function addReport(
   logger.info({ userId, reason, reportCount: count }, 'Report added for user');
 
   if (count >= moderation.banThreshold) {
-    await redis.set(redisKeys.userBanned(userId), '1');
+    await redis.set(keys.userBanned(userId), '1');
     logger.warn({ userId, reportCount: count }, 'User has been banned');
   }
 
@@ -53,13 +53,13 @@ export async function addReport(
 }
 
 export async function getReportCount(userId: string): Promise<number> {
-  const key = redisKeys.userReports(userId);
+  const key = keys.userReports(userId);
   await cleanExpiredReports(key);
   return await redis.zcard(key);
 }
 
 export async function getUserReports(userId: string): Promise<Report[]> {
-  const key = redisKeys.userReports(userId);
+  const key = keys.userReports(userId);
   await cleanExpiredReports(key);
   const reports = await redis.zrange(key, 0, -1);
   return reports.map(parseReport);
@@ -69,7 +69,7 @@ export async function removeReport(
   userId: string,
   reportId: string
 ): Promise<boolean> {
-  const key = redisKeys.userReports(userId);
+  const key = keys.userReports(userId);
   const removed = await redis.zrem(key, reportId);
 
   if (removed > 0) {
@@ -77,9 +77,9 @@ export async function removeReport(
 
     const count = await redis.zcard(key);
     if (count < moderation.banThreshold) {
-      const wasBanned = await redis.get(redisKeys.userBanned(userId));
+      const wasBanned = await redis.get(keys.userBanned(userId));
       if (wasBanned === '1') {
-        await redis.del(redisKeys.userBanned(userId));
+        await redis.del(keys.userBanned(userId));
         logger.info({ userId }, 'User auto-unbanned after report removal');
       }
     }
@@ -91,14 +91,14 @@ export async function removeReport(
 }
 
 export async function isUserBanned(userId: string): Promise<boolean> {
-  const banned = await redis.get(redisKeys.userBanned(userId));
+  const banned = await redis.get(keys.userBanned(userId));
   if (banned === '1') {
     return true;
   }
 
   const count = await getReportCount(userId);
   if (count >= moderation.banThreshold) {
-    await redis.set(redisKeys.userBanned(userId), '1');
+    await redis.set(keys.userBanned(userId), '1');
     return true;
   }
 
@@ -106,12 +106,12 @@ export async function isUserBanned(userId: string): Promise<boolean> {
 }
 
 export async function banUser(userId: string): Promise<void> {
-  await redis.set(redisKeys.userBanned(userId), '1');
+  await redis.set(keys.userBanned(userId), '1');
   logger.info({ userId }, 'User manually banned');
 }
 
 export async function unbanUser(userId: string): Promise<void> {
-  await redis.del(redisKeys.userBanned(userId));
-  await redis.del(redisKeys.userReports(userId));
+  await redis.del(keys.userBanned(userId));
+  await redis.del(keys.userReports(userId));
   logger.info({ userId }, 'User unbanned and reports cleared');
 }

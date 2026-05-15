@@ -1,6 +1,5 @@
 import { redis } from './client';
-
-const MODE_KEY = (channelId: string) => `ctx:mode:${channelId}`;
+import { keys } from './keys';
 
 export type ResponseMode = 'ping' | 'relevance' | 'ping+keyword' | 'none';
 
@@ -21,14 +20,14 @@ export async function setChannelMode(
   channelId: string,
   mode: ResponseMode
 ): Promise<void> {
-  await redis.set(MODE_KEY(channelId), mode);
+  await redis.set(keys.channelMode(channelId), mode);
 }
 
 export async function getChannelMode(channelId: string): Promise<ResponseMode> {
-  const raw = await redis.get(MODE_KEY(channelId));
+  const raw = await redis.get(keys.channelMode(channelId));
   return isResponseMode(raw) ? raw : DEFAULT_MODE;
 }
 
 export async function clearChannelMode(channelId: string): Promise<void> {
-  await redis.del(MODE_KEY(channelId));
+  await redis.del(keys.channelMode(channelId));
 }

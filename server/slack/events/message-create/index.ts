@@ -6,8 +6,8 @@ import {
   clearSilenced,
   getChannelMode,
   isSilenced,
+  keys,
   ratelimit,
-  redisKeys,
 } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
@@ -34,7 +34,7 @@ const blockedChannels = new Set(env.BLOCKED_CHANNELS ?? []);
 type MessageEventArgs = SlackEventMiddlewareArgs<'message'> & AllMiddlewareArgs;
 
 async function canReply(ctxId: string): Promise<boolean> {
-  const { success } = await ratelimit(redisKeys.channelCount(ctxId));
+  const { success } = await ratelimit(keys.channelCount(ctxId));
   if (!success) {
     logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
   }

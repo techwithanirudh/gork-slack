@@ -4,8 +4,6 @@ import logger from '~/lib/logger';
 import { clearQueue } from '~/lib/queue';
 import type { SlackMessageContext } from '~/types';
 
-const INLINE_COMMAND_PATTERN = /^!(stop|leave)\b/i;
-
 async function handleStop(
   context: SlackMessageContext,
   ctxId: string
@@ -38,21 +36,29 @@ async function handleLeave(context: SlackMessageContext): Promise<void> {
   logger.info({ channelId }, 'Left channel via !leave');
 }
 
+function parseInlineCommand(text: string): string | null {
+  const match = /^!(\w+)/i.exec(text.trimStart());
+  return match?.[1]?.toLowerCase() ?? null;
+}
+
 export async function handleInlineCommand(
   context: SlackMessageContext,
   ctxId: string,
   text: string
 ): Promise<'handled' | 'not-handled'> {
-  const match = INLINE_COMMAND_PATTERN.exec(text);
-  if (!match) {
+  const command = parseInlineCommand(text);
+  if (!command) {
     return 'not-handled';
   }
 
-  if (match[1]?.toLowerCase() === 'stop') {
-    await handleStop(context, ctxId);
-  } else {
-    await handleLeave(context);
+  switch (command) {
+    case 'stop':
+      await handleStop(context, ctxId);
+      return 'handled';
+    case 'leave':
+      await handleLeave(context);
+      return 'handled';
+    default:
+      return 'not-handled';
   }
-
-  return 'handled';
 }
