@@ -36,10 +36,9 @@ function buildCommandHelp(commandName: string): string | null {
     )
     .join('\n');
 
-  const modeLine =
-    'modes' in cmd && cmd.modes && cmd.modes.length > 0
-      ? `\n\n*Modes:*\n${cmd.modes.map((m) => `• *${m.name}* — ${m.description}`).join('\n')}`
-      : '';
+  const modeLine = cmd.modes?.length
+    ? `\n\n*Modes:*\n${cmd.modes.map((m) => `• *${m.name}* — ${m.description}`).join('\n')}`
+    : '';
 
   return `*/${commandName}* — ${cmd.description}\n\n*Subcommands:*\n${subcommandLines}${modeLine}`;
 }
@@ -47,18 +46,18 @@ function buildCommandHelp(commandName: string): string | null {
 export async function execute(
   context: SlackCommandMiddlewareArgs & AllMiddlewareArgs
 ) {
-  const { ack, body, respond } = context;
+  const { ack, command, respond } = context;
 
   await ack();
 
-  const args = (body as { text?: string }).text?.trim() ?? '';
+  const args = command.text?.trim() ?? '';
   const [commandName] = args.split(WHITESPACE_PATTERN);
 
   if (commandName) {
     const detail = buildCommandHelp(commandName.toLowerCase());
     if (!detail) {
       await respond({
-        text: `unknown command \`${commandName}\`. run \`/gork help\` to see all commands.`,
+        text: `unknown command \`${commandName}\`. run \`${command.command} help\` to see all commands.`,
         response_type: 'ephemeral',
       });
       return;

@@ -23,6 +23,15 @@ async function isChannelManagerViaRoles(
   return result.role_assignments?.some((a) => a.user_id === userId) ?? false;
 }
 
+async function isChannelCreator(
+  userId: string,
+  channelId: string,
+  client: WebClient
+): Promise<boolean> {
+  const { channel } = await client.conversations.info({ channel: channelId });
+  return (channel as { creator?: string } | undefined)?.creator === userId;
+}
+
 export async function isChannelAdmin(
   userId: string,
   channelId: string,
@@ -31,6 +40,7 @@ export async function isChannelAdmin(
   if (isAdmin(userId)) {
     return true;
   }
+
   try {
     return await isChannelManagerViaRoles(userId, channelId, client);
   } catch (rolesError) {
@@ -39,11 +49,9 @@ export async function isChannelAdmin(
       'admin.roles.listAssignments unavailable, falling back to creator check'
     );
   }
+
   try {
-    const channelInfo = await client.conversations.info({ channel: channelId });
-    const creator = (channelInfo.channel as { creator?: string } | undefined)
-      ?.creator;
-    return creator === userId;
+    return await isChannelCreator(userId, channelId, client);
   } catch (error) {
     logger.warn(
       { error, userId, channelId },

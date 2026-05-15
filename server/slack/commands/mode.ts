@@ -32,13 +32,13 @@ async function showCurrentMode(
 export async function execute(
   context: SlackCommandMiddlewareArgs & AllMiddlewareArgs
 ) {
-  const { ack, body, client, respond } = context;
+  const { ack, body, command, client, respond } = context;
 
   await ack();
 
   const channelId = body.channel_id;
   const userId = body.user_id;
-  const args = (body as { text?: string }).text?.trim() ?? '';
+  const args = command.text?.trim() ?? '';
   const [subcommand] = args.split(WHITESPACE_PATTERN);
 
   switch (subcommand?.toLowerCase()) {
