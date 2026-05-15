@@ -30,7 +30,7 @@ async function showCurrentMode(
 
 export async function execute(
   context: SlackCommandMiddlewareArgs & AllMiddlewareArgs
-) {
+): Promise<void> {
   const { ack, body, command, client, respond } = context;
 
   await ack();

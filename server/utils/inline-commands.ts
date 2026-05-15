@@ -8,14 +8,22 @@ async function handleStop(
   context: SlackMessageContext,
   ctxId: string
 ): Promise<void> {
+  const threadTs = (context.event as { thread_ts?: string }).thread_ts;
+  if (!threadTs) {
+    return;
+  }
   await setSilenced(ctxId);
   clearQueue(ctxId);
   logger.info({ ctxId }, 'Thread silenced and queue cleared via !stop');
-  await context.client.chat.postMessage({
-    channel: context.event.channel,
-    thread_ts: (context.event as { thread_ts?: string }).thread_ts,
-    text: "aight, i'll shut up now. ping me if u wanna talk",
-  });
+  await context.client.chat
+    .postMessage({
+      channel: context.event.channel,
+      thread_ts: threadTs,
+      text: "aight, i'll shut up now. ping me if u wanna talk",
+    })
+    .catch((error) =>
+      logger.warn({ error, ctxId }, 'Failed to send stop message')
+    );
 }
 
 async function handleLeave(context: SlackMessageContext): Promise<void> {
@@ -28,17 +36,16 @@ async function handleLeave(context: SlackMessageContext): Promise<void> {
     .catch((error) =>
       logger.warn({ error, channelId }, 'Failed to send leave message')
     );
-  await context.client.conversations
+  const left = await context.client.conversations
     .leave({ channel: channelId })
-    .catch((error) =>
-      logger.error({ error, channelId }, 'Failed to leave channel')
-    );
-  logger.info({ channelId }, 'Left channel via !leave');
-}
-
-function parseInlineCommand(text: string): string | null {
-  const match = /^!(\w+)/i.exec(text.trimStart());
-  return match?.[1]?.toLowerCase() ?? null;
+    .then(() => true)
+    .catch((error) => {
+      logger.error({ error, channelId }, 'Failed to leave channel');
+      return false;
+    });
+  if (left) {
+    logger.info({ channelId }, 'Left channel via !leave');
+  }
 }
 
 export async function handleInlineCommand(
@@ -46,7 +53,7 @@ export async function handleInlineCommand(
   ctxId: string,
   text: string
 ): Promise<'handled' | 'not-handled'> {
-  const command = parseInlineCommand(text);
+  const command = /^!(\w+)/i.exec(text.trimStart())?.[1]?.toLowerCase();
   if (!command) {
     return 'not-handled';
   }

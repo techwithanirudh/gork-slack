@@ -4,6 +4,8 @@ export { keys } from './keys';
 export {
   clearChannelMode,
   getChannelMode,
+  isResponseMode,
+  RESPONSE_MODES,
   type ResponseMode,
   setChannelMode,
 } from './mode';

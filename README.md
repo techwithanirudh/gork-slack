@@ -20,7 +20,7 @@ This project was developed with the following technologies:
 - [Vercel AI SDK][ai-sdk]
 - [Exa AI][exa]
 - [Pinecone][pinecone]
-- [Redis][redis]
+- [Redis][redis]    
 - [Slack Bolt SDK][slack-bolt]
 - [TypeScript][ts]
 - [Bun][bun]

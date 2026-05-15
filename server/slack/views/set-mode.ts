@@ -3,18 +3,11 @@ import type {
   SlackViewMiddlewareArgs,
   ViewSubmitAction,
 } from '@slack/bolt';
-import { type ResponseMode, setChannelMode } from '~/lib/kv';
+import { isResponseMode, type ResponseMode, setChannelMode } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { MODE_LABELS } from '~/slack/commands/mode';
 
 export const name = 'set_mode_modal';
-
-const VALID_MODES = new Set<string>([
-  'ping',
-  'relevance',
-  'ping+keyword',
-  'none',
-]);
 
 export async function execute({
   ack,
@@ -34,7 +27,7 @@ export async function execute({
   }
 
   const mode = view.state.values.mode_select?.mode?.selected_option?.value;
-  if (!(mode && VALID_MODES.has(mode))) {
+  if (!isResponseMode(mode)) {
     await ack({
       response_action: 'errors',
       errors: { mode_select: 'Please select a valid mode.' },
@@ -43,12 +36,19 @@ export async function execute({
   }
 
   await ack();
-  await setChannelMode(channelId, mode as ResponseMode);
-  logger.info({ channelId, mode, setBy: userId }, 'Channel mode set via modal');
 
-  await client.chat.postEphemeral({
-    channel: channelId,
-    user: userId,
-    text: `channel mode set to *${MODE_LABELS[mode as ResponseMode]}*`,
-  });
+  try {
+    await setChannelMode(channelId, mode as ResponseMode);
+    logger.info(
+      { channelId, mode, setBy: userId },
+      'Channel mode set via modal'
+    );
+    await client.chat.postEphemeral({
+      channel: channelId,
+      user: userId,
+      text: `channel mode set to *${MODE_LABELS[mode as ResponseMode]}*`,
+    });
+  } catch (error) {
+    logger.error({ error, channelId, mode }, 'Failed to save channel mode');
+  }
 }

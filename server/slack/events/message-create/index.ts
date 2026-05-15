@@ -199,16 +199,14 @@ async function handleTriggeredMessage(
   if (
     (triggerType === 'ping' || triggerType === 'dm') &&
     env.AUTO_ADD_CHANNEL &&
-    args.context.userId
+    userId
   ) {
     try {
       await args.client.conversations.invite({
         channel: env.AUTO_ADD_CHANNEL,
-        users: args.context.userId,
+        users: userId,
       });
-      logger.info(
-        `Added ${args.context.userId} to channel ${env.AUTO_ADD_CHANNEL}`
-      );
+      logger.info(`Added ${userId} to channel ${env.AUTO_ADD_CHANNEL}`);
     } catch (error) {
       logger.error({ error }, 'Failed to add user to channel');
     }
@@ -319,9 +317,6 @@ async function handleMessage(args: MessageEventArgs) {
   }
 
   const ctxId = getContextId(messageContext);
-  if (!(await canReply(ctxId))) {
-    return;
-  }
 
   const trigger = await getTrigger(
     messageContext,
@@ -350,7 +345,11 @@ async function handleMessage(args: MessageEventArgs) {
   const content = (messageContext.event as { text?: string }).text ?? '';
   const chatContext = await buildChatContext(messageContext);
 
-  if (trigger.type) {
+  const routeToTrigger =
+    trigger.type != null &&
+    !(trigger.type === 'keyword' && channelMode === 'relevance');
+
+  if (routeToTrigger && trigger.type != null) {
     await handleTriggeredMessage(
       args,
       messageContext,
