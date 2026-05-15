@@ -5,10 +5,9 @@ import type {
 import type { KnownBlock } from '@slack/types';
 import { ban, mode, reports, unban } from '~/constants/help';
 import { context as contextBlock, divider, section } from '~/lib/slack/blocks';
+import { splitArgs } from '~/utils/text';
 
 export const name = 'help';
-
-const WHITESPACE_PATTERN = /\s+/;
 
 const commands = [ban, unban, reports, mode] as const;
 
@@ -72,8 +71,7 @@ export async function execute(
 
   await ack();
 
-  const args = command.text?.trim() ?? '';
-  const [commandName] = args.split(WHITESPACE_PATTERN);
+  const [commandName] = splitArgs(command.text ?? '');
 
   if (commandName) {
     const blocks = buildCommandBlocks(

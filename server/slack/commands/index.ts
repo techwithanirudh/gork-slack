@@ -1,3 +1,4 @@
+import { splitArgs } from '~/utils/text';
 import { execute as banExecute, name as banName } from './ban';
 import { execute as helpExecute, name as helpName } from './help';
 import { execute as modeExecute, name as modeName } from './mode';
@@ -12,8 +13,6 @@ const subcommands = [
   { name: helpName, execute: helpExecute },
 ] as const;
 
-const WHITESPACE_PATTERN = /\s+/;
-
 // Regex to match /gork, /gork-dev, /gork-st, /gork-anything, etc.
 export const GORK_COMMAND_PATTERN = /^\/gork(?:-\w+)?$/;
 
@@ -21,12 +20,11 @@ function parseSubcommand(text: string): {
   subcommand: string | null;
   args: string;
 } {
-  const trimmed = text.trim();
-  if (!trimmed) {
+  const parts = splitArgs(text);
+  if (!parts.length) {
     return { subcommand: null, args: '' };
   }
 
-  const parts = trimmed.split(WHITESPACE_PATTERN);
   const subcommand = parts[0]?.toLowerCase() ?? null;
   const args = parts.slice(1).join(' ');
 

@@ -1,10 +1,9 @@
 import type { WebClient } from '@slack/web-api';
 import logger from '~/lib/logger';
+import { splitArgs } from '~/utils/text';
 
 const userNameCache = new Map<string, string>();
 
-const WHITESPACE_PATTERN = /\s+/;
-const USER_MENTION_PATTERN = /^<@([A-Z0-9]+)(?:\|[^>]+)?>$/;
 const USER_ID_PATTERN = /^[UW][A-Z0-9]+$/;
 
 export async function getSlackUserName(
@@ -44,29 +43,16 @@ export function primeSlackUserName(userId: string, name: string) {
 }
 
 export function normalizeSlackUserId(raw: string): string {
-  return raw.replace(/[<@>]/g, '').trim();
+  const match = /^<@([A-Z0-9]+)(?:\|[^>]+)?>$/.exec(raw);
+  return match?.[1] ?? raw.trim();
 }
 
 export function parseUserList(args: string): string[] {
-  const trimmed = args.trim();
-  if (!trimmed) {
-    return [];
-  }
-
-  const tokens = trimmed.split(WHITESPACE_PATTERN);
-  const targets = new Set<string>();
-
-  for (const token of tokens) {
-    const mentionMatch = token.match(USER_MENTION_PATTERN);
-    if (mentionMatch?.[1]) {
-      targets.add(mentionMatch[1]);
-      continue;
-    }
-
-    if (USER_ID_PATTERN.test(token)) {
-      targets.add(token);
-    }
-  }
-
-  return [...targets];
+  return [
+    ...new Set(
+      splitArgs(args)
+        .map(normalizeSlackUserId)
+        .filter((id) => USER_ID_PATTERN.test(id))
+    ),
+  ];
 }

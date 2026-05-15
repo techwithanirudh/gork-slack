@@ -5,10 +5,9 @@ import type {
 } from '@slack/bolt';
 import { mode as modeHelp } from '~/constants/help';
 import { clearChannelMode, getChannelMode, type ResponseMode } from '~/lib/kv';
+import { splitArgs } from '~/utils/text';
 
 export const name = 'mode';
-
-const WHITESPACE_PATTERN = /\s+/;
 
 export const MODE_LABELS: Record<ResponseMode, string> = {
   ping: 'ping only',
@@ -36,8 +35,7 @@ export async function execute(
   await ack();
 
   const channelId = body.channel_id;
-  const args = command.text?.trim() ?? '';
-  const [subcommand] = args.split(WHITESPACE_PATTERN);
+  const [subcommand] = splitArgs(command.text ?? '');
 
   switch (subcommand?.toLowerCase()) {
     case 'set': {
