@@ -48,15 +48,10 @@ export async function handleInlineCommand(
     return 'not-handled';
   }
 
-  switch (match[1]?.toLowerCase()) {
-    case 'stop':
-      await handleStop(context, ctxId);
-      break;
-    case 'leave':
-      await handleLeave(context);
-      break;
-    default:
-      break;
+  if (match[1]?.toLowerCase() === 'stop') {
+    await handleStop(context, ctxId);
+  } else {
+    await handleLeave(context);
   }
 
   return 'handled';

@@ -1,5 +1,5 @@
 // biome-ignore lint/performance/noBarrelFile: intentional public API for help constants
-export { banHelp } from './ban';
-export { modeHelp } from './mode';
-export { reportsHelp } from './reports';
-export { unbanHelp } from './unban';
+export { ban } from './ban';
+export { mode } from './mode';
+export { reports } from './reports';
+export { unban } from './unban';

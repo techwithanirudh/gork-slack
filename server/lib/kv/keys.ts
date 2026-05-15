@@ -3,6 +3,4 @@ export const redisKeys = {
   channelCount: (contextId: string) => `ctx:channelCount:${contextId}`,
   userReports: (userId: string) => `user:reports:${userId}`,
   userBanned: (userId: string) => `user:banned:${userId}`,
-  silenced: (contextId: string) => `ctx:silenced:${contextId}`,
-  channelMode: (channelId: string) => `ctx:mode:${channelId}`,
 };

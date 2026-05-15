@@ -3,7 +3,7 @@ import type {
   RespondFn,
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
-import { modeHelp } from '~/constants/help';
+import { mode as modeHelp } from '~/constants/help';
 import { clearChannelMode, getChannelMode, type ResponseMode } from '~/lib/kv';
 
 export const name = 'mode';

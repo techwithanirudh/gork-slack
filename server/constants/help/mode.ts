@@ -1,13 +1,12 @@
 import type { CommandHelp } from '~/types';
 
-export const modeHelp: CommandHelp = {
+export const mode: CommandHelp = {
   name: 'mode',
   description: 'Control when Gork replies in this channel.',
   subcommands: [
     {
       usage: 'mode set',
       description: 'Open a modal to set the reply mode for this channel.',
-      adminOnly: true,
     },
     {
       usage: 'mode show',
@@ -16,7 +15,6 @@ export const modeHelp: CommandHelp = {
     {
       usage: 'mode clear',
       description: 'Reset to the default mode (relevance).',
-      adminOnly: true,
     },
   ],
   modes: [

@@ -3,14 +3,14 @@ import type {
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
 import type { KnownBlock } from '@slack/types';
-import { banHelp, modeHelp, reportsHelp, unbanHelp } from '~/constants/help';
+import { ban, mode, reports, unban } from '~/constants/help';
 import { context as contextBlock, divider, section } from '~/lib/slack/blocks';
 
 export const name = 'help';
 
 const WHITESPACE_PATTERN = /\s+/;
 
-const commands = [banHelp, unbanHelp, reportsHelp, modeHelp] as const;
+const commands = [ban, unban, reports, mode] as const;
 
 function buildOverviewBlocks(cmd: string): KnownBlock[] {
   const commandList = commands
@@ -41,10 +41,12 @@ function buildCommandBlocks(
   }
 
   const subcommandText = command.subcommands
-    .map(
-      (s) =>
-        `• \`${cmd} ${s.usage}\`${s.adminOnly ? ' _(admins only)_' : ''}: ${s.description}`
-    )
+    .map((s) => {
+      const permLabel = s.permissions?.length
+        ? ` _(${s.permissions.join(', ')} only)_`
+        : '';
+      return `• \`${cmd} ${s.usage}\`${permLabel}: ${s.description}`;
+    })
     .join('\n');
 
   const blocks: KnownBlock[] = [

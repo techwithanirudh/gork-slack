@@ -1,6 +1,6 @@
 export interface HelpSubcommand {
-  adminOnly?: boolean;
   description: string;
+  permissions?: string[];
   usage: string;
 }
 
