@@ -5,7 +5,6 @@ import type {
 } from '@slack/bolt';
 import { type ResponseMode, setChannelMode } from '~/lib/kv';
 import logger from '~/lib/logger';
-import { isChannelAdmin } from '~/lib/permissions';
 import { MODE_LABELS } from '~/slack/commands/mode';
 
 export const name = 'set_mode_modal';
@@ -30,16 +29,6 @@ export async function execute({
     await ack({
       response_action: 'errors',
       errors: { mode_select: 'Could not determine channel. Please try again.' },
-    });
-    return;
-  }
-
-  if (!(await isChannelAdmin(userId, channelId, client))) {
-    await ack({
-      response_action: 'errors',
-      errors: {
-        mode_select: 'You do not have permission to change the channel mode.',
-      },
     });
     return;
   }

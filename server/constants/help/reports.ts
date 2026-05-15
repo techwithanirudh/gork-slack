@@ -5,7 +5,7 @@ export const reportsHelp: CommandHelp = {
   description: 'View reports filed against a user.',
   subcommands: [
     {
-      usage: '/gork reports',
+      usage: 'reports',
       description: 'Opens a modal to view reports for a selected user.',
       adminOnly: true,
     },

@@ -5,7 +5,7 @@ export const banHelp: CommandHelp = {
   description: 'Ban a user from interacting with Gork.',
   subcommands: [
     {
-      usage: '/gork ban [@user ...]',
+      usage: 'ban [@user ...]',
       description:
         'Ban one or more users. Opens a picker modal if no users specified.',
       adminOnly: true,

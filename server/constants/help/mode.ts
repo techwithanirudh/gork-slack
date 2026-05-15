@@ -5,16 +5,16 @@ export const modeHelp: CommandHelp = {
   description: 'Control when Gork replies in this channel.',
   subcommands: [
     {
-      usage: '/gork mode set',
+      usage: 'mode set',
       description: 'Open a modal to set the reply mode for this channel.',
       adminOnly: true,
     },
     {
-      usage: '/gork mode show',
+      usage: 'mode show',
       description: 'Show the current reply mode for this channel.',
     },
     {
-      usage: '/gork mode clear',
+      usage: 'mode clear',
       description: 'Reset to the default mode (relevance).',
       adminOnly: true,
     },

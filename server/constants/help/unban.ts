@@ -5,7 +5,7 @@ export const unbanHelp: CommandHelp = {
   description: 'Unban a previously banned user.',
   subcommands: [
     {
-      usage: '/gork unban [@user ...]',
+      usage: 'unban [@user ...]',
       description:
         'Unban one or more users. Opens a picker modal if no users specified.',
       adminOnly: true,

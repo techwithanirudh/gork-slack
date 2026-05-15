@@ -5,7 +5,6 @@ import type {
 } from '@slack/bolt';
 import { modeHelp } from '~/constants/help';
 import { clearChannelMode, getChannelMode, type ResponseMode } from '~/lib/kv';
-import { isChannelAdmin } from '~/lib/permissions';
 
 export const name = 'mode';
 
@@ -37,19 +36,11 @@ export async function execute(
   await ack();
 
   const channelId = body.channel_id;
-  const userId = body.user_id;
   const args = command.text?.trim() ?? '';
   const [subcommand] = args.split(WHITESPACE_PATTERN);
 
   switch (subcommand?.toLowerCase()) {
     case 'set': {
-      if (!(await isChannelAdmin(userId, channelId, client))) {
-        await respond({
-          text: 'only channel admins or workspace admins can change the mode',
-          response_type: 'ephemeral',
-        });
-        return;
-      }
       await client.views.open({
         trigger_id: body.trigger_id,
         view: {
@@ -87,13 +78,6 @@ export async function execute(
     }
 
     case 'clear': {
-      if (!(await isChannelAdmin(userId, channelId, client))) {
-        await respond({
-          text: 'only channel admins or workspace admins can change the mode',
-          response_type: 'ephemeral',
-        });
-        return;
-      }
       await clearChannelMode(channelId);
       await respond({
         text: 'channel mode cleared — back to default (relevance)',

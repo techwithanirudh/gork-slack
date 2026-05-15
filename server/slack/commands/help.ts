@@ -2,7 +2,9 @@ import type {
   AllMiddlewareArgs,
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
+import type { KnownBlock } from '@slack/types';
 import { banHelp, modeHelp, reportsHelp, unbanHelp } from '~/constants/help';
+import { context as contextBlock, divider, section } from '~/lib/slack/blocks';
 
 export const name = 'help';
 
@@ -10,43 +12,61 @@ const WHITESPACE_PATTERN = /\s+/;
 
 const commands = [banHelp, unbanHelp, reportsHelp, modeHelp] as const;
 
-function buildOverview(): string {
-  const lines = commands.map((c) => `• *${c.name}* — ${c.description}`);
-  lines.push(
-    '',
-    'Use `/gork help <command>` for detailed usage.',
-    'Use `!stop` to silence gork in a thread.',
-    'Use `!leave` to make gork leave the channel.',
-    '',
-    'Made with :heart: by <https://devarsh.me/|Devarsh> & <https://techwithanirudh.com|Anirudh>'
-  );
-  return `*Gork — available commands*\n\n${lines.join('\n')}`;
+function buildOverviewBlocks(cmd: string): KnownBlock[] {
+  const commandList = commands
+    .map((c) => `*${c.name}:* ${c.description}`)
+    .join('\n');
+
+  return [
+    section('*Gork*\navailable commands'),
+    divider(),
+    section(commandList),
+    divider(),
+    section(
+      'Use `!stop` to silence Gork in a thread.\nUse `!leave` to make Gork leave the channel.'
+    ),
+    contextBlock(
+      `Run \`${cmd} help <command>\` for detailed usage. Made with :heart: by <https://devarsh.me/|Devarsh> & <https://techwithanirudh.com|Anirudh>`
+    ),
+  ];
 }
 
-function buildCommandHelp(commandName: string): string | null {
-  const cmd = commands.find((c) => c.name === commandName);
-  if (!cmd) {
+function buildCommandBlocks(
+  commandName: string,
+  cmd: string
+): KnownBlock[] | null {
+  const command = commands.find((c) => c.name === commandName);
+  if (!command) {
     return null;
   }
 
-  const subcommandLines = cmd.subcommands
+  const subcommandText = command.subcommands
     .map(
       (s) =>
-        `• \`${s.usage}\` — ${s.description}${s.adminOnly ? ' _(admins only)_' : ''}`
+        `• \`${cmd} ${s.usage}\`${s.adminOnly ? ' _(admins only)_' : ''}: ${s.description}`
     )
     .join('\n');
 
-  const modeLine = cmd.modes?.length
-    ? `\n\n*Modes:*\n${cmd.modes.map((m) => `• *${m.name}* — ${m.description}`).join('\n')}`
-    : '';
+  const blocks: KnownBlock[] = [
+    section(`*Command: ${command.name}*\n${command.description}`),
+    divider(),
+    section(`*Subcommands:*\n${subcommandText}`),
+  ];
 
-  return `*/${commandName}* — ${cmd.description}\n\n*Subcommands:*\n${subcommandLines}${modeLine}`;
+  if (command.modes?.length) {
+    const modeText = command.modes
+      .map((m) => `• *${m.name}:* ${m.description}`)
+      .join('\n');
+    blocks.push(section(`*Modes:*\n${modeText}`));
+  }
+
+  return blocks;
 }
 
 export async function execute(
-  context: SlackCommandMiddlewareArgs & AllMiddlewareArgs
+  ctx: SlackCommandMiddlewareArgs & AllMiddlewareArgs
 ) {
-  const { ack, command, respond } = context;
+  const { ack, command, respond } = ctx;
 
   await ack();
 
@@ -54,17 +74,28 @@ export async function execute(
   const [commandName] = args.split(WHITESPACE_PATTERN);
 
   if (commandName) {
-    const detail = buildCommandHelp(commandName.toLowerCase());
-    if (!detail) {
+    const blocks = buildCommandBlocks(
+      commandName.toLowerCase(),
+      command.command
+    );
+    if (!blocks) {
       await respond({
         text: `unknown command \`${commandName}\`. run \`${command.command} help\` to see all commands.`,
         response_type: 'ephemeral',
       });
       return;
     }
-    await respond({ text: detail, response_type: 'ephemeral' });
+    await respond({
+      text: `Help: ${commandName}`,
+      blocks,
+      response_type: 'ephemeral',
+    });
     return;
   }
 
-  await respond({ text: buildOverview(), response_type: 'ephemeral' });
+  await respond({
+    text: 'Gork — available commands',
+    blocks: buildOverviewBlocks(command.command),
+    response_type: 'ephemeral',
+  });
 }
