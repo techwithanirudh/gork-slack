@@ -334,11 +334,6 @@ async function handleMessage(args: MessageEventArgs) {
     return;
   }
 
-  const channelMode = await getChannelMode(args.event.channel);
-  const authorName = await getAuthorName(messageContext);
-  const content = (messageContext.event as { text?: string }).text ?? '';
-  const chatContext = await buildChatContext(messageContext);
-
   const silenced = await isSilenced(ctxId);
   if (silenced) {
     if (trigger.type === 'ping') {
@@ -349,6 +344,11 @@ async function handleMessage(args: MessageEventArgs) {
       return;
     }
   }
+
+  const channelMode = await getChannelMode(args.event.channel);
+  const authorName = await getAuthorName(messageContext);
+  const content = (messageContext.event as { text?: string }).text ?? '';
+  const chatContext = await buildChatContext(messageContext);
 
   if (trigger.type) {
     await handleTriggeredMessage(
