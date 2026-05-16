@@ -1,3 +1,5 @@
+import { id } from "zod/v4/locales";
+
 export const keywords = ['gork', 'grok'];
 export const country = 'United States';
 export const city = 'New York';
@@ -24,8 +26,11 @@ export const restrictedChannels = [
   { id: 'C0A9ATPB2KF', name: 'gork-reports' },
 ];
 
-// Channels where Gork will not reply (subset of restrictedChannels)
-export const blockedChannels = [{ id: 'C09P6S7H725', name: 'gork' }];
+export const blockedChannels = [
+  { id: 'CNMU9L92Q', name: 'confessions' },
+  { id: 'C0188CY57PZ', name: 'meta' },
+  { id: 'C0C78SG9L', name: 'hq' }
+];
 
 export const moderation = {
   banThreshold: 15,
