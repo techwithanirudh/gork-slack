@@ -3,13 +3,15 @@ import type {
   RespondFn,
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
+import { restrictedChannels } from '~/config';
 import { mode as modeHelp } from '~/constants/help';
 import { clearChannelMode, getChannelMode, type ResponseMode } from '~/lib/kv';
+import { isAdmin } from '~/lib/permissions';
 import { splitArgs } from '~/utils/text';
 
 export const name = 'mode';
 
-export const MODE_LABELS: Record<ResponseMode, string> = {
+export const MODES: Record<ResponseMode, string> = {
   ping: 'ping only',
   relevance: 'relevance (default)',
   'ping+keyword': 'ping + keyword',
@@ -22,7 +24,7 @@ async function showCurrentMode(
 ): Promise<void> {
   const mode = await getChannelMode(channelId);
   await respond({
-    text: `current mode for this channel: *${MODE_LABELS[mode]}*`,
+    text: `current mode for this channel: *${MODES[mode]}*`,
     response_type: 'ephemeral',
   });
 }
@@ -35,10 +37,19 @@ export async function execute(
   await ack();
 
   const channelId = body.channel_id;
+  const userId = body.user_id;
   const [subcommand] = splitArgs(command.text ?? '');
 
   switch (subcommand?.toLowerCase()) {
     case 'set': {
+      const isRestricted = restrictedChannels.some((c) => c.id === channelId);
+      if (isRestricted && !(await isAdmin(client, userId))) {
+        await respond({
+          text: 'only workspace admins can change the mode in this channel.',
+          response_type: 'ephemeral',
+        });
+        return;
+      }
       await client.views.open({
         trigger_id: body.trigger_id,
         view: {
@@ -76,6 +87,14 @@ export async function execute(
     }
 
     case 'clear': {
+      const isRestricted = restrictedChannels.some((c) => c.id === channelId);
+      if (isRestricted && !(await isAdmin(client, userId))) {
+        await respond({
+          text: 'only workspace admins can change the mode in this channel.',
+          response_type: 'ephemeral',
+        });
+        return;
+      }
       await clearChannelMode(channelId);
       await respond({
         text: 'channel mode cleared — back to default (relevance)',
@@ -85,7 +104,6 @@ export async function execute(
     }
 
     default: {
-      // bare /gork mode → show current status
       await showCurrentMode(channelId, respond);
     }
   }

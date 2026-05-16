@@ -1,5 +1,20 @@
+import type { WebClient } from '@slack/web-api';
 import { env } from '~/env';
+import logger from '~/lib/logger';
 
-export function isAdmin(userId: string): boolean {
-  return new Set(env.ADMINS ?? []).has(userId);
+export async function isAdmin(
+  client: WebClient,
+  userId: string
+): Promise<boolean> {
+  if (new Set(env.ADMINS ?? []).has(userId)) {
+    return true;
+  }
+
+  try {
+    const info = await client.users.info({ user: userId });
+    return Boolean(info.user?.is_admin || info.user?.is_owner);
+  } catch (error) {
+    logger.warn({ error, userId }, 'Failed to fetch user info for admin check');
+    return false;
+  }
 }

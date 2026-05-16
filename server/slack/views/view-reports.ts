@@ -11,11 +11,12 @@ export const name = 'view_reports_modal';
 export async function execute({
   ack,
   body,
+  client,
   view,
 }: SlackViewMiddlewareArgs<ViewSubmitAction> & AllMiddlewareArgs) {
   const adminId = body.user.id;
 
-  if (!isAdmin(adminId)) {
+  if (!(await isAdmin(client, adminId))) {
     await ack({
       response_action: 'errors',
       errors: {

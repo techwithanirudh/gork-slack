@@ -28,7 +28,7 @@ export async function execute({
 }: SlackActionMiddlewareArgs<BlockAction<ButtonAction>> & AllMiddlewareArgs) {
   await ack();
 
-  if (!isAdmin(body.user.id)) {
+  if (!(await isAdmin(client, body.user.id))) {
     return;
   }
 

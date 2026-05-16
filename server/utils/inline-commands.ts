@@ -1,4 +1,4 @@
-import { leaveChannelBlocklist } from '~/config';
+import { restrictedChannels } from '~/config';
 import { setSilenced } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { clearQueue } from '~/lib/queue';
@@ -28,7 +28,7 @@ async function handleStop(
 
 async function handleLeave(context: SlackMessageContext): Promise<void> {
   const channelId = context.event.channel;
-  if (leaveChannelBlocklist.some((c) => c.id === channelId)) {
+  if (restrictedChannels.some((c) => c.id === channelId)) {
     return;
   }
   await context.client.chat

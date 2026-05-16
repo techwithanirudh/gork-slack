@@ -18,7 +18,7 @@ export async function execute(
 
   await ack();
 
-  if (!isAdmin(adminId)) {
+  if (!(await isAdmin(client, adminId))) {
     await respondWithPermissionError(context);
     return;
   }

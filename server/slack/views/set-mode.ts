@@ -5,7 +5,7 @@ import type {
 } from '@slack/bolt';
 import { isResponseMode, type ResponseMode, setChannelMode } from '~/lib/kv';
 import logger from '~/lib/logger';
-import { MODE_LABELS } from '~/slack/commands/mode';
+import { MODES } from '~/slack/commands/mode';
 
 export const name = 'set_mode_modal';
 
@@ -46,7 +46,7 @@ export async function execute({
     await client.chat.postEphemeral({
       channel: channelId,
       user: userId,
-      text: `channel mode set to *${MODE_LABELS[mode as ResponseMode]}*`,
+      text: `channel mode set to *${MODES[mode as ResponseMode]}*`,
     });
   } catch (error) {
     logger.error({ error, channelId, mode }, 'Failed to save channel mode');

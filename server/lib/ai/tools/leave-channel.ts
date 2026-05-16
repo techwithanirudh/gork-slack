@@ -1,6 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { leaveChannelBlocklist } from '~/config';
+import { restrictedChannels } from '~/config';
 import { env } from '~/env';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
@@ -19,7 +19,7 @@ export const leaveChannel = ({ context }: { context: SlackMessageContext }) =>
     }),
     execute: async ({ reason }) => {
       const channel = context.event.channel;
-      const blocked = leaveChannelBlocklist.find((c) => c.id === channel);
+      const blocked = restrictedChannels.find((c) => c.id === channel);
       if (blocked) {
         logger.info(
           { channel, name: blocked.name },
