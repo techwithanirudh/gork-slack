@@ -23,11 +23,7 @@ export async function handleTriggered({
   triggerType,
   channelMode,
 }: TriggeredArgs): Promise<void> {
-  if (
-    channelMode === 'none' &&
-    triggerType !== 'ping' &&
-    triggerType !== 'dm'
-  ) {
+  if (channelMode === 'none' && triggerType !== 'dm') {
     logger.debug(
       `[${getContextId(messageContext)}] Channel mode 'none' — skipping trigger ${triggerType}`
     );
