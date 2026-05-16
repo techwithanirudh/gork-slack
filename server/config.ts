@@ -24,6 +24,7 @@ export const restrictedChannels = [
   { id: 'C0A9ATPB2KF', name: 'gork-reports' },
 ];
 
+// Channels where Gork will not reply (subset of restrictedChannels)
 export const blockedChannels = [{ id: 'C09P6S7H725', name: 'gork' }];
 
 export const moderation = {

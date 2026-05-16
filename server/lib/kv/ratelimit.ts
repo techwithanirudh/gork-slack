@@ -1,7 +1,7 @@
 import { redis } from './client';
 
 const WINDOW_SECONDS = 30;
-const WINDOW_LIMIT = 56;
+const WINDOW_LIMIT = 56; // ~2 per second over the 30s window
 
 export async function ratelimit(
   contextId: string

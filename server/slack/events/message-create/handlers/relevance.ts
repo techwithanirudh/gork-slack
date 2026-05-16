@@ -5,37 +5,37 @@ import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
 import { isUserBanned } from '~/lib/reports';
 import type { SlackMessageContext } from '~/types';
-import type { ChatContext } from '~/utils/context';
+import { buildChatContext } from '~/utils/context';
 import { logReply } from '~/utils/log';
 import {
   checkMessageQuota,
   handleMessageCount,
 } from '~/utils/message-rate-limiter';
-import type { MessageEventArgs } from '../utils/message';
+import { getAuthorName, getContextId } from '../utils/message';
 import { assessRelevance } from '../utils/relevance';
 import { generateResponse } from '../utils/respond';
 
-export async function handleRelevance(
-  args: MessageEventArgs,
-  messageContext: SlackMessageContext,
-  ctxId: string,
-  channelMode: ResponseMode,
-  authorName: string,
-  content: string,
-  chatContext: ChatContext
-): Promise<void> {
+interface RelevanceArgs {
+  channelMode: ResponseMode;
+  messageContext: SlackMessageContext;
+}
+
+export async function handleRelevance({
+  messageContext,
+  channelMode,
+}: RelevanceArgs): Promise<void> {
   if (
     channelMode === 'ping' ||
     channelMode === 'ping+keyword' ||
     channelMode === 'none'
   ) {
     logger.debug(
-      `[${ctxId}] Channel mode '${channelMode}' — skipping relevance`
+      `[${getContextId(messageContext)}] Channel mode '${channelMode}' — skipping relevance`
     );
     return;
   }
 
-  const userId = (args.event as { user?: string }).user;
+  const userId = (messageContext.event as { user?: string }).user;
   if (!isUserAllowed(userId ?? '')) {
     return;
   }
@@ -43,6 +43,7 @@ export async function handleRelevance(
     return;
   }
 
+  const ctxId = getContextId(messageContext);
   const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
   if (!hasQuota) {
     logger.debug(
@@ -50,6 +51,12 @@ export async function handleRelevance(
     );
     return;
   }
+
+  const [authorName, chatContext] = await Promise.all([
+    getAuthorName(messageContext),
+    buildChatContext(messageContext),
+  ]);
+  const content = (messageContext.event as { text?: string }).text ?? '';
 
   const { probability, reason } = await assessRelevance(
     messageContext,

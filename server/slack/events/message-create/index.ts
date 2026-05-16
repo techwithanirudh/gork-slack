@@ -8,14 +8,12 @@ import {
 } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { getQueue } from '~/lib/queue';
-import { buildChatContext } from '~/utils/context';
 import { handleInlineCommand } from '~/utils/inline-commands';
 import { shouldUse } from '~/utils/messages';
 import { getTrigger, type Trigger } from '~/utils/triggers';
 import { handleRelevance } from './handlers/relevance';
 import { handleTriggered } from './handlers/triggered';
 import {
-  getAuthorName,
   getContextId,
   isProcessableMessage,
   type MessageEventArgs,
@@ -76,43 +74,25 @@ async function handleMessage(
     }
   }
 
-  const [channelMode, authorName, chatContext] = await Promise.all([
-    getEffectiveMode({
-      workspaceId: messageContext.teamId,
-      channelId: args.event.channel,
-    }),
-    getAuthorName(messageContext),
-    buildChatContext(messageContext),
-  ]);
+  const channelMode = await getEffectiveMode({
+    workspaceId: messageContext.teamId,
+    channelId: args.event.channel,
+  });
 
-  const content = (messageContext.event as { text?: string }).text ?? '';
   const routeToTrigger =
     trigger.type != null &&
     !(trigger.type === 'keyword' && channelMode === 'relevance');
 
   if (routeToTrigger && trigger.type != null) {
-    await handleTriggered(
-      args,
+    await handleTriggered({
       messageContext,
-      ctxId,
-      trigger.type,
       channelMode,
-      authorName,
-      content,
-      chatContext
-    );
+      triggerType: trigger.type,
+    });
     return;
   }
 
-  await handleRelevance(
-    args,
-    messageContext,
-    ctxId,
-    channelMode,
-    authorName,
-    content,
-    chatContext
-  );
+  await handleRelevance({ messageContext, channelMode });
 }
 
 export async function execute(args: MessageEventArgs) {
