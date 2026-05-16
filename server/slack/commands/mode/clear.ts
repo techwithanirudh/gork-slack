@@ -1,0 +1,54 @@
+import type { RespondFn } from '@slack/bolt';
+import type { WebClient } from '@slack/web-api';
+import { restrictedChannels } from '~/config';
+import { clearMode, type ModeScope } from '~/lib/kv';
+import { isAdmin } from '~/lib/permissions';
+import { section } from '~/lib/slack/blocks';
+
+interface ClearArgs {
+  channelId: string;
+  scope: ModeScope;
+  userId: string;
+  workspaceId: string;
+}
+
+export async function handleClear(
+  client: WebClient,
+  respond: RespondFn,
+  { workspaceId, channelId, userId, scope }: ClearArgs
+): Promise<void> {
+  const id = scope === 'workspace' ? workspaceId : channelId;
+
+  if (scope === 'workspace' && !(await isAdmin(client, userId))) {
+    await respond({
+      text: 'only workspace admins can clear the workspace mode.',
+      response_type: 'ephemeral',
+    });
+    return;
+  }
+  if (
+    scope === 'channel' &&
+    restrictedChannels.some((c) => c.id === channelId) &&
+    !(await isAdmin(client, userId))
+  ) {
+    await respond({
+      text: 'only workspace admins can change the mode in this channel.',
+      response_type: 'ephemeral',
+    });
+    return;
+  }
+
+  await clearMode({ scope, id });
+  await respond({
+    text:
+      scope === 'workspace' ? 'workspace mode cleared' : 'channel mode cleared',
+    blocks: [
+      section(
+        scope === 'workspace'
+          ? 'workspace mode wiped. channels fall back to their own override, or relevance'
+          : 'channel mode cleared. falls back to workspace default, or relevance'
+      ),
+    ],
+    response_type: 'ephemeral',
+  });
+}

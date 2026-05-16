@@ -2,11 +2,13 @@ import type { WebClient } from '@slack/web-api';
 import { env } from '~/env';
 import logger from '~/lib/logger';
 
+const admins = new Set(env.ADMINS ?? []);
+
 export async function isAdmin(
   client: WebClient,
   userId: string
 ): Promise<boolean> {
-  if (new Set(env.ADMINS ?? []).has(userId)) {
+  if (admins.has(userId)) {
     return true;
   }
 

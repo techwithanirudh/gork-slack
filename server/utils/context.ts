@@ -216,3 +216,5 @@ export async function buildChatContext(
 
   return { messages, hints, memories };
 }
+
+export type ChatContext = Awaited<ReturnType<typeof buildChatContext>>;

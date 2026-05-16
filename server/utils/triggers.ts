@@ -16,11 +16,16 @@ function isPlainMessage(
   );
 }
 
+export interface Trigger {
+  info: string | string[] | null;
+  type: TriggerType;
+}
+
 export async function getTrigger(
   message: SlackMessageContext,
   keywords: string[],
   botId?: string
-): Promise<{ type: TriggerType; info: string | string[] | null }> {
+): Promise<Trigger> {
   const { event, client } = message;
 
   if (!isPlainMessage(event)) {

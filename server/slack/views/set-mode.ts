@@ -4,12 +4,7 @@ import type {
   ViewSubmitAction,
 } from '@slack/bolt';
 import { restrictedChannels } from '~/config';
-import {
-  isResponseMode,
-  type ModeScope,
-  type ResponseMode,
-  setMode,
-} from '~/lib/kv';
+import { isResponseMode, type ModeScope, setMode } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { isAdmin } from '~/lib/permissions';
 
@@ -17,7 +12,6 @@ export const name = 'set_mode_modal';
 
 interface ModalMetadata {
   channelId: string;
-  scope: ModeScope;
   workspaceId: string;
 }
 
@@ -85,7 +79,7 @@ export async function execute({
   const id = scope === 'workspace' ? workspaceId : channelId;
 
   try {
-    await setMode({ scope, id, mode: mode as ResponseMode });
+    await setMode({ scope, id, mode });
     logger.info({ scope, id, mode, setBy: userId }, 'Mode set via modal');
     await client.chat.postEphemeral({
       channel: channelId,
