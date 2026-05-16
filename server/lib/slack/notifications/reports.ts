@@ -1,5 +1,6 @@
 import type { WebClient } from '@slack/web-api';
 import { env } from '~/env';
+import { MODES, type ModeScope, type ResponseMode } from '~/lib/kv';
 import logger from '~/lib/logger';
 import {
   banNotificationBlocks,
@@ -135,4 +136,78 @@ export async function sendUnbanNotification({
   });
 
   logger.info({ userId, unbannedBy }, 'Unban notification sent');
+}
+
+interface ModeChangeNotificationParams {
+  action: 'clear' | 'set';
+  changedBy: string;
+  channelId: string;
+  client: WebClient;
+  mode?: ResponseMode;
+  scope: ModeScope;
+  workspaceId: string;
+}
+
+export async function sendModeChangeNotification({
+  action,
+  channelId,
+  changedBy,
+  client,
+  mode,
+  scope,
+  workspaceId,
+}: ModeChangeNotificationParams): Promise<void> {
+  if (!env.REPORTS_CHANNEL) {
+    logger.warn(
+      'Mode change notification not sent because REPORTS_CHANNEL is not configured'
+    );
+    return;
+  }
+
+  const target =
+    scope === 'workspace' ? `workspace ${workspaceId}` : `<#${channelId}>`;
+  const description =
+    action === 'set'
+      ? `Reply mode was set to *${mode ? MODES[mode] : 'unknown'}*.`
+      : 'Reply mode was cleared.';
+
+  try {
+    await client.chat.postMessage({
+      channel: env.REPORTS_CHANNEL,
+      text: `Gork ${scope} mode ${action} by <@${changedBy}>`,
+      blocks: [
+        {
+          type: 'header',
+          text: {
+            type: 'plain_text',
+            text: action === 'set' ? 'Mode Set' : 'Mode Cleared',
+          },
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: description,
+          },
+        },
+        {
+          type: 'section',
+          fields: [
+            { type: 'mrkdwn', text: `*Changed By*\n<@${changedBy}>` },
+            { type: 'mrkdwn', text: `*Scope*\n${scope}` },
+            { type: 'mrkdwn', text: `*Target*\n${target}` },
+          ],
+        },
+      ],
+    });
+    logger.info(
+      { action, scope, channelId, workspaceId, mode, changedBy },
+      'Mode change notification sent'
+    );
+  } catch (error) {
+    logger.warn(
+      { error, action, scope, channelId, workspaceId, mode, changedBy },
+      'Failed to send mode change notification'
+    );
+  }
 }

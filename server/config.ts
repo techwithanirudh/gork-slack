@@ -1,5 +1,3 @@
-import { id } from "zod/v4/locales";
-
 export const keywords = ['gork', 'grok'];
 export const country = 'United States';
 export const city = 'New York';
@@ -29,7 +27,7 @@ export const restrictedChannels = [
 export const blockedChannels = [
   { id: 'CNMU9L92Q', name: 'confessions' },
   { id: 'C0188CY57PZ', name: 'meta' },
-  { id: 'C0C78SG9L', name: 'hq' }
+  { id: 'C0C78SG9L', name: 'hq' },
 ];
 
 export const moderation = {

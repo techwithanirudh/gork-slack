@@ -80,7 +80,21 @@ export async function handleTriggered({
       });
       logger.info(`Added ${userId} to channel ${env.AUTO_ADD_CHANNEL}`);
     } catch (error) {
-      logger.error({ error }, 'Failed to add user to channel');
+      const code = (error as { data?: { error?: string }; code?: string }).data
+        ?.error;
+      const errorCode =
+        code ?? (error as { data?: { error?: string }; code?: string }).code;
+      if (
+        errorCode === 'already_in_channel' ||
+        errorCode === 'cant_invite_self'
+      ) {
+        logger.debug(
+          { error, userId },
+          'User already in channel or cannot be invited'
+        );
+      } else {
+        logger.error({ error, userId }, 'Failed to add user to channel');
+      }
     }
   }
 

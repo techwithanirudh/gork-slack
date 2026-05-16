@@ -4,8 +4,10 @@ import type { WebClient } from '@slack/web-api';
 import { restrictedChannels } from '~/config';
 import { mode as modeHelp } from '~/constants/help';
 import { MODES, type ModeScope, type ResponseMode, setMode } from '~/lib/kv';
+import logger from '~/lib/logger';
 import { isAdmin } from '~/lib/permissions';
 import { section } from '~/lib/slack/blocks';
+import { sendModeChangeNotification } from '~/lib/slack/notifications';
 
 interface SetArgs {
   channelId: string;
@@ -44,6 +46,7 @@ export async function handleSet(
     }
 
     await setMode({ scope, id, mode });
+    logger.info({ scope, id, mode, changedBy: userId }, 'Mode set via command');
     await respond({
       text: `${scope} mode set to ${MODES[mode]}`,
       blocks: [
@@ -52,6 +55,15 @@ export async function handleSet(
         ),
       ],
       response_type: 'ephemeral',
+    });
+    await sendModeChangeNotification({
+      action: 'set',
+      client,
+      scope,
+      workspaceId,
+      channelId,
+      mode,
+      changedBy: userId,
     });
     return;
   }
@@ -62,7 +74,12 @@ export async function handleSet(
     view: {
       type: 'modal',
       callback_id: 'set_mode_modal',
-      private_metadata: JSON.stringify({ workspaceId, channelId }),
+      private_metadata: JSON.stringify({
+        workspaceId,
+        channelId,
+        openedBy: userId,
+        isAdmin: userIsAdmin,
+      }),
       title: { type: 'plain_text', text: 'Set Mode' },
       submit: { type: 'plain_text', text: 'Set' },
       close: { type: 'plain_text', text: 'Cancel' },

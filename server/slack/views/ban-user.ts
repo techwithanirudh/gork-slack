@@ -4,8 +4,8 @@ import type {
   ViewSubmitAction,
 } from '@slack/bolt';
 import logger from '~/lib/logger';
-import { isAdmin } from '~/lib/permissions';
 import { banUser, isUserBanned, sendBanNotification } from '~/lib/reports';
+import { isViewOwner } from './metadata';
 
 export const name = 'ban_user_modal';
 
@@ -14,10 +14,11 @@ export async function execute({
   body,
   view,
   client,
-}: SlackViewMiddlewareArgs<ViewSubmitAction> & AllMiddlewareArgs) {
+}: SlackViewMiddlewareArgs<ViewSubmitAction> &
+  AllMiddlewareArgs): Promise<void> {
   const adminId = body.user.id;
 
-  if (!(await isAdmin(client, adminId))) {
+  if (!isViewOwner(view.private_metadata, adminId)) {
     await ack({
       response_action: 'errors',
       errors: {

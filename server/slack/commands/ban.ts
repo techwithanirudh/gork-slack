@@ -44,6 +44,7 @@ export async function execute(
     view: {
       type: 'modal',
       callback_id: 'ban_user_modal',
+      private_metadata: JSON.stringify({ openedBy: adminId }),
       title: {
         type: 'plain_text',
         text: 'Ban User',
