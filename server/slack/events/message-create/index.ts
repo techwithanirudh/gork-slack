@@ -8,7 +8,6 @@ import {
 } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { getQueue } from '~/lib/queue';
-import type { SlackMessageContext } from '~/types';
 import { buildChatContext } from '~/utils/context';
 import { handleInlineCommand } from '~/utils/inline-commands';
 import { shouldUse } from '~/utils/messages';
@@ -30,26 +29,6 @@ async function canReply(ctxId: string): Promise<boolean> {
     logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
   }
   return success;
-}
-
-async function handleTriggerInBlockedChannel(
-  ctx: SlackMessageContext,
-  triggerType: string
-): Promise<void> {
-  if (triggerType !== 'ping' && triggerType !== 'dm') {
-    return;
-  }
-  const channelId = (ctx.event as { channel?: string }).channel;
-  const threadTs = (ctx.event as { thread_ts?: string }).thread_ts;
-  const messageTs = (ctx.event as { ts?: string }).ts;
-  if (!channelId) {
-    return;
-  }
-  await ctx.client.chat.postMessage({
-    channel: channelId,
-    thread_ts: threadTs ?? messageTs,
-    text: "can't talk here, find me in another channel",
-  });
 }
 
 async function handleMessage(
@@ -76,7 +55,13 @@ async function handleMessage(
   const ctxId = getContextId(messageContext);
 
   if (blockedChannels.some((c) => c.id === args.event.channel)) {
-    await handleTriggerInBlockedChannel(messageContext, trigger.type ?? '');
+    if (trigger.type === 'ping' || trigger.type === 'dm') {
+      await args.client.chat.postMessage({
+        channel: args.event.channel,
+        thread_ts: args.event.thread_ts ?? args.event.ts,
+        text: "can't talk here, find me in another channel",
+      });
+    }
     return;
   }
 
