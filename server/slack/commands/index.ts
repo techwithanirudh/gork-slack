@@ -38,11 +38,10 @@ async function handleGorkCommand(
   const { subcommand, args } = parseSubcommand(command.text);
 
   if (!subcommand) {
-    await context.ack();
-    await respond({
-      text: `Available subcommands: ${subcommands.map((s) => s.name).join(', ')}\nUsage: \`${command.command} <subcommand> [args]\`\n\nRun \`${command.command} help\` for detailed usage.`,
-      response_type: 'ephemeral',
-    });
+    const helpHandler = subcommands.find((s) => s.name === 'help');
+    if (helpHandler) {
+      await helpHandler.execute(context);
+    }
     return;
   }
 

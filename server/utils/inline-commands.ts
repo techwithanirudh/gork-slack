@@ -4,6 +4,8 @@ import logger from '~/lib/logger';
 import { clearQueue } from '~/lib/queue';
 import type { SlackMessageContext } from '~/types';
 
+const INLINE_COMMAND_RE = /^!(\w+)/i;
+
 async function handleStop(
   context: SlackMessageContext,
   ctxId: string
@@ -53,7 +55,7 @@ export async function handleInlineCommand(
   ctxId: string,
   text: string
 ): Promise<'handled' | 'not-handled'> {
-  const command = /^!(\w+)/i.exec(text.trimStart())?.[1]?.toLowerCase();
+  const command = INLINE_COMMAND_RE.exec(text)?.[1]?.toLowerCase();
   if (!command) {
     return 'not-handled';
   }

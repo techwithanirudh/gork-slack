@@ -5,6 +5,7 @@ import { splitArgs } from '~/utils/text';
 const userNameCache = new Map<string, string>();
 
 const USER_ID_PATTERN = /^[UW][A-Z0-9]+$/;
+const USER_MENTION_RE = /^<@([A-Z0-9]+)(?:\|[^>]+)?>$/;
 
 export async function getSlackUserName(
   client: WebClient,
@@ -43,7 +44,7 @@ export function primeSlackUserName(userId: string, name: string) {
 }
 
 export function normalizeSlackUserId(raw: string): string {
-  const match = /^<@([A-Z0-9]+)(?:\|[^>]+)?>$/.exec(raw);
+  const match = USER_MENTION_RE.exec(raw);
   return match?.[1] ?? raw.trim();
 }
 

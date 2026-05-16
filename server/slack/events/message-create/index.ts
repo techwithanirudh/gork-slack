@@ -1,12 +1,13 @@
 import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
-import { keywords, messageThreshold } from '~/config';
+import { blockedChannels, keywords, messageThreshold } from '~/config';
 import { env } from '~/env';
 import { isUserAllowed } from '~/lib/allowed-users';
 import {
   clearSilenced,
-  getChannelMode,
+  getEffectiveMode,
   isSilenced,
   keys,
+  type ResponseMode,
   ratelimit,
 } from '~/lib/kv';
 import logger from '~/lib/logger';
@@ -23,15 +24,17 @@ import {
   resetMessageCount,
 } from '~/utils/message-rate-limiter';
 import { shouldUse } from '~/utils/messages';
-import { getTrigger } from '~/utils/triggers';
+import { getTrigger, type TriggerType } from '~/utils/triggers';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
 
 export const name = 'message';
 
-const blockedChannels = new Set(env.BLOCKED_CHANNELS ?? []);
-
 type MessageEventArgs = SlackEventMiddlewareArgs<'message'> & AllMiddlewareArgs;
+interface Trigger {
+  info: string | string[] | null;
+  type: TriggerType;
+}
 
 async function canReply(ctxId: string): Promise<boolean> {
   const { success } = await ratelimit(keys.channelCount(ctxId));
@@ -133,7 +136,7 @@ async function handleTriggerInBlockedChannel(
   await ctx.client.chat.postMessage({
     channel: channelId,
     thread_ts: threadTs ?? messageTs,
-    text: "sorry i'm not allowed to respond in this channel",
+    text: "can't talk here, find me in another channel",
   });
 }
 
@@ -144,7 +147,7 @@ async function handleTriggeredMessage(
   messageContext: SlackMessageContext,
   ctxId: string,
   triggerType: string,
-  channelMode: Awaited<ReturnType<typeof getChannelMode>>,
+  channelMode: ResponseMode,
   authorName: string,
   content: string,
   chatContext: ChatContext
@@ -178,7 +181,7 @@ async function handleTriggeredMessage(
     await args.client.chat.postMessage({
       channel: ev.channel,
       thread_ts: ev.thread_ts || ev.ts,
-      markdown_text: `sorry bro <@${ev.user}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
+      text: `sorry bro <@${ev.user}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
     });
     return;
   }
@@ -234,7 +237,7 @@ async function handleRelevancePath(
   args: MessageEventArgs,
   messageContext: SlackMessageContext,
   ctxId: string,
-  channelMode: Awaited<ReturnType<typeof getChannelMode>>,
+  channelMode: ResponseMode,
   authorName: string,
   content: string,
   chatContext: ChatContext
@@ -298,7 +301,10 @@ async function handleRelevancePath(
   }
 }
 
-async function handleMessage(args: MessageEventArgs) {
+async function handleMessage(
+  args: MessageEventArgs,
+  trigger: Trigger
+): Promise<void> {
   if (
     args.event.subtype &&
     args.event.subtype !== 'thread_broadcast' &&
@@ -318,13 +324,7 @@ async function handleMessage(args: MessageEventArgs) {
 
   const ctxId = getContextId(messageContext);
 
-  const trigger = await getTrigger(
-    messageContext,
-    keywords,
-    messageContext.botUserId
-  );
-
-  if (blockedChannels.has(args.event.channel)) {
+  if (blockedChannels.some((c) => c.id === args.event.channel)) {
     await handleTriggerInBlockedChannel(messageContext, trigger.type ?? '');
     return;
   }
@@ -340,7 +340,10 @@ async function handleMessage(args: MessageEventArgs) {
     }
   }
 
-  const channelMode = await getChannelMode(args.event.channel);
+  const channelMode = await getEffectiveMode({
+    workspaceId: messageContext.teamId,
+    channelId: args.event.channel,
+  });
   const authorName = await getAuthorName(messageContext);
   const content = (messageContext.event as { text?: string }).text ?? '';
   const chatContext = await buildChatContext(messageContext);
@@ -393,11 +396,20 @@ export async function execute(args: MessageEventArgs) {
     return;
   }
 
-  const text = (messageContext.event as { text?: string }).text ?? '';
-  const inlineResult = await handleInlineCommand(messageContext, ctxId, text);
-  if (inlineResult === 'handled') {
-    return;
+  const trigger = await getTrigger(
+    messageContext,
+    keywords,
+    messageContext.botUserId
+  );
+
+  if (trigger.type === 'ping') {
+    const raw = (messageContext.event as { text?: string }).text ?? '';
+    const text = raw.replace(/<@[A-Z0-9]+>/gi, '').trimStart();
+    const inlineResult = await handleInlineCommand(messageContext, ctxId, text);
+    if (inlineResult === 'handled') {
+      return;
+    }
   }
 
-  return await getQueue(ctxId).add(async () => handleMessage(args));
+  return await getQueue(ctxId).add(async () => handleMessage(args, trigger));
 }

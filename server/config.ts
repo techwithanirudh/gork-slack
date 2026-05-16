@@ -24,6 +24,8 @@ export const restrictedChannels = [
   { id: 'C0A9ATPB2KF', name: 'gork-reports' },
 ];
 
+export const blockedChannels = [{ id: 'C09P6S7H725', name: 'gork' }];
+
 export const moderation = {
   banThreshold: 15,
   contextMessages: 3,

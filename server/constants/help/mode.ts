@@ -2,19 +2,22 @@ import type { CommandHelp } from '~/types';
 
 export const mode: CommandHelp = {
   name: 'mode',
-  description: 'Control when Gork replies in this channel.',
+  description: 'Control when Gork replies in this workspace or channel.',
   subcommands: [
     {
-      usage: 'mode set',
-      description: 'Open a modal to set the reply mode for this channel.',
+      usage: 'mode set [workspace|channel] <mode>',
+      description:
+        'Set the reply mode. Workspace scope requires admin. Omit scope to open a modal.',
+      permissions: ['admin (workspace scope)'],
     },
     {
-      usage: 'mode show',
-      description: 'Show the current reply mode for this channel.',
+      usage: 'mode show [workspace|channel]',
+      description: 'Show stored modes and the effective mode for this channel.',
     },
     {
-      usage: 'mode clear',
-      description: 'Reset to the default mode (relevance).',
+      usage: 'mode clear <workspace|channel>',
+      description: 'Clear a stored mode. Workspace scope requires admin.',
+      permissions: ['admin (workspace scope)'],
     },
   ],
   modes: [

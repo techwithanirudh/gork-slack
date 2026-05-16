@@ -1,36 +1,81 @@
 import { redis } from './client';
+import { keys } from './keys';
 
-const MODE_KEY = (channelId: string) => `ctx:mode:${channelId}`;
+export const MODES = {
+  ping: 'ping only',
+  relevance: 'relevance (default)',
+  'ping+keyword': 'ping + keyword',
+  none: 'none',
+} as const;
 
-export const RESPONSE_MODES = [
-  'ping',
-  'relevance',
-  'ping+keyword',
-  'none',
-] as const;
-
-export type ResponseMode = (typeof RESPONSE_MODES)[number];
+export type ResponseMode = keyof typeof MODES;
+export type ModeScope = 'workspace' | 'channel';
 
 const DEFAULT_MODE: ResponseMode = 'relevance';
 
 export function isResponseMode(
   value: string | null | undefined
 ): value is ResponseMode {
-  return (RESPONSE_MODES as readonly string[]).includes(value ?? '');
+  return value != null && value in MODES;
 }
 
-export async function setChannelMode(
-  channelId: string,
-  mode: ResponseMode
-): Promise<void> {
-  await redis.set(MODE_KEY(channelId), mode);
+export async function setMode({
+  scope,
+  id,
+  mode,
+}: {
+  scope: ModeScope;
+  id: string;
+  mode: ResponseMode;
+}): Promise<void> {
+  const key =
+    scope === 'workspace' ? keys.workspaceMode(id) : keys.channelMode(id);
+  await redis.set(key, mode);
 }
 
-export async function getChannelMode(channelId: string): Promise<ResponseMode> {
-  const raw = await redis.get(MODE_KEY(channelId));
-  return isResponseMode(raw) ? raw : DEFAULT_MODE;
+export async function clearMode({
+  scope,
+  id,
+}: {
+  scope: ModeScope;
+  id: string;
+}): Promise<void> {
+  const key =
+    scope === 'workspace' ? keys.workspaceMode(id) : keys.channelMode(id);
+  await redis.del(key);
 }
 
-export async function clearChannelMode(channelId: string): Promise<void> {
-  await redis.del(MODE_KEY(channelId));
+export async function getStoredMode({
+  scope,
+  id,
+}: {
+  scope: ModeScope;
+  id: string;
+}): Promise<ResponseMode | null> {
+  const key =
+    scope === 'workspace' ? keys.workspaceMode(id) : keys.channelMode(id);
+  const raw = await redis.get(key);
+  return isResponseMode(raw) ? raw : null;
+}
+
+export async function getEffectiveMode({
+  workspaceId,
+  channelId,
+}: {
+  workspaceId?: string;
+  channelId?: string;
+}): Promise<ResponseMode> {
+  if (channelId) {
+    const raw = await redis.get(keys.channelMode(channelId));
+    if (isResponseMode(raw)) {
+      return raw;
+    }
+  }
+  if (workspaceId) {
+    const raw = await redis.get(keys.workspaceMode(workspaceId));
+    if (isResponseMode(raw)) {
+      return raw;
+    }
+  }
+  return DEFAULT_MODE;
 }

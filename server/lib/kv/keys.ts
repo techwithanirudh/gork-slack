@@ -5,4 +5,5 @@ export const keys = {
   userBanned: (userId: string) => `user:banned:${userId}`,
   silenced: (contextId: string) => `ctx:silenced:${contextId}`,
   channelMode: (channelId: string) => `ctx:mode:${channelId}`,
+  workspaceMode: (workspaceId: string) => `ws:mode:${workspaceId}`,
 };

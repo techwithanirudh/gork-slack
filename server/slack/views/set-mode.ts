@@ -3,11 +3,23 @@ import type {
   SlackViewMiddlewareArgs,
   ViewSubmitAction,
 } from '@slack/bolt';
-import { isResponseMode, type ResponseMode, setChannelMode } from '~/lib/kv';
+import { restrictedChannels } from '~/config';
+import {
+  isResponseMode,
+  type ModeScope,
+  type ResponseMode,
+  setMode,
+} from '~/lib/kv';
 import logger from '~/lib/logger';
-import { MODES } from '~/slack/commands/mode';
+import { isAdmin } from '~/lib/permissions';
 
 export const name = 'set_mode_modal';
+
+interface ModalMetadata {
+  channelId: string;
+  scope: ModeScope;
+  workspaceId: string;
+}
 
 export async function execute({
   ack,
@@ -16,17 +28,25 @@ export async function execute({
   client,
 }: SlackViewMiddlewareArgs<ViewSubmitAction> & AllMiddlewareArgs) {
   const userId = body.user.id;
-  const channelId = view.private_metadata;
 
-  if (!channelId) {
+  let metadata: ModalMetadata;
+  try {
+    metadata = JSON.parse(view.private_metadata) as ModalMetadata;
+  } catch {
     await ack({
       response_action: 'errors',
-      errors: { mode_select: 'Could not determine channel. Please try again.' },
+      errors: { mode_select: 'Invalid modal state. Please try again.' },
     });
     return;
   }
 
+  const { workspaceId, channelId } = metadata;
+  const scope: ModeScope =
+    (view.state.values.scope_select?.scope?.selected_option?.value as
+      | ModeScope
+      | undefined) ?? 'channel';
   const mode = view.state.values.mode_select?.mode?.selected_option?.value;
+
   if (!isResponseMode(mode)) {
     await ack({
       response_action: 'errors',
@@ -35,20 +55,44 @@ export async function execute({
     return;
   }
 
+  if (scope === 'workspace' && !(await isAdmin(client, userId))) {
+    await ack({
+      response_action: 'errors',
+      errors: {
+        scope_select: 'Only workspace admins can set the workspace mode.',
+      },
+    });
+    return;
+  }
+
+  if (
+    scope === 'channel' &&
+    restrictedChannels.some((c) => c.id === channelId) &&
+    !(await isAdmin(client, userId))
+  ) {
+    await ack({
+      response_action: 'errors',
+      errors: {
+        scope_select:
+          'Only workspace admins can change the mode in this channel.',
+      },
+    });
+    return;
+  }
+
   await ack();
 
+  const id = scope === 'workspace' ? workspaceId : channelId;
+
   try {
-    await setChannelMode(channelId, mode as ResponseMode);
-    logger.info(
-      { channelId, mode, setBy: userId },
-      'Channel mode set via modal'
-    );
+    await setMode({ scope, id, mode: mode as ResponseMode });
+    logger.info({ scope, id, mode, setBy: userId }, 'Mode set via modal');
     await client.chat.postEphemeral({
       channel: channelId,
       user: userId,
-      text: `channel mode set to *${MODES[mode as ResponseMode]}*`,
+      text: `${scope} mode set to *${mode}*`,
     });
   } catch (error) {
-    logger.error({ error, channelId, mode }, 'Failed to save channel mode');
+    logger.error({ error, scope, id, mode }, 'Failed to save mode');
   }
 }
