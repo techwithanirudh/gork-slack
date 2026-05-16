@@ -28,6 +28,7 @@ export const blockedChannels = [
   { id: 'CNMU9L92Q', name: 'confessions' },
   { id: 'C0188CY57PZ', name: 'meta' },
   { id: 'C0C78SG9L', name: 'hq' },
+  { id: 'C0AUZ1LAMH6', name: 'macondo' },
 ];
 
 export const moderation = {
