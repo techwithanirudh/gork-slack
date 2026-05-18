@@ -86,7 +86,7 @@ async function handleMessage(
     const ts = (args.event as { ts?: string }).ts;
     const threadTs = (args.event as { thread_ts?: string }).thread_ts ?? ts;
     if (channel && ts) {
-      void args.client.assistant.threads
+      args.client.assistant.threads
         .setStatus({
           channel_id: channel,
           thread_ts: threadTs ?? ts,
@@ -98,7 +98,7 @@ async function handleMessage(
             'on it...',
           ],
         })
-        .catch(() => {});
+        .catch(() => undefined);
     }
     try {
       await handleTriggered({
@@ -108,13 +108,13 @@ async function handleMessage(
       });
     } finally {
       if (channel && ts) {
-        void args.client.assistant.threads
+        args.client.assistant.threads
           .setStatus({
             channel_id: channel,
             thread_ts: threadTs ?? ts,
             status: '',
           })
-          .catch(() => {});
+          .catch(() => undefined);
       }
     }
     return;

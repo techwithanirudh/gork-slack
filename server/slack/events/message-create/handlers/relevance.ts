@@ -98,7 +98,7 @@ export async function handleRelevance({
   const threadTs =
     (messageContext.event as { thread_ts?: string }).thread_ts ?? ts;
   if (channel && ts) {
-    void messageContext.client.assistant.threads
+    messageContext.client.assistant.threads
       .setStatus({
         channel_id: channel,
         thread_ts: threadTs ?? ts,
@@ -110,7 +110,7 @@ export async function handleRelevance({
           'on it...',
         ],
       })
-      .catch(() => {});
+      .catch(() => undefined);
   }
 
   logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
@@ -130,13 +130,13 @@ export async function handleRelevance({
     }
   } finally {
     if (channel && ts) {
-      void messageContext.client.assistant.threads
+      messageContext.client.assistant.threads
         .setStatus({
           channel_id: channel,
           thread_ts: threadTs ?? ts,
           status: '',
         })
-        .catch(() => {});
+        .catch(() => undefined);
     }
   }
 }

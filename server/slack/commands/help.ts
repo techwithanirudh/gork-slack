@@ -35,7 +35,10 @@ function buildCommandBlocks(
   commandName: (typeof commands)[number]['name'],
   cmd: string
 ): KnownBlock[] {
-  const command = commands.find((c) => c.name === commandName)!;
+  const command = commands.find((c) => c.name === commandName);
+  if (!command) {
+    return [];
+  }
 
   const subcommandText = command.subcommands
     .map((s) => {

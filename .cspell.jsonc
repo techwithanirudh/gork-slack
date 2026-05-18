@@ -46,6 +46,10 @@
     "zrem",
     "zcard",
     "zremrangebyscore",
-    "macondo"
+    "macondo",
+    "retryables",
+    "Usergroup",
+    "usergroup",
+    "usergroups"
   ]
 }

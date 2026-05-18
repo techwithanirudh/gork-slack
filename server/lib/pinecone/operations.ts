@@ -52,11 +52,11 @@ export const queryMemories = async (
     });
 
     const index = (await getIndex()).namespace(namespace);
-    void Promise.all(
+    Promise.all(
       results.map(({ id }: { id: string }) =>
         index.update({ id, metadata: { lastRetrievalTime: Date.now() } })
       )
-    );
+    ).catch(() => undefined);
 
     return results;
   } catch (error) {
