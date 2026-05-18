@@ -2,7 +2,7 @@ import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
 import { channelMode as channelModeConfig } from '~/config';
 import { mode as modeHelp } from '~/constants/help';
 import { env } from '~/env';
-import { setMode } from '~/lib/kv';
+import { getStoredMode, MODES, type ResponseMode, setMode } from '~/lib/kv';
 import logger from '~/lib/logger';
 
 export const name = 'member_joined_channel';
@@ -45,9 +45,19 @@ export async function execute({
   }
 
   const isLarge = members >= channelModeConfig.largeChannelThreshold;
-  const assignedMode = isLarge ? 'ping' : 'relevance';
 
-  if (isLarge) {
+  // Check if the channel already has a configured mode before auto-assigning
+  const existingMode = await getStoredMode({ scope: 'channel', id: channelId });
+
+  let assignedMode: ResponseMode;
+  let modeLabel: string;
+  let reason: string;
+
+  if (existingMode) {
+    assignedMode = existingMode;
+    modeLabel = MODES[existingMode];
+    reason = '(already configured)';
+  } else if (isLarge) {
     try {
       await setMode({ scope: 'channel', id: channelId, mode: 'ping' });
       logger.info(
@@ -57,16 +67,18 @@ export async function execute({
     } catch (error) {
       logger.error({ error, channelId }, 'Failed to auto-set channel mode');
     }
+    assignedMode = 'ping';
+    modeLabel = 'ping only';
+    reason = '(large channel, defaults to ping only)';
+  } else {
+    assignedMode = 'relevance';
+    modeLabel = 'relevance';
+    reason = '(smaller channel, defaults to relevance)';
   }
 
   const modeList = (modeHelp.modes ?? [])
     .map((m) => `• *${m.name}*: ${m.description}`)
     .join('\n');
-
-  const modeLabel = isLarge ? 'ping only' : 'relevance';
-  const reason = isLarge
-    ? '(large channel, defaults to ping only)'
-    : '(smaller channel, defaults to relevance)';
 
   try {
     await client.chat.postEphemeral({
@@ -92,7 +104,7 @@ export async function execute({
   try {
     await client.chat.postMessage({
       channel: env.LOGS_CHANNEL,
-      text: `<@${userId}> added the bot to <#${channelId}> (mode auto-set to ${assignedMode}, ${members} members)`,
+      text: `<@${userId}> added the bot to <#${channelId}> (mode: ${assignedMode}, ${members} members)`,
     });
     logger.info(
       { userId, channelId },

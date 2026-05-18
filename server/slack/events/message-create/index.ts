@@ -82,6 +82,13 @@ async function handleMessage(
   const routeToTrigger = trigger.type != null;
 
   if (routeToTrigger && trigger.type != null) {
+    if (channelMode === 'none' && trigger.type !== 'dm') {
+      return;
+    }
+    if (channelMode === 'ping' && trigger.type === 'keyword') {
+      return;
+    }
+
     const channel = (args.event as { channel?: string }).channel;
     const ts = (args.event as { ts?: string }).ts;
     const threadTs = (args.event as { thread_ts?: string }).thread_ts ?? ts;
