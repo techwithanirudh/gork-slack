@@ -155,6 +155,14 @@ export async function getConversationMessages({
 
     return modelMessages;
   } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'data' in error &&
+      (error as { data?: { error?: string } }).data?.error === 'not_in_channel'
+    ) {
+      throw error;
+    }
     logger.error(
       { error, channel, threadTs },
       'Failed to fetch conversation history'

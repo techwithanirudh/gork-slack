@@ -55,7 +55,22 @@ export async function handleRelevance({
   const [authorName, chatContext] = await Promise.all([
     getAuthorName(messageContext),
     buildChatContext(messageContext),
-  ]);
+  ]).catch((error) => {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'data' in error &&
+      (error as { data?: { error?: string } }).data?.error === 'not_in_channel'
+    ) {
+      logger.info(`[${ctxId}] Bot is not in channel, skipping relevance`);
+      return [null, null] as const;
+    }
+    throw error;
+  });
+
+  if (!(authorName && chatContext)) {
+    return;
+  }
 
   const { probability, reason } = await assessRelevance(
     messageContext,
