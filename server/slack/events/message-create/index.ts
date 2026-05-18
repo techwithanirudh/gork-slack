@@ -63,7 +63,7 @@ async function handleMessage(
       await clearSilenced(ctxId);
       logger.info(`[${ctxId}] Thread un-silenced by ping`);
     } else {
-      logger.debug(`[${ctxId}] Thread is silenced — skipping`);
+      logger.debug(`[${ctxId}] Thread is silenced: skipping`);
       return;
     }
   }

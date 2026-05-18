@@ -27,12 +27,12 @@ export async function handleTriggered({
 
   if (channelMode === 'none' && triggerType !== 'dm') {
     logger.debug(
-      `[${ctxId}] Channel mode 'none' — skipping trigger ${triggerType}`
+      `[${ctxId}] Channel mode 'none': skipping trigger ${triggerType}`
     );
     return;
   }
   if (channelMode === 'ping' && triggerType === 'keyword') {
-    logger.debug(`[${ctxId}] Channel mode 'ping' — skipping keyword trigger`);
+    logger.debug(`[${ctxId}] Channel mode 'ping': skipping keyword trigger`);
     return;
   }
 

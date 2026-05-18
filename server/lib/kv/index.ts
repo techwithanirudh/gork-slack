@@ -11,4 +11,14 @@ export {
   setMode,
 } from './mode';
 export { ratelimit } from './ratelimit';
+export {
+  addReport,
+  banUser,
+  getReportCount,
+  getUserReports,
+  isUserBanned,
+  type Report,
+  removeReport,
+  unbanUser,
+} from './reports';
 export { clearSilenced, isSilenced, setSilenced } from './silence';

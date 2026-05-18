@@ -30,7 +30,7 @@ export async function handleRelevance({
     channelMode === 'none'
   ) {
     logger.debug(
-      `[${getContextId(messageContext)}] Channel mode '${channelMode}' — skipping relevance`
+      `[${getContextId(messageContext)}] Channel mode '${channelMode}': skipping relevance`
     );
     return;
   }
@@ -89,7 +89,7 @@ export async function handleRelevance({
   await handleMessageCount(ctxId, willReply);
 
   if (!willReply) {
-    logger.debug(`[${ctxId}] Low relevance — ignoring`);
+    logger.debug(`[${ctxId}] Low relevance: ignoring`);
     return;
   }
 

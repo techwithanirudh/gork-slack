@@ -13,7 +13,7 @@ export {
   type Report,
   removeReport,
   unbanUser,
-} from './queries/reports';
+} from '~/lib/kv';
 
 export { userReportBlocks } from './slack/blocks';
 

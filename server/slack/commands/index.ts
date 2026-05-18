@@ -13,8 +13,6 @@ const subcommands = [
   { name: helpName, execute: helpExecute },
 ] as const;
 
-export const GORK_COMMAND_PATTERN = /^\/gork(?:-\w+)?$/;
-
 function parseSubcommand(text: string): {
   subcommand: string | null;
   args: string;
@@ -30,7 +28,7 @@ function parseSubcommand(text: string): {
   return { subcommand, args };
 }
 
-async function handleGorkCommand(
+async function handleCommand(
   context: Parameters<typeof banExecute>[0]
 ): Promise<void> {
   const { command, respond } = context;
@@ -67,5 +65,6 @@ async function handleGorkCommand(
 }
 
 export const commands = [
-  { pattern: GORK_COMMAND_PATTERN, execute: handleGorkCommand },
+  // biome-ignore lint/performance/useTopLevelRegex: pattern is module-local
+  { pattern: /^\/gork(?:-\w+)?$/, execute: handleCommand },
 ] as const;

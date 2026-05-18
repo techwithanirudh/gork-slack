@@ -1,6 +1,7 @@
 import { moderation } from '~/config';
-import { keys, redis } from '~/lib/kv';
 import logger from '~/lib/logger';
+import { redis } from './client';
+import { keys } from './keys';
 
 const UUID_REGEX = /^[a-f0-9-]{36}$/;
 

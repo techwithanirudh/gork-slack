@@ -9,7 +9,7 @@ import {
   Header,
   Section,
 } from 'slack-block-builder';
-import type { Report } from '~/lib/queries/reports';
+import type { Report } from '~/lib/kv/reports';
 
 function build(builder: Parameters<typeof buildBlock>[0]): Block {
   return buildBlock(builder) as unknown as Block;

@@ -1,4 +1,4 @@
-import type { WebClient } from '@slack/web-api';
+import type { ConversationsHistoryResponse, WebClient } from '@slack/web-api';
 import type { ModelMessage, UserContent } from 'ai';
 import logger from '~/lib/logger';
 import { processSlackFiles, type SlackFile } from '~/utils/images';
@@ -15,14 +15,9 @@ interface ConversationOptions {
   threadTs?: string;
 }
 
-interface SlackMessage {
-  bot_id?: string;
-  files?: SlackFile[];
-  subtype?: string;
-  text?: string;
-  ts?: string;
-  user?: string;
-}
+type SlackMessage = NonNullable<
+  ConversationsHistoryResponse['messages']
+>[number];
 
 export async function getConversationMessages({
   client,
@@ -128,7 +123,9 @@ export async function getConversationMessages({
         }
 
         // Process images from files for user messages
-        const imageContents = await processSlackFiles(message.files);
+        const imageContents = await processSlackFiles(
+          message.files as SlackFile[] | undefined
+        );
 
         // If there are images, create a multi-part content message
         if (imageContents.length > 0) {
