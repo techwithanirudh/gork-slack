@@ -44,28 +44,29 @@ export async function execute({
     logger.warn({ error, channelId }, 'Failed to count channel members');
   }
 
-  const assignedMode =
-    members >= channelModeConfig.largeChannelThreshold ? 'ping' : 'relevance';
+  const isLarge = members >= channelModeConfig.largeChannelThreshold;
+  const assignedMode = isLarge ? 'ping' : 'relevance';
 
-  try {
-    await setMode({ scope: 'channel', id: channelId, mode: assignedMode });
-    logger.info(
-      { channelId, assignedMode, members },
-      'Auto-set channel mode on bot join'
-    );
-  } catch (error) {
-    logger.error({ error, channelId }, 'Failed to auto-set channel mode');
+  if (isLarge) {
+    try {
+      await setMode({ scope: 'channel', id: channelId, mode: 'ping' });
+      logger.info(
+        { channelId, members },
+        'Auto-set channel mode to ping on bot join'
+      );
+    } catch (error) {
+      logger.error({ error, channelId }, 'Failed to auto-set channel mode');
+    }
   }
 
   const modeList = (modeHelp.modes ?? [])
     .map((m) => `• *${m.name}*: ${m.description}`)
     .join('\n');
 
-  const modeLabel = assignedMode === 'ping' ? 'ping only' : 'relevance';
-  const reason =
-    assignedMode === 'ping'
-      ? '(large channel, defaults to ping only)'
-      : '(smaller channel, defaults to relevance)';
+  const modeLabel = isLarge ? 'ping only' : 'relevance';
+  const reason = isLarge
+    ? '(large channel, defaults to ping only)'
+    : '(smaller channel, defaults to relevance)';
 
   try {
     await client.chat.postEphemeral({
