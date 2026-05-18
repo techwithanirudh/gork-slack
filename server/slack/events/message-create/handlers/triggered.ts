@@ -23,41 +23,38 @@ export async function handleTriggered({
   triggerType,
   channelMode,
 }: TriggeredArgs): Promise<void> {
+  const ctxId = getContextId(messageContext);
+
   if (channelMode === 'none' && triggerType !== 'dm') {
     logger.debug(
-      `[${getContextId(messageContext)}] Channel mode 'none' — skipping trigger ${triggerType}`
+      `[${ctxId}] Channel mode 'none' — skipping trigger ${triggerType}`
     );
     return;
   }
   if (channelMode === 'ping' && triggerType === 'keyword') {
-    logger.debug(
-      `[${getContextId(messageContext)}] Channel mode 'ping' — skipping keyword trigger`
-    );
+    logger.debug(`[${ctxId}] Channel mode 'ping' — skipping keyword trigger`);
     return;
   }
 
-  const ev = messageContext.event;
-  const userId = (ev as { user?: string }).user;
-  const threadTs = (ev as { thread_ts?: string }).thread_ts;
+  const { user: userId, thread_ts, ts, channel } = messageContext.event;
 
   if (!isUserAllowed(userId ?? '')) {
-    if (triggerType === 'keyword') {
-      return;
+    if (triggerType !== 'keyword') {
+      await messageContext.client.chat.postMessage({
+        channel: messageContext.event.channel,
+        thread_ts: thread_ts || ts,
+        text: `sorry bro <@${userId}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
+      });
     }
-    await messageContext.client.chat.postMessage({
-      channel: ev.channel,
-      thread_ts: threadTs || ev.ts,
-      text: `sorry bro <@${userId}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
-    });
     return;
   }
 
   if (userId && (await isUserBanned(userId))) {
     if (triggerType === 'ping' || triggerType === 'dm') {
       await messageContext.client.chat.postMessage({
-        channel: ev.channel,
+        channel: messageContext.event.channel,
         text: "nah bro you're banned lol. hit up staff if you think this is a mistake or whatever",
-        thread_ts: threadTs || ev.ts,
+        thread_ts: thread_ts || ts,
       });
     }
     logger.info({ userId }, 'Refused to respond to banned user');
@@ -94,8 +91,24 @@ export async function handleTriggered({
     }
   }
 
-  const ctxId = getContextId(messageContext);
-  const content = (ev as { text?: string }).text ?? '';
+  const threadTs = ts ? (thread_ts ?? ts) : undefined;
+  if (channel && threadTs) {
+    messageContext.client.assistant.threads
+      .setStatus({
+        channel_id: channel,
+        thread_ts: threadTs,
+        status: 'cooking...',
+        loading_messages: [
+          'cooking...',
+          'thinking rn...',
+          'give me a sec...',
+          'on it...',
+        ],
+      })
+      .catch(() => undefined);
+  }
+
+  const { text: content = '' } = messageContext.event;
   const [authorName, chatContext] = await Promise.all([
     getAuthorName(messageContext),
     buildChatContext(messageContext),
@@ -107,17 +120,29 @@ export async function handleTriggered({
     `[${ctxId}] Triggered by ${triggerType}`
   );
 
-  const result = await generateResponse(
-    messageContext,
-    chatContext.messages,
-    chatContext.hints,
-    chatContext.memories
-  );
-  logReply(ctxId, authorName, result, 'trigger');
-  if (result.success && result.toolCalls) {
-    await saveChatMemory(messageContext, {
-      channelName: chatContext.hints.channel,
-      guildName: chatContext.hints.server,
-    });
+  try {
+    const result = await generateResponse(
+      messageContext,
+      chatContext.messages,
+      chatContext.hints,
+      chatContext.memories
+    );
+    logReply(ctxId, authorName, result, 'trigger');
+    if (result.success && result.toolCalls) {
+      await saveChatMemory(messageContext, {
+        channelName: chatContext.hints.channel,
+        guildName: chatContext.hints.server,
+      });
+    }
+  } finally {
+    if (channel && threadTs) {
+      messageContext.client.assistant.threads
+        .setStatus({
+          channel_id: channel,
+          thread_ts: threadTs,
+          status: '',
+        })
+        .catch(() => undefined);
+    }
   }
 }

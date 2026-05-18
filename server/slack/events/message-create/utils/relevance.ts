@@ -19,8 +19,7 @@ export async function assessRelevance(
   memories: ScoredPineconeRecord<PineconeMetadataOutput>[]
 ): Promise<Probability> {
   try {
-    const userId = (context.event as { user?: string }).user;
-    const messageText = (context.event as { text?: string }).text ?? '';
+    const { user: userId, text: messageText = '' } = context.event;
     const files = (context.event as { files?: SlackFile[] }).files;
     const authorName = userId
       ? await getSlackUserName(context.client, userId)

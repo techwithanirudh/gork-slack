@@ -14,18 +14,14 @@ async function resolveTargetMessage(
   ctx: SlackMessageContext,
   offset: number
 ): Promise<SlackHistoryMessage | null> {
-  const channelId = (ctx.event as { channel?: string }).channel;
-  const messageTs = (ctx.event as { ts?: string }).ts;
+  const { channel: channelId, ts: messageTs, thread_ts } = ctx.event;
 
   if (!(channelId && messageTs)) {
     return null;
   }
 
   if (offset <= 0) {
-    return {
-      ts: messageTs,
-      thread_ts: (ctx.event as { thread_ts?: string }).thread_ts,
-    };
+    return { ts: messageTs, thread_ts };
   }
 
   const history = await ctx.client.conversations.history({
@@ -74,7 +70,7 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
         .min(0)
         .optional()
         .describe(
-          `Number of messages to go back from the triggering message. 0 or omitted means that you will reply to the message that you were triggered by. This would usually stay as 0. ${(context.event as { thread_ts?: string }).thread_ts ? 'NOTE: YOU ARE IN A THREAD - THE OFFSET WILL RESPOND TO A DIFFERENT THREAD. Change the offset only if you are sure.' : ''}`.trim()
+          `Number of messages to go back from the triggering message. 0 or omitted means that you will reply to the message that you were triggered by. This would usually stay as 0. ${context.event.thread_ts ? 'NOTE: YOU ARE IN A THREAD - THE OFFSET WILL RESPOND TO A DIFFERENT THREAD. Change the offset only if you are sure.' : ''}`.trim()
         ),
       content: z
         .array(z.string())
@@ -89,20 +85,13 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
         .describe('Reply in a thread or post directly in the channel.'),
     }),
     execute: async ({ offset = 0, content, type }) => {
-      const ev = context.event as {
-        channel?: string;
-        ts?: string;
-        thread_ts?: string;
-        blocks?: unknown;
-        user?: string;
-      };
       const {
         channel: channelId,
         ts: messageTs,
         thread_ts: currentThread,
         blocks,
         user: userId,
-      } = ev;
+      } = context.event;
       const forceChannelReply =
         !currentThread && getGroupMentions(blocks).length > 0;
 

@@ -71,10 +71,8 @@ export const generateImageTool = ({
         path: ['size'],
       }),
     execute: async ({ prompt, status, n, size, aspectRatio, seed }) => {
-      const channelId = context.event.channel;
-      const messageTs = context.event.ts;
-      const threadTs =
-        (context.event as { thread_ts?: string }).thread_ts ?? messageTs;
+      const { channel: channelId, ts: messageTs, thread_ts } = context.event;
+      const threadTs = thread_ts ?? messageTs;
       let statusMessageTs: string | undefined;
 
       if (!(channelId && threadTs)) {

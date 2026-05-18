@@ -13,7 +13,6 @@ const subcommands = [
   { name: helpName, execute: helpExecute },
 ] as const;
 
-// Regex to match /gork, /gork-dev, /gork-st, /gork-anything, etc.
 export const GORK_COMMAND_PATTERN = /^\/gork(?:-\w+)?$/;
 
 function parseSubcommand(text: string): {

@@ -13,9 +13,11 @@ export async function saveChatMemory(
   location: ChatMemoryLocation,
   contextLimit = 5
 ) {
-  const channelId = (message.event as { channel?: string }).channel;
-  const messageTs = (message.event as { ts?: string }).ts;
-  const threadTs = (message.event as { thread_ts?: string }).thread_ts;
+  const {
+    channel: channelId,
+    ts: messageTs,
+    thread_ts: threadTs,
+  } = message.event;
 
   if (!(channelId && messageTs)) {
     return;

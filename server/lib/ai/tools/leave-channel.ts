@@ -5,8 +5,6 @@ import { env } from '~/env';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
 
-const SLACK_USER_ID_REGEX = /^[UW][A-Z0-9]+$/;
-
 export const leaveChannel = ({ context }: { context: SlackMessageContext }) =>
   tool({
     description:
@@ -18,7 +16,7 @@ export const leaveChannel = ({ context }: { context: SlackMessageContext }) =>
         .describe('Optional short reason for leaving'),
     }),
     execute: async ({ reason }) => {
-      const channel = context.event.channel;
+      const { channel, user: triggerUserId } = context.event;
       const blocked = restrictedChannels.find((c) => c.id === channel);
       if (blocked) {
         logger.info(
@@ -31,19 +29,14 @@ export const leaveChannel = ({ context }: { context: SlackMessageContext }) =>
         };
       }
 
-      const triggerUserId = (context.event as { user?: string }).user;
-      const safeTriggerUserId =
-        triggerUserId && SLACK_USER_ID_REGEX.test(triggerUserId)
-          ? triggerUserId
-          : undefined;
       logger.info({ reason, triggerUserId, channel }, 'Leaving channel');
 
       if (env.LOGS_CHANNEL) {
         try {
           await context.client.chat.postMessage({
             channel: env.LOGS_CHANNEL,
-            text: safeTriggerUserId
-              ? `<@${safeTriggerUserId}> asked the bot to leave <#${channel}>`
+            text: triggerUserId
+              ? `<@${triggerUserId}> asked the bot to leave <#${channel}>`
               : `The bot was asked to leave <#${channel}>`,
           });
         } catch (error) {

@@ -15,8 +15,7 @@ export const react = ({ context }: { context: SlackMessageContext }) =>
         .describe('Emoji names to react with (unicode or custom names).'),
     }),
     execute: async ({ emojis }) => {
-      const channelId = (context.event as { channel?: string }).channel;
-      const messageTs = (context.event as { ts?: string }).ts;
+      const { channel: channelId, ts: messageTs } = context.event;
 
       if (!(channelId && messageTs)) {
         return { success: false, error: 'Missing Slack channel or message id' };

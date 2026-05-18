@@ -1,66 +1,63 @@
-import type {
-  ActionsBlockElement,
-  KnownBlock as Block,
+import type { KnownBlock as Block } from '@slack/types';
+import {
+  Actions,
   Button,
-} from '@slack/types';
+  type ButtonBuilder,
+  buildBlock,
+  Context,
+  Divider,
+  Header,
+  Section,
+} from 'slack-block-builder';
 import type { Report } from '~/lib/queries/reports';
 
+function build(builder: Parameters<typeof buildBlock>[0]): Block {
+  return buildBlock(builder) as unknown as Block;
+}
+
 export function header(text: string): Block {
-  return {
-    type: 'header',
-    text: { type: 'plain_text', text, emoji: false },
-  };
+  return build(Header({ text }));
 }
 
 export function divider(): Block {
-  return { type: 'divider' };
+  return build(Divider());
 }
 
 export function section(text: string): Block {
-  return {
-    type: 'section',
-    text: { type: 'mrkdwn', text },
-  };
+  return build(Section({ text }));
 }
 
 export function fields(...texts: string[]): Block {
-  return {
-    type: 'section',
-    fields: texts.map((text) => ({ type: 'mrkdwn', text })),
-  };
+  return build(Section().fields(...texts));
 }
 
 export function context(text: string): Block {
-  return {
-    type: 'context',
-    elements: [{ type: 'mrkdwn', text }],
-  };
-}
-
-export function actions(...elements: ActionsBlockElement[]): Block {
-  return { type: 'actions', elements };
+  return build(Context().elements(text));
 }
 
 export function button(
   text: string,
   actionId: string,
   options?: { value?: string; style?: 'primary' | 'danger'; url?: string }
-): Button {
-  const btn: Button = {
-    type: 'button',
-    text: { type: 'plain_text', text, emoji: false },
-    action_id: actionId,
-  };
-  if (options?.value) {
-    btn.value = options.value;
+): ButtonBuilder {
+  let btn = Button({ text, actionId });
+  if (options?.style === 'primary') {
+    btn = btn.primary();
   }
-  if (options?.style) {
-    btn.style = options.style;
+  if (options?.style === 'danger') {
+    btn = btn.danger();
+  }
+  if (options?.value) {
+    btn = btn.value(options.value);
   }
   if (options?.url) {
-    btn.url = options.url;
+    btn = btn.url(options.url);
   }
   return btn;
+}
+
+export function actions(...buttons: ButtonBuilder[]): Block {
+  return build(Actions().elements(...buttons));
 }
 
 export function formatDate(timestamp: number): string {
@@ -94,17 +91,18 @@ export function userReportBlocks(
     blocks.push(section('_No reports found for this user._'));
   } else {
     for (const report of reports) {
-      blocks.push({
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*Reason:* ${report.reason}\n*Date:* ${formatDate(report.timestamp)}`,
-        },
-        accessory: button('Remove', 'remove_report', {
-          style: 'danger',
-          value: JSON.stringify({ userId, reportId: report.id }),
-        }),
-      });
+      blocks.push(
+        build(
+          Section({
+            text: `*Reason:* ${report.reason}\n*Date:* ${formatDate(report.timestamp)}`,
+          }).accessory(
+            button('Remove', 'remove_report', {
+              style: 'danger',
+              value: JSON.stringify({ userId, reportId: report.id }),
+            })
+          )
+        )
+      );
     }
   }
 
@@ -165,7 +163,7 @@ export function reportNotificationBlocks(
   messageContext?: string[],
   isPrivateChannel?: boolean
 ): Block[] {
-  const actionButtons: ActionsBlockElement[] = [];
+  const actionButtons: ButtonBuilder[] = [];
 
   if (messageLink) {
     actionButtons.push(
@@ -189,7 +187,6 @@ export function reportNotificationBlocks(
     ),
   ];
 
-  // Warn moderators if this is from a private channel they may not have access to
   if (isPrivateChannel) {
     blocks.push(
       context(
@@ -200,7 +197,6 @@ export function reportNotificationBlocks(
 
   blocks.push(section(`*Reason:*\n${reason}`));
 
-  // Include message context so moderators can see what was said
   if (messageContext && messageContext.length > 0) {
     const truncatedMessages = messageContext.map((msg) =>
       msg.length > 300 ? `${msg.slice(0, 300)}...` : msg

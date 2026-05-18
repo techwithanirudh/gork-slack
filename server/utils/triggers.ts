@@ -1,19 +1,17 @@
-import type { SlackMessageContext, SlackMessageEvent } from '~/types';
+import type { SlackMessageContext } from '~/types';
 import { getGroupMentions } from '~/utils/blocks';
 import { primeSlackUserName } from '~/utils/users';
 
 export type TriggerType = 'ping' | 'keyword' | 'dm' | null;
 
 function isPlainMessage(
-  event: SlackMessageEvent
-): event is SlackMessageEvent & { text: string; user: string } {
+  event: SlackMessageContext['event']
+): event is SlackMessageContext['event'] & { text: string; user: string } {
   const subtype = 'subtype' in event ? event.subtype : undefined;
   return (
     (!subtype || subtype === 'thread_broadcast') &&
-    'text' in event &&
-    typeof (event as { text?: unknown }).text === 'string' &&
-    'user' in event &&
-    typeof (event as { user?: unknown }).user === 'string'
+    typeof event.text === 'string' &&
+    typeof event.user === 'string'
   );
 }
 
@@ -50,7 +48,7 @@ export async function getTrigger(
   }
 
   if (botId) {
-    const groupIds = getGroupMentions((event as { blocks?: unknown }).blocks);
+    const groupIds = getGroupMentions(event.blocks);
     const matchedGroups: string[] = [];
     for (const groupId of groupIds) {
       try {
@@ -75,8 +73,7 @@ export async function getTrigger(
     return { type: 'keyword', info: matchedKeywords };
   }
 
-  const channelType = (event as { channel_type?: string }).channel_type;
-  if (channelType === 'im') {
+  if (event.channel_type === 'im') {
     return { type: 'dm', info: event.user };
   }
 

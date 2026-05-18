@@ -13,7 +13,7 @@ import { getTimeInCity } from '~/utils/time';
 import { getSlackUserName } from '~/utils/users';
 
 async function resolveChannelName(ctx: SlackMessageContext): Promise<string> {
-  const channelId = (ctx.event as { channel?: string }).channel;
+  const channelId = ctx.event.channel;
   if (!channelId) {
     return 'Unknown channel';
   }
@@ -83,11 +83,13 @@ export async function buildChatContext(
   let hints = opts?.hints;
   let memories = opts?.memories;
 
-  const channelId = (ctx.event as { channel?: string }).channel;
-  const threadTs = (ctx.event as { thread_ts?: string }).thread_ts;
-  const messageTs = (ctx.event as { ts?: string }).ts;
-  const text = (ctx.event as { text?: string }).text ?? '';
-  const userId = (ctx.event as { user?: string }).user;
+  const {
+    channel: channelId,
+    thread_ts: threadTs,
+    ts: messageTs,
+    text = '',
+    user: userId,
+  } = ctx.event;
 
   if (!(channelId && messageTs)) {
     throw new Error('Slack message missing channel or timestamp');

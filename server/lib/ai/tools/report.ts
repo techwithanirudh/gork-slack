@@ -20,10 +20,12 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
       reason: z.string().describe('Brief description of the violation'),
     }),
     execute: async ({ reason }) => {
-      const channelId = context.event.channel;
-      const messageTs = (context.event as { ts?: string }).ts;
-      const currentThread = (context.event as { thread_ts?: string }).thread_ts;
-      const userId = (context.event as { user?: string }).user;
+      const {
+        channel: channelId,
+        ts: messageTs,
+        thread_ts: currentThread,
+        user: userId,
+      } = context.event;
 
       if (!(channelId && messageTs)) {
         return { success: false, error: 'Missing Slack channel or timestamp' };
@@ -118,7 +120,6 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
           ],
         });
 
-        // Extract last 3 messages from user for moderator context
         const messageContext = userMessages
           .slice(-3)
           .map((msg) => getMessageText(msg))

@@ -15,8 +15,7 @@ export const skip = ({ context }: { context: SlackMessageContext }) =>
     }),
     execute: async ({ reason }) => {
       if (reason) {
-        const authorId = (context.event as { user?: string }).user;
-        const content = (context.event as { text?: string }).text ?? '';
+        const { user: authorId, text: content = '' } = context.event;
         const author = authorId
           ? await getSlackUserName(context.client, authorId)
           : 'unknown';

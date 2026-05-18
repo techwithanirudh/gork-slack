@@ -10,7 +10,7 @@ async function handleStop(
   context: SlackMessageContext,
   ctxId: string
 ): Promise<void> {
-  const threadTs = (context.event as { thread_ts?: string }).thread_ts;
+  const { thread_ts: threadTs } = context.event;
   if (!threadTs) {
     return;
   }

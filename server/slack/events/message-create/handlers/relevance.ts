@@ -35,7 +35,7 @@ export async function handleRelevance({
     return;
   }
 
-  const userId = (messageContext.event as { user?: string }).user;
+  const { user: userId } = messageContext.event;
   if (!isUserAllowed(userId ?? '')) {
     return;
   }
@@ -79,7 +79,7 @@ export async function handleRelevance({
     chatContext.memories
   );
 
-  const content = (messageContext.event as { text?: string }).text ?? '';
+  const { text: content = '' } = messageContext.event;
   logger.info(
     { reason, probability, message: `${authorName}: ${content}` },
     `[${ctxId}] Relevance check`
@@ -93,15 +93,13 @@ export async function handleRelevance({
     return;
   }
 
-  const channel = (messageContext.event as { channel?: string }).channel;
-  const ts = (messageContext.event as { ts?: string }).ts;
-  const threadTs =
-    (messageContext.event as { thread_ts?: string }).thread_ts ?? ts;
-  if (channel && ts) {
+  const { channel, ts, thread_ts } = messageContext.event;
+  const threadTs = ts ? (thread_ts ?? ts) : undefined;
+  if (channel && threadTs) {
     messageContext.client.assistant.threads
       .setStatus({
         channel_id: channel,
-        thread_ts: threadTs ?? ts,
+        thread_ts: threadTs,
         status: 'cooking...',
         loading_messages: [
           'cooking...',
@@ -129,11 +127,11 @@ export async function handleRelevance({
       });
     }
   } finally {
-    if (channel && ts) {
+    if (channel && threadTs) {
       messageContext.client.assistant.threads
         .setStatus({
           channel_id: channel,
-          thread_ts: threadTs ?? ts,
+          thread_ts: threadTs,
           status: '',
         })
         .catch(() => undefined);

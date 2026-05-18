@@ -33,30 +33,24 @@ async function handleMessage(
   args: MessageEventArgs,
   trigger: Trigger
 ): Promise<void> {
-  if (
-    args.event.subtype &&
-    args.event.subtype !== 'thread_broadcast' &&
-    args.event.subtype !== 'file_share'
-  ) {
-    return;
-  }
-
-  if (!shouldUse(args.event.text || '')) {
-    return;
-  }
-
   const messageContext = isProcessableMessage(args);
   if (!messageContext) {
     return;
   }
 
+  const { event } = messageContext;
+
+  if (!shouldUse(event.text || '')) {
+    return;
+  }
+
   const ctxId = getContextId(messageContext);
 
-  if (blockedChannels.some((c) => c.id === args.event.channel)) {
+  if (blockedChannels.some((c) => c.id === event.channel)) {
     if (trigger.type === 'ping' || trigger.type === 'dm') {
       await args.client.chat.postMessage({
-        channel: args.event.channel,
-        thread_ts: args.event.thread_ts ?? args.event.ts,
+        channel: event.channel,
+        thread_ts: event.thread_ts ?? event.ts,
         text: "can't talk here, find me in another channel",
       });
     }
@@ -76,54 +70,15 @@ async function handleMessage(
 
   const channelMode = await getEffectiveMode({
     workspaceId: messageContext.teamId,
-    channelId: args.event.channel,
+    channelId: event.channel,
   });
 
-  const routeToTrigger = trigger.type != null;
-
-  if (routeToTrigger && trigger.type != null) {
-    if (channelMode === 'none' && trigger.type !== 'dm') {
-      return;
-    }
-    if (channelMode === 'ping' && trigger.type === 'keyword') {
-      return;
-    }
-
-    const channel = (args.event as { channel?: string }).channel;
-    const ts = (args.event as { ts?: string }).ts;
-    const threadTs = (args.event as { thread_ts?: string }).thread_ts ?? ts;
-    if (channel && ts) {
-      args.client.assistant.threads
-        .setStatus({
-          channel_id: channel,
-          thread_ts: threadTs ?? ts,
-          status: 'cooking...',
-          loading_messages: [
-            'cooking...',
-            'thinking rn...',
-            'give me a sec...',
-            'on it...',
-          ],
-        })
-        .catch(() => undefined);
-    }
-    try {
-      await handleTriggered({
-        messageContext,
-        channelMode,
-        triggerType: trigger.type,
-      });
-    } finally {
-      if (channel && ts) {
-        args.client.assistant.threads
-          .setStatus({
-            channel_id: channel,
-            thread_ts: threadTs ?? ts,
-            status: '',
-          })
-          .catch(() => undefined);
-      }
-    }
+  if (trigger.type != null) {
+    await handleTriggered({
+      messageContext,
+      channelMode,
+      triggerType: trigger.type,
+    });
     return;
   }
 
@@ -156,7 +111,7 @@ export async function execute(args: MessageEventArgs) {
   );
 
   if (trigger.type === 'ping') {
-    const raw = (messageContext.event as { text?: string }).text ?? '';
+    const raw = messageContext.event.text ?? '';
     const text = raw.replace(/<@[A-Z0-9]+>/gi, '').trimStart();
     const inlineResult = await handleInlineCommand(messageContext, ctxId, text);
     if (inlineResult === 'handled') {

@@ -43,7 +43,7 @@ export function isProcessableMessage(
 }
 
 export async function getAuthorName(ctx: SlackMessageContext): Promise<string> {
-  const userId = (ctx.event as { user?: string }).user;
+  const { user: userId } = ctx.event;
   if (!userId) {
     return 'unknown';
   }
@@ -63,9 +63,11 @@ export async function getAuthorName(ctx: SlackMessageContext): Promise<string> {
 
 export function getContextId(ctx: SlackMessageContext): string {
   const channel = ctx.event.channel ?? 'unknown-channel';
-  const channelType = ctx.event.channel_type;
-  const userId = (ctx.event as { user?: string }).user;
-  const threadTs = (ctx.event as { thread_ts?: string }).thread_ts;
+  const {
+    channel_type: channelType,
+    user: userId,
+    thread_ts: threadTs,
+  } = ctx.event;
 
   if (channelType === 'im' && userId) {
     return `dm:${userId}`;
