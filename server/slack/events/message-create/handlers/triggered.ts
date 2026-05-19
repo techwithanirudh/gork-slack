@@ -93,7 +93,7 @@ export async function handleTriggered({
   const { text: content = '' } = messageContext.event;
   const [authorName, chatContext] = await Promise.all([
     getSlackUserName({ client: messageContext.client, userId: userId ?? '' }),
-    buildChatContext({ ctx: messageContext }),
+    buildChatContext(messageContext),
   ]);
 
   await resetMessageCount(ctxId);

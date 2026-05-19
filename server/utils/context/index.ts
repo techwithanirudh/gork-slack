@@ -9,17 +9,18 @@ import type {
 import { buildRequestHints } from './hints';
 import { buildContextMemories } from './memories';
 
-export async function buildChatContext({
-  ctx,
-  messages: providedMessages,
-  hints: providedHints,
-  memories: providedMemories,
-}: {
-  ctx: SlackMessageContext;
-  messages?: ModelMessage[];
-  hints?: RequestHints;
-  memories?: ScoredPineconeRecord<PineconeMetadataOutput>[];
-}) {
+export async function buildChatContext(
+  context: SlackMessageContext,
+  {
+    messages: providedMessages,
+    hints: providedHints,
+    memories: providedMemories,
+  }: {
+    messages?: ModelMessage[];
+    hints?: RequestHints;
+    memories?: ScoredPineconeRecord<PineconeMetadataOutput>[];
+  } = {}
+) {
   let messages = providedMessages;
   let hints = providedHints;
   let memories = providedMemories;
@@ -30,7 +31,7 @@ export async function buildChatContext({
     ts: messageTs,
     text = '',
     user: userId,
-  } = ctx.event;
+  } = context.event;
 
   if (!(channelId && messageTs)) {
     throw new Error('Slack message missing channel or timestamp');
@@ -38,10 +39,10 @@ export async function buildChatContext({
 
   if (!messages) {
     messages = await getConversationMessages({
-      client: ctx.client,
+      client: context.client,
       channel: channelId,
       threadTs,
-      botUserId: ctx.botUserId,
+      botUserId: context.botUserId,
       limit: 50,
       latest: messageTs,
       inclusive: false,
@@ -49,11 +50,16 @@ export async function buildChatContext({
   }
 
   if (!hints) {
-    hints = await buildRequestHints(ctx);
+    hints = await buildRequestHints(context);
   }
 
   if (!memories) {
-    memories = await buildContextMemories({ ctx, messages, text, userId });
+    memories = await buildContextMemories({
+      ctx: context,
+      messages,
+      text,
+      userId,
+    });
   }
 
   return { messages, hints, memories };
