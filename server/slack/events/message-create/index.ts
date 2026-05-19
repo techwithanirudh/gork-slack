@@ -64,7 +64,7 @@ async function handleMessage(
     channelId: event.channel,
   });
 
-  if (trigger.type != null) {
+  if (trigger.type !== null) {
     await handleTriggered({
       messageContext,
       channelMode,

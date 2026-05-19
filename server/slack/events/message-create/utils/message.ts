@@ -5,7 +5,6 @@ import type {
   ProcessableSlackMessageEvent,
   SlackMessageContext,
 } from '~/types';
-
 export function setThreadStatus({
   ctx,
   active,
@@ -22,7 +21,7 @@ export function setThreadStatus({
     .setStatus({
       channel_id: channel,
       thread_ts: threadTs,
-      status: active ? 'cooking...' : '',
+      status: active ? (loadingMessages[0] ?? '') : '',
       ...(active && { loading_messages: loadingMessages }),
     })
     // Slack may reject status updates outside assistant-managed threads.
@@ -71,25 +70,6 @@ export function isProcessableMessage(
     botUserId: context.botUserId,
     teamId: context.teamId ?? body.team_id,
   } satisfies SlackMessageContext;
-}
-
-export async function getAuthorName(ctx: SlackMessageContext): Promise<string> {
-  const { user: userId } = ctx.event;
-  if (!userId) {
-    return 'unknown';
-  }
-  try {
-    const info = await ctx.client.users.info({ user: userId });
-    return (
-      info.user?.profile?.display_name ||
-      info.user?.real_name ||
-      info.user?.name ||
-      userId
-    );
-  } catch (error) {
-    logger.warn({ error, userId }, 'Failed to fetch user info for logging');
-    return userId;
-  }
 }
 
 export function getContextId(ctx: SlackMessageContext): string {

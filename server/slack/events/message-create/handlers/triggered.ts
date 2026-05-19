@@ -10,7 +10,8 @@ import { slackErrorCode } from '~/utils/error';
 import { logReply } from '~/utils/log';
 import { resetMessageCount } from '~/utils/message-rate-limiter';
 import type { TriggerType } from '~/utils/triggers';
-import { getAuthorName, getContextId, setThreadStatus } from '../utils/message';
+import { getSlackUserName } from '~/utils/users';
+import { getContextId, setThreadStatus } from '../utils/message';
 import { generateResponse } from '../utils/respond';
 
 interface TriggeredArgs {
@@ -91,7 +92,7 @@ export async function handleTriggered({
 
   const { text: content = '' } = messageContext.event;
   const [authorName, chatContext] = await Promise.all([
-    getAuthorName(messageContext),
+    getSlackUserName({ client: messageContext.client, userId: userId ?? '' }),
     buildChatContext({ ctx: messageContext }),
   ]);
 

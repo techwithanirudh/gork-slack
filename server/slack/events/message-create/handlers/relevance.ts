@@ -12,7 +12,8 @@ import {
   checkMessageQuota,
   handleMessageCount,
 } from '~/utils/message-rate-limiter';
-import { getAuthorName, getContextId, setThreadStatus } from '../utils/message';
+import { getSlackUserName } from '~/utils/users';
+import { getContextId, setThreadStatus } from '../utils/message';
 import { assessRelevance } from '../utils/relevance';
 import { generateResponse } from '../utils/respond';
 
@@ -54,7 +55,7 @@ export async function handleRelevance({
   }
 
   const [authorName, chatContext] = await Promise.all([
-    getAuthorName(messageContext),
+    getSlackUserName({ client: messageContext.client, userId: userId ?? '' }),
     buildChatContext({ ctx: messageContext }),
   ]).catch((error) => {
     if (slackErrorCode(error) === 'not_in_channel') {

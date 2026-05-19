@@ -102,14 +102,13 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
             }),
             Context().elements(
               isBanned
-                ? `You have ${reportCount} report(s) in the last 30 days. You are now banned from using Gork.`
-                : `You have ${reportCount} report(s) in the last 30 days. ${moderation.banThreshold - reportCount} more will result in a ban.`
+                ? `You have ${reportCount} report(s) in the last ${moderation.reports.expiration / (24 * 60 * 60)} days. You are now banned from using Gork.`
+                : `You have ${reportCount} report(s) in the last ${moderation.reports.expiration / (24 * 60 * 60)} days. ${moderation.banThreshold - reportCount} more will result in a ban.`
             )
           ),
         });
 
         const messageContext = userMessages
-          .slice(-moderation.contextMessages)
           .map((msg) => getMessageText(msg))
           .filter(Boolean);
 

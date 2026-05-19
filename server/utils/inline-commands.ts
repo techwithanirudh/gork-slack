@@ -89,7 +89,7 @@ export async function handleInlineCommand({
       await handleStop({ context, ctxId });
       return 'handled';
     case 'leave':
-      await handleLeave(context);
+      await handleLeave({ context, ctxId });
       return 'handled';
     default:
       return 'not-handled';
