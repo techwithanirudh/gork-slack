@@ -19,6 +19,7 @@ import type {
   RequestHints,
   SlackMessageContext,
 } from '~/types';
+import { errorMessage } from '~/utils/error';
 import { processSlackFiles } from '~/utils/images';
 import { getSlackUserName } from '~/utils/users';
 
@@ -109,7 +110,7 @@ export async function generateResponse(
   } catch (e) {
     return {
       success: false,
-      error: (e as Error)?.message,
+      error: errorMessage(e),
     };
   }
 }

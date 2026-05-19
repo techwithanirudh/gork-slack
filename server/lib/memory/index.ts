@@ -1,6 +1,6 @@
 import { addMemory } from '~/lib/pinecone/queries';
 import { getConversationMessages } from '~/slack/conversations';
-import type { SlackMessageContext } from '~/types';
+import type { PineconeMetadataInput, SlackMessageContext } from '~/types';
 import { buildHistorySnippet } from '~/utils/messages';
 
 export interface ChatMemoryLocation {
@@ -33,18 +33,18 @@ export async function saveChatMemory(
     inclusive: true,
   });
 
-  const data = buildHistorySnippet(history, contextLimit);
+  const data = buildHistorySnippet({ messages: history, limit: contextLimit });
   if (!data) {
     return;
   }
 
   const metadata = {
-    type: 'chat' as const,
+    type: 'chat',
     context: data,
     createdAt: Date.now(),
     lastRetrievalTime: Date.now(),
     guild: { id: message.teamId ?? null, name: location.guildName },
     channel: { id: channelId, name: location.channelName },
-  };
+  } satisfies PineconeMetadataInput;
   await addMemory(data, metadata);
 }

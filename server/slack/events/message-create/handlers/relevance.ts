@@ -55,11 +55,11 @@ export async function handleRelevance({
 
   const [authorName, chatContext] = await Promise.all([
     getAuthorName(messageContext),
-    buildChatContext(messageContext),
+    buildChatContext({ ctx: messageContext }),
   ]).catch((error) => {
     if (slackErrorCode(error) === 'not_in_channel') {
       logger.info(`[${ctxId}] Bot is not in channel, skipping relevance`);
-      return [null, null] as const;
+      return [null, null] satisfies [null, null];
     }
     throw error;
   });

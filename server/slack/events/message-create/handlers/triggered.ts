@@ -92,7 +92,7 @@ export async function handleTriggered({
   const { text: content = '' } = messageContext.event;
   const [authorName, chatContext] = await Promise.all([
     getAuthorName(messageContext),
-    buildChatContext(messageContext),
+    buildChatContext({ ctx: messageContext }),
   ]);
 
   await resetMessageCount(ctxId);

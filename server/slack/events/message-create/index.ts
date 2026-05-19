@@ -106,7 +106,11 @@ export async function execute(args: MessageEventArgs) {
   if (trigger.type === 'ping') {
     const raw = messageContext.event.text ?? '';
     const text = raw.replace(/<@[A-Z0-9]+>/gi, '').trimStart();
-    const inlineResult = await handleInlineCommand(messageContext, ctxId, text);
+    const inlineResult = await handleInlineCommand({
+      context: messageContext,
+      ctxId,
+      text,
+    });
     if (inlineResult === 'handled') {
       return;
     }

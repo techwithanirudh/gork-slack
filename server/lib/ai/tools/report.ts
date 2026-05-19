@@ -64,10 +64,10 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
           };
         }
 
-        const messageContent = buildHistorySnippet(
-          userMessages,
-          moderation.contextMessages
-        );
+        const messageContent = buildHistorySnippet({
+          messages: userMessages,
+          limit: moderation.contextMessages,
+        });
 
         const validation = await validateReport(messageContent);
         if (!validation.valid) {

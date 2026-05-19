@@ -6,10 +6,13 @@ import type { SlackMessageContext } from '~/types';
 
 const INLINE_COMMAND_RE = /^!(\w+)/i;
 
-async function handleStop(
-  context: SlackMessageContext,
-  ctxId: string
-): Promise<void> {
+async function handleStop({
+  context,
+  ctxId,
+}: {
+  context: SlackMessageContext;
+  ctxId: string;
+}): Promise<void> {
   const { thread_ts: threadTs } = context.event;
   if (!threadTs) {
     return;
@@ -50,11 +53,15 @@ async function handleLeave(context: SlackMessageContext): Promise<void> {
   }
 }
 
-export async function handleInlineCommand(
-  context: SlackMessageContext,
-  ctxId: string,
-  text: string
-): Promise<'handled' | 'not-handled'> {
+export async function handleInlineCommand({
+  context,
+  ctxId,
+  text,
+}: {
+  context: SlackMessageContext;
+  ctxId: string;
+  text: string;
+}): Promise<'handled' | 'not-handled'> {
   const command = INLINE_COMMAND_RE.exec(text)?.[1]?.toLowerCase();
   if (!command) {
     return 'not-handled';
@@ -62,7 +69,7 @@ export async function handleInlineCommand(
 
   switch (command) {
     case 'stop':
-      await handleStop(context, ctxId);
+      await handleStop({ context, ctxId });
       return 'handled';
     case 'leave':
       await handleLeave(context);

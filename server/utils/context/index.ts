@@ -6,20 +6,23 @@ import type {
   RequestHints,
   SlackMessageContext,
 } from '~/types';
-import { buildRequestHints } from '~/utils/context-hints';
-import { buildContextMemories } from '~/utils/context-memories';
+import { buildRequestHints } from './hints';
+import { buildContextMemories } from './memories';
 
-export async function buildChatContext(
-  ctx: SlackMessageContext,
-  opts?: {
-    messages?: ModelMessage[];
-    hints?: RequestHints;
-    memories?: ScoredPineconeRecord<PineconeMetadataOutput>[];
-  }
-) {
-  let messages = opts?.messages;
-  let hints = opts?.hints;
-  let memories = opts?.memories;
+export async function buildChatContext({
+  ctx,
+  messages: providedMessages,
+  hints: providedHints,
+  memories: providedMemories,
+}: {
+  ctx: SlackMessageContext;
+  messages?: ModelMessage[];
+  hints?: RequestHints;
+  memories?: ScoredPineconeRecord<PineconeMetadataOutput>[];
+}) {
+  let messages = providedMessages;
+  let hints = providedHints;
+  let memories = providedMemories;
 
   const {
     channel: channelId,
