@@ -5,19 +5,18 @@ import type {
 import { Context, Divider, Section } from 'slack-block-builder';
 import { z } from 'zod';
 import { asBlocks } from '~/lib/slack/blocks';
-import { mode } from '~/slack/features/mode';
-import { reports } from '~/slack/features/reports';
 import { parseCommandArgs } from '~/utils/args';
-import { help as ping } from './ping';
+import { subcommands } from './subcommands';
 
 export const name = 'help';
 
-const commands = [...reports.help, ...mode.help, ping];
-const commandNames = commands.map((c) => c.name) as [string, ...string[]];
+const allCommands = subcommands;
+
+const commandNames = allCommands.map((c) => c.name) as [string, ...string[]];
 
 function buildOverviewBlocks(cmd: string) {
-  const commandList = commands
-    .map((c) => `*${c.name}:* ${c.description}`)
+  const commandList = allCommands
+    .map((c) => `*${c.help.name}:* ${c.help.description}`)
     .join('\n');
   return asBlocks(
     Section({ text: '*Gork*\navailable commands' }),
@@ -33,14 +32,13 @@ function buildOverviewBlocks(cmd: string) {
   );
 }
 
-function buildCommandBlocks(
-  commandName: (typeof commands)[number]['name'],
-  cmd: string
-) {
-  const command = commands.find((c) => c.name === commandName);
-  if (!command) {
+function buildCommandBlocks(commandName: string, cmd: string) {
+  const entry = allCommands.find((c) => c.name === commandName);
+  if (!entry) {
     return [];
   }
+
+  const { help: command } = entry;
 
   const subcommandText = command.subcommands
     .map((s) => {

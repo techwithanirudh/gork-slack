@@ -1,17 +1,10 @@
 import { splitArgs } from '~/utils/text';
-import { mode } from '../features/mode';
-import { reports } from '../features/reports';
 import { execute as helpExecute, name as helpName } from './help';
-import { execute as pingExecute, name as pingName } from './ping';
+import { subcommands } from './subcommands';
 
-type CommandContext = Parameters<(typeof reports.commands)[0]['execute']>[0];
+type CommandContext = Parameters<(typeof subcommands)[0]['execute']>[0];
 
-const subcommands = [
-  ...reports.commands,
-  ...mode.commands,
-  { name: helpName, execute: helpExecute },
-  { name: pingName, execute: pingExecute },
-];
+const allCommands = [...subcommands, { name: helpName, execute: helpExecute }];
 
 function parseSubcommand(text: string): {
   subcommand: string | null;
@@ -36,7 +29,7 @@ export async function handleCommand(context: CommandContext): Promise<void> {
     return;
   }
 
-  const handler = subcommands.find((s) => s.name === subcommand);
+  const handler = allCommands.find((s) => s.name === subcommand);
   if (!handler) {
     await context.ack();
     await respond({

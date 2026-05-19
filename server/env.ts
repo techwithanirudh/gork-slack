@@ -18,8 +18,6 @@ export const env = createEnv({
     REPORTS_CHANNEL: z.string().optional(),
     // Channel for logs: strikes, bans, bot join/leave (e.g. #gork-logs)
     LOGS_CHANNEL: z.string().optional(),
-    // Enable/disable ban-related log messages to LOGS_CHANNEL
-    BAN_LOGS: z.coerce.boolean().optional().default(true),
     // Comma-separated or JSON array of admin user IDs who can use /ban, /unban, /reports
     ADMINS: z.preprocess((val) => {
       if (typeof val === 'string') {

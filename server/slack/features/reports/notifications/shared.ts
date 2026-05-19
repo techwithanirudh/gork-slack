@@ -30,7 +30,7 @@ export async function postLog(
   text: string,
   blocks?: KnownBlock[]
 ): Promise<void> {
-  if (!(env.LOGS_CHANNEL && env.BAN_LOGS)) {
+  if (!env.LOGS_CHANNEL) {
     return;
   }
   try {
