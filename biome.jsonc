@@ -54,7 +54,8 @@
         }
       },
       "performance": {
-        "noBarrelFile": "off"
+        "noBarrelFile": "off",
+        "noNamespaceImport": "off"
       },
       "recommended": true
     }
