@@ -13,6 +13,7 @@ import { help as ping } from './ping';
 export const name = 'help';
 
 const commands = [...reports.help, ...mode.help, ping];
+const commandNames = commands.map((c) => c.name) as [string, ...string[]];
 
 function buildOverviewBlocks(cmd: string) {
   const commandList = commands
@@ -73,7 +74,7 @@ export async function execute(
   await ack();
 
   const result = parseCommandArgs(command.text ?? '', {
-    command: z.enum(['ban', 'unban', 'reports', 'mode', 'ping']).optional(),
+    command: z.enum(commandNames).optional(),
   });
 
   if (!result.success) {

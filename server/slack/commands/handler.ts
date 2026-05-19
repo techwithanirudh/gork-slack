@@ -2,7 +2,7 @@ import { splitArgs } from '~/utils/text';
 import { mode } from '../features/mode';
 import { reports } from '../features/reports';
 import { execute as helpExecute, name as helpName } from './help';
-import { execute as pingExecute } from './ping';
+import { execute as pingExecute, name as pingName } from './ping';
 
 type CommandContext = Parameters<(typeof reports.commands)[0]['execute']>[0];
 
@@ -10,7 +10,7 @@ const subcommands = [
   ...reports.commands,
   ...mode.commands,
   { name: helpName, execute: helpExecute },
-  { name: 'ping', execute: pingExecute },
+  { name: pingName, execute: pingExecute },
 ];
 
 function parseSubcommand(text: string): {

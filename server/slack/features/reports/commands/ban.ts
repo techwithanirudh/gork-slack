@@ -4,7 +4,13 @@ import type {
 } from '@slack/bolt';
 import { Input, UserSelect } from 'slack-block-builder';
 import { isAdmin } from '~/lib/permissions';
+import { asBlocks } from '~/lib/slack/blocks';
+import { respondWithPermissionError } from '~/lib/slack/errors';
+import { executeBan } from '~/slack/features/reports/utils/bans';
 import type { CommandHelp } from '~/types';
+import { parseUserList } from '~/utils/users';
+
+export const name = 'ban';
 
 export const help: CommandHelp = {
   name: 'ban',
@@ -18,13 +24,6 @@ export const help: CommandHelp = {
     },
   ],
 };
-
-import { asBlocks } from '~/lib/slack/blocks';
-import { respondWithPermissionError } from '~/lib/slack/errors';
-import { executeBan } from '~/slack/features/reports/utils/bans';
-import { parseUserList } from '~/utils/users';
-
-export const name = 'ban';
 
 export async function execute(
   context: SlackCommandMiddlewareArgs & AllMiddlewareArgs
@@ -67,10 +66,7 @@ export async function execute(
       close: { type: 'plain_text', text: 'Cancel' },
       blocks: asBlocks(
         Input({ blockId: 'user_select', label: 'User' }).element(
-          UserSelect({
-            actionId: 'user',
-            placeholder: 'Select a user to ban',
-          })
+          UserSelect({ actionId: 'user', placeholder: 'Select a user to ban' })
         )
       ),
     },

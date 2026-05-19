@@ -4,7 +4,13 @@ import type {
 } from '@slack/bolt';
 import { Input, UserSelect } from 'slack-block-builder';
 import { isAdmin } from '~/lib/permissions';
+import { asBlocks } from '~/lib/slack/blocks';
+import { respondWithPermissionError } from '~/lib/slack/errors';
+import { executeUnban } from '~/slack/features/reports/utils/bans';
 import type { CommandHelp } from '~/types';
+import { parseUserList } from '~/utils/users';
+
+export const name = 'unban';
 
 export const help: CommandHelp = {
   name: 'unban',
@@ -18,13 +24,6 @@ export const help: CommandHelp = {
     },
   ],
 };
-
-import { asBlocks } from '~/lib/slack/blocks';
-import { respondWithPermissionError } from '~/lib/slack/errors';
-import { executeUnban } from '~/slack/features/reports/utils/bans';
-import { parseUserList } from '~/utils/users';
-
-export const name = 'unban';
 
 export async function execute(
   context: SlackCommandMiddlewareArgs & AllMiddlewareArgs

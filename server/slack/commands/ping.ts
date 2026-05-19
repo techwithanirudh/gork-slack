@@ -6,6 +6,8 @@ import { Actions, Button, Section } from 'slack-block-builder';
 import { asBlocks } from '~/lib/slack/blocks';
 import type { CommandHelp } from '~/types';
 
+export const name = 'ping';
+
 export const help: CommandHelp = {
   name: 'ping',
   description: 'Check if Gork is alive.',

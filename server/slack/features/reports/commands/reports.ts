@@ -2,7 +2,13 @@ import type {
   AllMiddlewareArgs,
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
+import { Input, UserSelect } from 'slack-block-builder';
+import { isAdmin } from '~/lib/permissions';
+import { asBlocks } from '~/lib/slack/blocks';
+import { respondWithPermissionError } from '~/lib/slack/errors';
 import type { CommandHelp } from '~/types';
+
+export const name = 'reports';
 
 export const help: CommandHelp = {
   name: 'reports',
@@ -15,13 +21,6 @@ export const help: CommandHelp = {
     },
   ],
 };
-
-import { Input, UserSelect } from 'slack-block-builder';
-import { isAdmin } from '~/lib/permissions';
-import { asBlocks } from '~/lib/slack/blocks';
-import { respondWithPermissionError } from '~/lib/slack/errors';
-
-export const name = 'reports';
 
 export async function execute(
   context: SlackCommandMiddlewareArgs & AllMiddlewareArgs
