@@ -9,8 +9,8 @@ export {
   type ModeScope,
   type ResponseMode,
   setMode,
-} from './mode';
-export { ratelimit } from './ratelimit';
+} from './queries/mode';
+export { ratelimit } from './queries/ratelimit';
 export {
   addReport,
   banUser,
@@ -20,5 +20,5 @@ export {
   type Report,
   removeReport,
   unbanUser,
-} from './reports';
-export { clearSilenced, isSilenced, setSilenced } from './silence';
+} from './queries/reports';
+export { clearSilenced, isSilenced, setSilenced } from './queries/silence';

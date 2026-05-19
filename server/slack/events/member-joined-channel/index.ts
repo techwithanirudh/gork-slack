@@ -1,9 +1,8 @@
 import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
-import { channelMode as channelModeConfig } from '~/config';
 import { mode as modeHelp } from '~/constants/help';
 import { env } from '~/env';
-import { getStoredMode, MODES, type ResponseMode, setMode } from '~/lib/kv';
 import logger from '~/lib/logger';
+import { countChannelMembers, resolveMode } from './utils/mode';
 
 export const name = 'member_joined_channel';
 
@@ -24,57 +23,18 @@ export async function execute({
 
   logger.info({ userId, channelId }, 'Bot added to channel');
 
-  let members = 0;
+  let memberCount = 0;
   try {
-    const { largeChannelThreshold } = channelModeConfig;
-    let cursor: string | undefined;
-    do {
-      const res = await client.conversations.members({
-        channel: channelId,
-        limit: largeChannelThreshold,
-        cursor,
-      });
-      members += res.members?.length ?? 0;
-      cursor =
-        members < largeChannelThreshold
-          ? (res.response_metadata?.next_cursor ?? undefined)
-          : undefined;
-    } while (cursor);
+    memberCount = await countChannelMembers(client, channelId);
   } catch (error) {
     logger.warn({ error, channelId }, 'Failed to count channel members');
   }
 
-  const isLarge = members >= channelModeConfig.largeChannelThreshold;
-
-  // Check if the channel already has a configured mode before auto-assigning
-  const existingMode = await getStoredMode({ scope: 'channel', id: channelId });
-
-  let assignedMode: ResponseMode;
-  let modeLabel: string;
-  let reason: string;
-
-  if (existingMode) {
-    assignedMode = existingMode;
-    modeLabel = MODES[existingMode];
-    reason = '(already configured)';
-  } else if (isLarge) {
-    try {
-      await setMode({ scope: 'channel', id: channelId, mode: 'ping' });
-      logger.info(
-        { channelId, members },
-        'Auto-set channel mode to ping on bot join'
-      );
-    } catch (error) {
-      logger.error({ error, channelId }, 'Failed to auto-set channel mode');
-    }
-    assignedMode = 'ping';
-    modeLabel = 'ping only';
-    reason = '(large channel, defaults to ping only)';
-  } else {
-    assignedMode = 'relevance';
-    modeLabel = 'relevance';
-    reason = '(smaller channel, defaults to relevance)';
-  }
+  const {
+    mode: assignedMode,
+    label: modeLabel,
+    reason,
+  } = await resolveMode(channelId, memberCount);
 
   const modeList = (modeHelp.modes ?? [])
     .map((m) => `• *${m.name}*: ${m.description}`)
@@ -104,11 +64,11 @@ export async function execute({
   try {
     await client.chat.postMessage({
       channel: env.LOGS_CHANNEL,
-      text: `<@${userId}> added the bot to <#${channelId}> (mode: ${assignedMode}, ${members} members)`,
+      text: `<@${userId}> added the bot to <#${channelId}> (mode: ${assignedMode}, ${memberCount} members)`,
     });
     logger.info(
       { userId, channelId },
-      'Bot added to channel notification sent to reports channel'
+      'Bot added to channel notification sent'
     );
   } catch (error) {
     logger.error(

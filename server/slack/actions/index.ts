@@ -1,20 +1,10 @@
-import { execute as banUserExecute, name as banUserName } from './ban-user';
+import { reports } from '../features/reports';
 import {
-  execute as moderationInfoExecute,
-  name as moderationInfoName,
-} from './moderation-info';
-import {
-  execute as removeReportExecute,
-  name as removeReportName,
-} from './remove-report';
-import {
-  execute as unbanUserExecute,
-  name as unbanUserName,
-} from './unban-user';
+  execute as retryPingExecute,
+  name as retryPingName,
+} from './retry-ping';
 
 export const actions = [
-  { name: banUserName, execute: banUserExecute },
-  { name: unbanUserName, execute: unbanUserExecute },
-  { name: removeReportName, execute: removeReportExecute },
-  { name: moderationInfoName, execute: moderationInfoExecute },
-] as const;
+  ...reports.actions,
+  { name: retryPingName, execute: retryPingExecute },
+];

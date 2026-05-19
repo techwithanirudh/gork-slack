@@ -51,6 +51,15 @@ Always use **bun**. Never use npm, yarn, or pnpm.
 | `LOG_DIRECTORY` | No | Directory for log files (default: logs) |
 
 
+## Adding a New `/gork` Subcommand
+
+When adding a new subcommand (e.g. `/gork foo`), you must update **all** of the following or the command will be invisible in help:
+
+1. **Implementation** — add `server/slack/commands/foo.ts` (or `server/slack/features/<feature>/commands/foo.ts` if part of a feature)
+2. **Help constant** — add `server/constants/help/foo.ts` and re-export it from `server/constants/help/index.ts`
+3. **Help command** — in `server/slack/commands/help.ts`, add the constant to the `commands` array and to the `z.enum([...])` in `parseCommandArgs`
+4. **Router** — in `server/slack/commands/handler.ts`, import and add the handler to the `subcommands` array
+
 ## How Gork Works
 
 ### Trigger System

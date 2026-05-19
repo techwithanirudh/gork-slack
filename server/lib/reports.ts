@@ -15,7 +15,7 @@ export {
   unbanUser,
 } from '~/lib/kv';
 
-export { userReportBlocks } from './slack/blocks';
+export { userReportBlocks } from './slack/reports/blocks';
 
 export {
   sendBanLog,
@@ -24,7 +24,7 @@ export {
   sendStrikeLog,
   sendUnbanLog,
   sendUnbanNotification,
-} from './slack/notifications';
+} from './slack/reports/notifications';
 
 export async function validateReport(
   messageContent: string
