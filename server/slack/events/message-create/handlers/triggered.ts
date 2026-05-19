@@ -6,6 +6,7 @@ import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
 import type { SlackMessageContext } from '~/types';
 import { buildChatContext } from '~/utils/context';
+import { slackErrorCode } from '~/utils/error';
 import { logReply } from '~/utils/log';
 import { resetMessageCount } from '~/utils/message-rate-limiter';
 import type { TriggerType } from '~/utils/triggers';
@@ -73,10 +74,7 @@ export async function handleTriggered({
       });
       logger.info(`Added ${userId} to channel ${env.AUTO_ADD_CHANNEL}`);
     } catch (error) {
-      const code = (error as { data?: { error?: string }; code?: string }).data
-        ?.error;
-      const errorCode =
-        code ?? (error as { data?: { error?: string }; code?: string }).code;
+      const errorCode = slackErrorCode(error);
       if (
         errorCode === 'already_in_channel' ||
         errorCode === 'cant_invite_self'

@@ -6,6 +6,7 @@ import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
 import type { SlackMessageContext } from '~/types';
 import { buildChatContext } from '~/utils/context';
+import { slackErrorCode } from '~/utils/error';
 import { logReply } from '~/utils/log';
 import {
   checkMessageQuota,
@@ -56,12 +57,7 @@ export async function handleRelevance({
     getAuthorName(messageContext),
     buildChatContext(messageContext),
   ]).catch((error) => {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'data' in error &&
-      (error as { data?: { error?: string } }).data?.error === 'not_in_channel'
-    ) {
+    if (slackErrorCode(error) === 'not_in_channel') {
       logger.info(`[${ctxId}] Bot is not in channel, skipping relevance`);
       return [null, null] as const;
     }

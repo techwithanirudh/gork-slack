@@ -52,11 +52,17 @@ export const queryMemories = async (
     });
 
     const index = (await getIndex()).namespace(namespace);
+    // Retrieval timestamps are advisory; memory search should not wait on them.
     Promise.all(
       results.map(({ id }: { id: string }) =>
         index.update({ id, metadata: { lastRetrievalTime: Date.now() } })
       )
-    ).catch(() => undefined);
+    ).catch((error) =>
+      logger.debug(
+        { error, namespace },
+        'Failed to update memory retrieval time'
+      )
+    );
 
     return results;
   } catch (error) {

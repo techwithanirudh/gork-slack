@@ -1,6 +1,7 @@
 import type { ConversationsHistoryResponse, WebClient } from '@slack/web-api';
 import type { ModelMessage, UserContent } from 'ai';
 import logger from '~/lib/logger';
+import { slackErrorCode } from '~/utils/error';
 import { processSlackFiles, type SlackFile } from '~/utils/images';
 
 interface ConversationOptions {
@@ -131,12 +132,7 @@ export async function getConversationMessages({
 
     return modelMessages;
   } catch (error) {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'data' in error &&
-      (error as { data?: { error?: string } }).data?.error === 'not_in_channel'
-    ) {
+    if (slackErrorCode(error) === 'not_in_channel') {
       throw error;
     }
     logger.error(

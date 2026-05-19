@@ -21,3 +21,18 @@ export function toError(error: unknown): Error {
 export function toLogError(error: unknown): { err: Error } {
   return { err: toError(error) };
 }
+
+export function slackErrorCode(error: unknown): string | undefined {
+  if (typeof error !== 'object' || error === null) {
+    return;
+  }
+
+  const { code, data } = error as {
+    code?: unknown;
+    data?: { error?: unknown };
+  };
+  if (typeof data?.error === 'string') {
+    return data.error;
+  }
+  return typeof code === 'string' ? code : undefined;
+}

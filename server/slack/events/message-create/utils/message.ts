@@ -22,7 +22,10 @@ export function setThreadStatus({
       status: active ? 'cooking...' : '',
       ...(active && { loading_messages: loadingMessages }),
     })
-    .catch(() => undefined);
+    // Slack may reject status updates outside assistant-managed threads.
+    .catch((error) =>
+      logger.debug({ error, channel, threadTs }, 'Failed to set thread status')
+    );
 }
 
 export type MessageEventArgs = SlackEventMiddlewareArgs<'message'> &
