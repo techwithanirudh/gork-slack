@@ -7,7 +7,7 @@ export async function setSilenced(contextId: string): Promise<void> {
 }
 
 export async function isSilenced(contextId: string): Promise<boolean> {
-  return (await redis.exists(keys.silenced(contextId))) > 0;
+  return await redis.exists(keys.silenced(contextId));
 }
 
 export async function clearSilenced(contextId: string): Promise<void> {
