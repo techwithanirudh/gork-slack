@@ -6,12 +6,14 @@ export async function ratelimit(
 ): Promise<{ success: boolean }> {
   const now = Date.now();
   const key = `slack:${contextId}`;
-  await redis.zadd(key, now, now.toString());
-  await redis.zremrangebyscore(
-    key,
-    0,
-    now - rateLimit.channel.windowSeconds * 1000
-  );
+  await Promise.all([
+    redis.zadd(key, now, now.toString()),
+    redis.zremrangebyscore(
+      key,
+      0,
+      now - rateLimit.channel.windowSeconds * 1000
+    ),
+  ]);
   const [count] = await Promise.all([
     redis.zcard(key),
     redis.expire(key, rateLimit.channel.windowSeconds),
