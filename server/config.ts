@@ -13,8 +13,6 @@ export const speed = {
   speedFactor: 180 * 180,
 };
 
-export const messageThreshold = 25;
-
 export const memories = {
   eachLimit: 2,
   maxMemories: 4,
@@ -22,11 +20,20 @@ export const memories = {
 };
 
 export const rateLimit = {
-  windowSeconds: 30,
-  windowLimit: 56,
+  channel: {
+    windowSeconds: 30,
+    windowLimit: 56,
+  },
+  // Caps passive relevance replies after enough ignored messages in a context.
+  quota: {
+    threshold: 25,
+    ttl: 60 * 60,
+  },
+  // !stop mutes a thread until someone pings Gork again or this expires.
+  silence: {
+    ttl: 60 * 60 * 24 * 7,
+  },
 };
-
-export const silenceTtlSeconds = 60 * 60 * 24 * 7;
 
 export const restrictedChannels = [
   { id: 'C09P6S7H725', name: 'gork' },

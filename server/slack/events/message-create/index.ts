@@ -112,5 +112,5 @@ export async function execute(args: MessageEventArgs) {
     }
   }
 
-  return await getQueue(ctxId).add(async () => handleMessage(args, trigger));
+  return getQueue(ctxId).add(async () => handleMessage(args, trigger));
 }

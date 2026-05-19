@@ -1,4 +1,4 @@
-import { messageThreshold } from '~/config';
+import { rateLimit } from '~/config';
 import { isUserAllowed } from '~/lib/allowed-users';
 import type { ResponseMode } from '~/lib/kv';
 import { isUserBanned } from '~/lib/kv';
@@ -47,7 +47,7 @@ export async function handleRelevance({
   const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
   if (!hasQuota) {
     logger.debug(
-      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`
+      `[${ctxId}] Quota exhausted (${idleCount}/${rateLimit.quota.threshold})`
     );
     return;
   }

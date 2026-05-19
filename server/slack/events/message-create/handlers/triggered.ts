@@ -42,7 +42,7 @@ export async function handleTriggered({
     if (triggerType !== 'keyword') {
       await messageContext.client.chat.postMessage({
         channel: messageContext.event.channel,
-        thread_ts: thread_ts || ts,
+        thread_ts: thread_ts ?? ts,
         text: `sorry bro <@${userId}> you gotta be in <#${env.OPT_IN_CHANNEL}> to talk to me alr? i'm exclusive yk`,
       });
     }
@@ -54,7 +54,7 @@ export async function handleTriggered({
       await messageContext.client.chat.postMessage({
         channel: messageContext.event.channel,
         text: "nah bro you're banned lol. hit up staff if you think this is a mistake or whatever",
-        thread_ts: thread_ts || ts,
+        thread_ts: thread_ts ?? ts,
       });
     }
     logger.info({ userId }, 'Refused to respond to banned user');

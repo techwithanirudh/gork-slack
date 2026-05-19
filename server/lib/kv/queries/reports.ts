@@ -56,7 +56,7 @@ export async function addReport(
 export async function getReportCount(userId: string): Promise<number> {
   const key = keys.userReports(userId);
   await cleanExpiredReports(key);
-  return await redis.zcard(key);
+  return redis.zcard(key);
 }
 
 export async function getUserReports(userId: string): Promise<Report[]> {

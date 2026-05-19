@@ -1,12 +1,12 @@
 import type { RespondFn } from '@slack/bolt';
 import type { WebClient } from '@slack/web-api';
 import { Section } from 'slack-block-builder';
-import { restrictedChannels } from '~/config';
 import { clearMode, type ModeScope } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { isAdmin } from '~/lib/permissions';
 import { asBlocks } from '~/lib/slack/blocks';
 import { sendModeChangeNotification } from '../notifications';
+import { canManageModeScope } from '../utils/permissions';
 
 interface ClearArgs {
   channelId: string;
@@ -22,20 +22,13 @@ export async function handleClear(
 ): Promise<void> {
   const id = scope === 'workspace' ? workspaceId : channelId;
 
-  if (scope === 'workspace' && !(await isAdmin(client, userId))) {
+  const userIsAdmin = await isAdmin(client, userId);
+  if (!canManageModeScope({ channelId, isAdmin: userIsAdmin, scope })) {
     await respond({
-      text: 'only workspace admins can clear the workspace mode.',
-      response_type: 'ephemeral',
-    });
-    return;
-  }
-  if (
-    scope === 'channel' &&
-    restrictedChannels.some((c) => c.id === channelId) &&
-    !(await isAdmin(client, userId))
-  ) {
-    await respond({
-      text: 'only workspace admins can change the mode in this channel.',
+      text:
+        scope === 'workspace'
+          ? 'only workspace admins can clear the workspace mode.'
+          : 'only workspace admins can change the mode in this channel.',
       response_type: 'ephemeral',
     });
     return;

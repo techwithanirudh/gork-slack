@@ -7,10 +7,14 @@ export async function ratelimit(
   const now = Date.now();
   const key = `slack:${contextId}`;
   await redis.zadd(key, now, now.toString());
-  await redis.zremrangebyscore(key, 0, now - rateLimit.windowSeconds * 1000);
+  await redis.zremrangebyscore(
+    key,
+    0,
+    now - rateLimit.channel.windowSeconds * 1000
+  );
   const [count] = await Promise.all([
     redis.zcard(key),
-    redis.expire(key, rateLimit.windowSeconds),
+    redis.expire(key, rateLimit.channel.windowSeconds),
   ]);
-  return { success: count <= rateLimit.windowLimit };
+  return { success: count <= rateLimit.channel.windowLimit };
 }

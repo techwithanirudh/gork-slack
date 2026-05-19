@@ -3,11 +3,11 @@ import type {
   SlackViewMiddlewareArgs,
   ViewSubmitAction,
 } from '@slack/bolt';
-import { restrictedChannels } from '~/config';
 import { isResponseMode, type ModeScope, setMode } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { isNonEmptyString, parseViewMetadata } from '~/slack/views/metadata';
 import { sendModeChangeNotification } from '../notifications';
+import { canManageModeScope } from '../utils/permissions';
 
 export const name = 'set_mode_modal';
 
@@ -55,8 +55,7 @@ export async function execute({
   }
 
   const { workspaceId, channelId } = metadata;
-  const canManageProtectedScope =
-    metadata.openedBy === userId && metadata.isAdmin;
+  const isOpeningAdmin = metadata.openedBy === userId && metadata.isAdmin;
   const scope: ModeScope =
     (view.state.values.scope_select?.scope?.selected_option?.value as
       | ModeScope
@@ -79,26 +78,14 @@ export async function execute({
     return;
   }
 
-  if (scope === 'workspace' && !canManageProtectedScope) {
-    await ack({
-      response_action: 'errors',
-      errors: {
-        scope_select: 'Only workspace admins can set the workspace mode.',
-      },
-    });
-    return;
-  }
-
-  if (
-    scope === 'channel' &&
-    restrictedChannels.some((c) => c.id === channelId) &&
-    !canManageProtectedScope
-  ) {
+  if (!canManageModeScope({ channelId, isAdmin: isOpeningAdmin, scope })) {
     await ack({
       response_action: 'errors',
       errors: {
         scope_select:
-          'Only workspace admins can change the mode in this channel.',
+          scope === 'workspace'
+            ? 'Only workspace admins can set the workspace mode.'
+            : 'Only workspace admins can change the mode in this channel.',
       },
     });
     return;

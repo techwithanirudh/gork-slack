@@ -1,4 +1,4 @@
-import { messageThreshold } from '~/config';
+import { rateLimit } from '~/config';
 import { keys, redis } from '~/lib/kv';
 
 export async function resetMessageCount(ctxId: string): Promise<void> {
@@ -13,7 +13,7 @@ export async function checkMessageQuota(ctxId: string): Promise<{
   const count = n ? Number(n) : 0;
   return {
     count,
-    hasQuota: count < messageThreshold,
+    hasQuota: count < rateLimit.quota.threshold,
   };
 }
 
@@ -28,6 +28,9 @@ export async function handleMessageCount(
     return 0;
   }
 
-  const [count] = await Promise.all([redis.incr(key), redis.expire(key, 3600)]);
+  const [count] = await Promise.all([
+    redis.incr(key),
+    redis.expire(key, rateLimit.quota.ttl),
+  ]);
   return count || 1;
 }
