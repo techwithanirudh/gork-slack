@@ -1,3 +1,4 @@
+import type { ConversationsHistoryResponse } from '@slack/web-api';
 import { tool } from 'ai';
 import { z } from 'zod';
 import logger from '~/lib/logger';
@@ -5,10 +6,9 @@ import type { SlackMessageContext } from '~/types';
 import { getGroupMentions } from '~/utils/blocks';
 import { getSlackUserName } from '~/utils/users';
 
-interface SlackHistoryMessage {
-  thread_ts?: string;
-  ts?: string;
-}
+type SlackHistoryMessage = NonNullable<
+  ConversationsHistoryResponse['messages']
+>[number];
 
 async function resolveTargetMessage(
   ctx: SlackMessageContext,
@@ -36,7 +36,7 @@ async function resolveTargetMessage(
   }
 
   // Slack history is channel-wide here, so offsets can cross thread boundaries.
-  const sorted = ((history.messages ?? []) as SlackHistoryMessage[])
+  const sorted = (history.messages ?? [])
     .filter((msg) => Boolean(msg.ts))
     .sort((a, b) => Number(b.ts ?? '0') - Number(a.ts ?? '0'));
 

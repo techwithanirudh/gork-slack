@@ -1,8 +1,8 @@
-import type { ConversationsHistoryResponse, WebClient } from '@slack/web-api';
+import type { WebClient } from '@slack/web-api';
 import type { ModelMessage, UserContent } from 'ai';
 import logger from '~/lib/logger';
 import { slackErrorCode } from '~/utils/error';
-import { processSlackFiles, type SlackFile } from '~/utils/images';
+import { processSlackFiles } from '~/utils/images';
 
 interface ConversationOptions {
   botUserId?: string;
@@ -14,10 +14,6 @@ interface ConversationOptions {
   oldest?: string;
   threadTs?: string;
 }
-
-type SlackMessage = NonNullable<
-  ConversationsHistoryResponse['messages']
->[number];
 
 export async function getConversationMessages({
   client,
@@ -47,7 +43,7 @@ export async function getConversationMessages({
           inclusive,
         });
 
-    const messages = (response.messages as SlackMessage[] | undefined) ?? [];
+    const messages = response.messages ?? [];
 
     const filteredMessages = latest
       ? messages.filter((message) => {
@@ -91,7 +87,9 @@ export async function getConversationMessages({
     const mentionRegex = botUserId ? new RegExp(`<@${botUserId}>`, 'gi') : null;
 
     const sortedMessages = filteredMessages
-      .filter((message) => !message.subtype || message.subtype === 'file_share')
+      .filter(
+        (message) => !('subtype' in message) || message.subtype === 'file_share'
+      )
       .sort((a, b) => {
         const aTs = Number(a.ts ?? '0');
         const bTs = Number(b.ts ?? '0');
@@ -118,9 +116,7 @@ export async function getConversationMessages({
           return { role: 'assistant', content: formattedText };
         }
 
-        const images = await processSlackFiles(
-          message.files as SlackFile[] | undefined
-        );
+        const images = await processSlackFiles(message.files);
         return {
           role: 'user',
           content: (images.length

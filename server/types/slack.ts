@@ -1,19 +1,20 @@
 import type { SlackEventMiddlewareArgs } from '@slack/bolt';
+import type {
+  FileShareMessageEvent,
+  GenericMessageEvent,
+  ThreadBroadcastMessageEvent,
+} from '@slack/types';
 import type { WebClient } from '@slack/web-api';
 
 export type SlackMessageEvent = SlackEventMiddlewareArgs<'message'>['event'];
-
-/** Optional fields present on plain message events but not on all union members. */
-export interface SlackMessageFields {
-  blocks?: unknown;
-  text?: string;
-  thread_ts?: string;
-  user?: string;
-}
+export type ProcessableSlackMessageEvent =
+  | FileShareMessageEvent
+  | GenericMessageEvent
+  | ThreadBroadcastMessageEvent;
 
 export interface SlackMessageContext {
   botUserId?: string;
   client: WebClient;
-  event: SlackMessageEvent & SlackMessageFields;
+  event: ProcessableSlackMessageEvent;
   teamId?: string;
 }

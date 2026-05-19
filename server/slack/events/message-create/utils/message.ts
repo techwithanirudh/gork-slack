@@ -1,7 +1,7 @@
 import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
 import { loadingMessages } from '~/config';
 import logger from '~/lib/logger';
-import type { SlackMessageContext } from '~/types';
+import type { ProcessableSlackMessageEvent, SlackMessageContext } from '~/types';
 
 export function setThreadStatus({
   ctx,
@@ -31,20 +31,30 @@ export function setThreadStatus({
 export type MessageEventArgs = SlackEventMiddlewareArgs<'message'> &
   AllMiddlewareArgs;
 
-export function isProcessableMessage(
-  args: MessageEventArgs
-): SlackMessageContext | null {
-  const { event, context, client, body } = args;
-
+function isProcessableEvent(
+  event: MessageEventArgs['event']
+): event is ProcessableSlackMessageEvent {
   if (
     event.subtype &&
     event.subtype !== 'thread_broadcast' &&
     event.subtype !== 'file_share'
   ) {
-    return null;
+    return false;
   }
 
   if ('bot_id' in event && event.bot_id) {
+    return false;
+  }
+
+  return 'text' in event;
+}
+
+export function isProcessableMessage(
+  args: MessageEventArgs
+): SlackMessageContext | null {
+  const { event, context, client, body } = args;
+
+  if (!isProcessableEvent(event)) {
     return null;
   }
 
@@ -52,19 +62,11 @@ export function isProcessableMessage(
     return null;
   }
 
-  if (!('text' in event)) {
-    return null;
-  }
-
   return {
-    event: event as SlackMessageContext['event'],
+    event,
     client,
     botUserId: context.botUserId,
-    teamId:
-      context.teamId ??
-      (typeof body === 'object' && body
-        ? (body as { team_id?: string }).team_id
-        : undefined),
+    teamId: context.teamId ?? body.team_id,
   } satisfies SlackMessageContext;
 }
 

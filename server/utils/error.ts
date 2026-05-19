@@ -1,3 +1,5 @@
+import { ErrorCode, type WebAPIPlatformError } from '@slack/web-api';
+
 export function errorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
@@ -23,16 +25,12 @@ export function toLogError(error: unknown): { err: Error } {
 }
 
 export function slackErrorCode(error: unknown): string | undefined {
-  if (typeof error !== 'object' || error === null) {
+  if (!(error instanceof Error)) {
     return;
   }
 
-  const { code, data } = error as {
-    code?: unknown;
-    data?: { error?: unknown };
-  };
-  if (typeof data?.error === 'string') {
-    return data.error;
-  }
-  return typeof code === 'string' ? code : undefined;
+  const maybeError = error as WebAPIPlatformError;
+  return maybeError.code === ErrorCode.PlatformError
+    ? maybeError.data.error
+    : undefined;
 }
