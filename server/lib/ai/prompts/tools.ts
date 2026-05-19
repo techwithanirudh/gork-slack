@@ -53,5 +53,4 @@ Rules:
 - spam or repeated low-value messages:
    - ignore by calling \`skip\` and do NOT reply or react
    - e.g repeated gibberish, "gm", "lol", a single emoji, etc.
-- stopTalking: when a user asks you to stop talking/replying in a thread, ask for confirmation, then farewell after.
 </tools>`;

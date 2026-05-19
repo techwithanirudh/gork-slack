@@ -8,14 +8,8 @@ import {
   Section,
 } from 'slack-block-builder';
 import logger from '~/lib/logger';
-import { asBlocks } from '~/lib/slack/blocks';
-import {
-  footerBlock,
-  infoButton,
-  sendLog,
-  sendReport,
-} from './shared';
-import { slackDate } from '~/lib/slack/blocks';
+import { asBlocks, slackDate } from '~/lib/slack/blocks';
+import { footerBlock, infoButton, sendLog, sendReport } from './shared';
 
 export async function sendStrikeLog({
   client,
