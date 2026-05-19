@@ -9,7 +9,7 @@ import { buildChatContext } from '~/utils/context';
 import { logReply } from '~/utils/log';
 import { resetMessageCount } from '~/utils/message-rate-limiter';
 import type { TriggerType } from '~/utils/triggers';
-import { getAuthorName, getContextId } from '../utils/message';
+import { getAuthorName, getContextId, setThreadStatus } from '../utils/message';
 import { generateResponse } from '../utils/respond';
 
 interface TriggeredArgs {
@@ -36,7 +36,7 @@ export async function handleTriggered({
     return;
   }
 
-  const { user: userId, thread_ts, ts, channel } = messageContext.event;
+  const { user: userId, thread_ts, ts } = messageContext.event;
 
   if (!isUserAllowed(userId ?? '')) {
     if (triggerType !== 'keyword') {
@@ -91,23 +91,6 @@ export async function handleTriggered({
     }
   }
 
-  const threadTs = ts ? (thread_ts ?? ts) : undefined;
-  if (channel && threadTs) {
-    messageContext.client.assistant.threads
-      .setStatus({
-        channel_id: channel,
-        thread_ts: threadTs,
-        status: 'cooking...',
-        loading_messages: [
-          'cooking...',
-          'thinking rn...',
-          'give me a sec...',
-          'on it...',
-        ],
-      })
-      .catch(() => undefined);
-  }
-
   const { text: content = '' } = messageContext.event;
   const [authorName, chatContext] = await Promise.all([
     getAuthorName(messageContext),
@@ -120,6 +103,7 @@ export async function handleTriggered({
     `[${ctxId}] Triggered by ${triggerType}`
   );
 
+  setThreadStatus({ ctx: messageContext, active: true });
   try {
     const result = await generateResponse(
       messageContext,
@@ -135,14 +119,6 @@ export async function handleTriggered({
       });
     }
   } finally {
-    if (channel && threadTs) {
-      messageContext.client.assistant.threads
-        .setStatus({
-          channel_id: channel,
-          thread_ts: threadTs,
-          status: '',
-        })
-        .catch(() => undefined);
-    }
+    setThreadStatus({ ctx: messageContext, active: false });
   }
 }

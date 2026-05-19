@@ -1,6 +1,6 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
-import { city, country, memories as memoriesConfig, timezone } from '~/config';
+import { locale, memories as memoriesConfig } from '~/config';
 import { queryMemories } from '~/lib/pinecone/operations';
 import { getConversationMessages } from '~/slack/conversations';
 import type {
@@ -116,9 +116,9 @@ export async function buildChatContext(
 
     hints = {
       channel: channelName,
-      time: getTimeInCity(timezone),
-      city,
-      country,
+      time: getTimeInCity(locale.timezone),
+      city: locale.city,
+      country: locale.country,
       server: serverName,
       joined: botDetails.joined,
       status: botDetails.status,
@@ -133,14 +133,16 @@ export async function buildChatContext(
       : 'unknown';
     const currentMessage = `${authorName}: ${text}`;
 
+    const ONE_HOUR_MS = 1000 * 60 * 60;
+
     const [
-      memories0,
-      memories1,
-      memories2,
-      memories3,
-      memories4,
-      memories5,
-      memories6,
+      byText,
+      byHistory,
+      byHistoryRecent,
+      byMessage,
+      byMessageRecent,
+      byHistoryTools,
+      byHistoryToolsRecent,
     ] = await Promise.all([
       queryMemories(text, {
         namespace: 'default',
@@ -153,7 +155,7 @@ export async function buildChatContext(
       queryMemories(historySnippet, {
         namespace: 'default',
         limit: memoriesConfig.eachLimit,
-        ageLimit: 1000 * 60 * 60,
+        ageLimit: ONE_HOUR_MS,
       }),
       queryMemories(currentMessage, {
         namespace: 'default',
@@ -162,7 +164,7 @@ export async function buildChatContext(
       queryMemories(currentMessage, {
         namespace: 'default',
         limit: memoriesConfig.eachLimit,
-        ageLimit: 1000 * 60 * 60,
+        ageLimit: ONE_HOUR_MS,
       }),
       queryMemories(historySnippet, {
         namespace: 'default',
@@ -175,18 +177,18 @@ export async function buildChatContext(
         limit: memoriesConfig.eachLimit,
         ignoreRecent: false,
         onlyTools: true,
-        ageLimit: 1000 * 60 * 60,
+        ageLimit: ONE_HOUR_MS,
       }),
     ]);
 
     const memoryLists = [
-      memories6,
-      memories1,
-      memories4,
-      memories3,
-      memories5,
-      memories0,
-      memories2,
+      byHistoryToolsRecent,
+      byHistory,
+      byMessageRecent,
+      byMessage,
+      byHistoryTools,
+      byText,
+      byHistoryRecent,
     ];
 
     const combined: ScoredPineconeRecord<PineconeMetadataOutput>[] = [];

@@ -1,7 +1,10 @@
 export const keywords = ['gork', 'grok'];
-export const country = 'United States';
-export const city = 'New York';
-export const timezone = 'America/New_York';
+
+export const locale = {
+  country: 'United States',
+  city: 'New York',
+  timezone: 'America/New_York',
+};
 
 export const speed = {
   minDelay: 5,
@@ -37,10 +40,17 @@ export const channelMode = {
   largeChannelThreshold: 200,
 };
 
+export const loadingMessages = [
+  'cooking...',
+  'thinking rn...',
+  'give me a sec...',
+  'on it...',
+];
+
 export const moderation = {
   banThreshold: 15,
   contextMessages: 3,
   reports: {
-    expiration: 7 * 24 * 60 * 60, // Expiration time in seconds (7 days)
+    expiration: 7 * 24 * 60 * 60,
   },
 };

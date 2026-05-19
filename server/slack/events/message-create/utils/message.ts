@@ -1,6 +1,23 @@
 import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
+import { loadingMessages } from '~/config';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
+
+export function setThreadStatus({ ctx, active }: { ctx: SlackMessageContext; active: boolean }): void {
+  const { channel, ts, thread_ts } = ctx.event;
+  const threadTs = ts ? (thread_ts ?? ts) : undefined;
+  if (!(channel && threadTs)) {
+    return;
+  }
+  ctx.client.assistant.threads
+    .setStatus({
+      channel_id: channel,
+      thread_ts: threadTs,
+      status: active ? 'cooking...' : '',
+      ...(active && { loading_messages: loadingMessages }),
+    })
+    .catch(() => undefined);
+}
 
 export type MessageEventArgs = SlackEventMiddlewareArgs<'message'> &
   AllMiddlewareArgs;

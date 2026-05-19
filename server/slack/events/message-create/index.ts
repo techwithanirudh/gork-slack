@@ -9,7 +9,6 @@ import {
 import logger from '~/lib/logger';
 import { getQueue } from '~/lib/queue';
 import { handleInlineCommand } from '~/utils/inline-commands';
-import { shouldUse } from '~/utils/messages';
 import { getTrigger, type Trigger } from '~/utils/triggers';
 import { handleRelevance } from './handlers/relevance';
 import { handleTriggered } from './handlers/triggered';
@@ -40,7 +39,7 @@ async function handleMessage(
 
   const { event } = messageContext;
 
-  if (!shouldUse(event.text || '')) {
+  if (event.text?.startsWith('##')) {
     return;
   }
 

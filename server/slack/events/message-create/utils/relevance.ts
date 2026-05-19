@@ -1,5 +1,5 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import { generateText, type ModelMessage, Output, type UserContent } from 'ai';
+import { generateText, type ModelMessage, Output } from 'ai';
 import { systemPrompt } from '~/lib/ai/prompts';
 import { provider } from '~/lib/ai/providers';
 import logger from '~/lib/logger';
@@ -9,7 +9,11 @@ import type {
   RequestHints,
   SlackMessageContext,
 } from '~/types';
-import { processSlackFiles, type SlackFile } from '~/utils/images';
+import {
+  buildUserContent,
+  processSlackFiles,
+  type SlackFile,
+} from '~/utils/images';
 import { getSlackUserName } from '~/utils/users';
 
 export async function assessRelevance(
@@ -25,22 +29,14 @@ export async function assessRelevance(
       ? await getSlackUserName(context.client, userId)
       : 'user';
 
-    // Process images from the current message for relevance assessment
-    const imageContents = await processSlackFiles(files);
-
-    // Build messages with current message images if present
+    const images = await processSlackFiles(files);
     let relevanceMessages = messages;
-    if (imageContents.length > 0) {
-      // Add the current message with images to the context
-      const currentMessageContent: UserContent = [
-        { type: 'text' as const, text: `${authorName}: ${messageText}` },
-        ...imageContents,
-      ];
+    if (images.length > 0) {
       relevanceMessages = [
         ...messages,
         {
-          role: 'user' as const,
-          content: currentMessageContent,
+          role: 'user',
+          content: buildUserContent(`${authorName}: ${messageText}`, images),
         },
       ];
     }
