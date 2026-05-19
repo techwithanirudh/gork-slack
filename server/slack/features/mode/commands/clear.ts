@@ -6,7 +6,7 @@ import { clearMode, type ModeScope } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { isAdmin } from '~/lib/permissions';
 import { asBlocks } from '~/lib/slack/blocks';
-import { sendModeChangeNotification } from './notifications';
+import { sendModeChangeNotification } from '../notifications';
 
 interface ClearArgs {
   channelId: string;

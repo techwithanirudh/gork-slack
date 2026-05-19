@@ -3,8 +3,9 @@ import type {
   SlackViewMiddlewareArgs,
   ViewSubmitAction,
 } from '@slack/bolt';
+import { isUserBanned, unbanUser } from '~/lib/kv';
 import logger from '~/lib/logger';
-import { isUserBanned, sendUnbanNotification, unbanUser } from '~/lib/reports';
+import { sendUnbanNotification } from '~/slack/features/reports/notifications';
 import { isViewOwner } from '~/slack/views/metadata';
 
 export const name = 'unban_user_modal';

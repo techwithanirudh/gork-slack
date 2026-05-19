@@ -11,6 +11,21 @@ import {
   execute as unbanActionExecute,
   name as unbanActionName,
 } from './actions/unban';
+import {
+  execute as banCmdExecute,
+  name as banCmdName,
+  help as banHelp,
+} from './commands/ban';
+import {
+  execute as reportsCmdExecute,
+  name as reportsCmdName,
+  help as reportsHelp,
+} from './commands/reports';
+import {
+  execute as unbanCmdExecute,
+  name as unbanCmdName,
+  help as unbanHelp,
+} from './commands/unban';
 import { execute as banViewExecute, name as banViewName } from './views/ban';
 import {
   execute as reportsViewExecute,
@@ -33,4 +48,10 @@ export const reports = {
     { name: unbanViewName, execute: unbanViewExecute },
     { name: reportsViewName, execute: reportsViewExecute },
   ],
+  commands: [
+    { name: banCmdName, execute: banCmdExecute },
+    { name: unbanCmdName, execute: unbanCmdExecute },
+    { name: reportsCmdName, execute: reportsCmdExecute },
+  ],
+  help: [banHelp, unbanHelp, reportsHelp],
 };

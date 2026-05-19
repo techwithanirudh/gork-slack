@@ -1,30 +1,14 @@
 import { splitArgs } from '~/utils/text';
-import {
-  execute as modeExecute,
-  name as modeName,
-} from '../features/mode/commands';
-import {
-  execute as banExecute,
-  name as banName,
-} from '../features/reports/commands/ban';
-import {
-  execute as reportsExecute,
-  name as reportsName,
-} from '../features/reports/commands/reports';
-import {
-  execute as unbanExecute,
-  name as unbanName,
-} from '../features/reports/commands/unban';
+import { mode } from '../features/mode';
+import { reports } from '../features/reports';
 import { execute as helpExecute, name as helpName } from './help';
 import { execute as pingExecute } from './ping';
 
-type CommandContext = Parameters<typeof banExecute>[0];
+type CommandContext = Parameters<(typeof reports.commands)[0]['execute']>[0];
 
 const subcommands = [
-  { name: banName, execute: banExecute },
-  { name: unbanName, execute: unbanExecute },
-  { name: reportsName, execute: reportsExecute },
-  { name: modeName, execute: modeExecute },
+  ...reports.commands,
+  ...mode.commands,
   { name: helpName, execute: helpExecute },
   { name: 'ping', execute: pingExecute },
 ];

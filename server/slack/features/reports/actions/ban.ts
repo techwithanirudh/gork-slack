@@ -4,10 +4,11 @@ import type {
   ButtonAction,
   SlackActionMiddlewareArgs,
 } from '@slack/bolt';
+import { getUserReports, isUserBanned } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { isAdmin } from '~/lib/permissions';
-import { getUserReports, isUserBanned, userReportBlocks } from '~/lib/reports';
-import { executeBan } from '~/lib/slack/reports/bans';
+import { reportBlocks } from '~/slack/features/reports/blocks';
+import { executeBan } from '~/slack/features/reports/utils/bans';
 
 export const name = 'ban_user';
 
@@ -48,7 +49,7 @@ export async function execute(
         callback_id: 'view_reports_result',
         title: { type: 'plain_text', text: 'User Reports' },
         close: { type: 'plain_text', text: 'Close' },
-        blocks: userReportBlocks(userId, userReports, userIsBanned),
+        blocks: reportBlocks(userId, userReports, userIsBanned),
       },
     });
   }

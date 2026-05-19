@@ -1,14 +1,14 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { moderation } from '~/config';
+import { addReport } from '~/lib/kv';
 import logger from '~/lib/logger';
+import { getConversationMessages } from '~/slack/conversations';
 import {
-  addReport,
   sendReportNotification,
   sendStrikeLog,
-  validateReport,
-} from '~/lib/reports';
-import { getConversationMessages } from '~/slack/conversations';
+} from '~/slack/features/reports/notifications';
+import { validateReport } from '~/slack/features/reports/utils/validate-report';
 import type { SlackMessageContext } from '~/types';
 import { buildHistorySnippet, getMessageText } from '~/utils/messages';
 

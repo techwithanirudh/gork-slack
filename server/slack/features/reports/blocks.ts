@@ -1,40 +1,13 @@
 import type { KnownBlock } from '@slack/types';
-import {
-  Actions,
-  Button,
-  type ButtonBuilder,
-  Divider,
-  Section,
-} from 'slack-block-builder';
+import { Actions, Button, Divider, Section } from 'slack-block-builder';
 import type { Report } from '~/lib/kv';
-import { asBlock, asBlocks } from '../blocks';
+import { asBlock, asBlocks } from '~/lib/slack/blocks';
 
 function slackDate(ms: number): string {
   return `<!date^${Math.floor(ms / 1000)}^{date_short_pretty} at {time}|${new Date(ms).toISOString()}>`;
 }
 
-function btn(
-  text: string,
-  actionId: string,
-  options?: { value?: string; style?: 'primary' | 'danger'; url?: string }
-): ButtonBuilder {
-  let b = Button({ text, actionId });
-  if (options?.style === 'primary') {
-    b = b.primary();
-  }
-  if (options?.style === 'danger') {
-    b = b.danger();
-  }
-  if (options?.value) {
-    b = b.value(options.value);
-  }
-  if (options?.url) {
-    b = b.url(options.url);
-  }
-  return b;
-}
-
-export function userReportBlocks(
+export function reportBlocks(
   userId: string,
   reports: Report[],
   isBanned: boolean
@@ -61,10 +34,9 @@ export function userReportBlocks(
           Section({
             text: `*Reason:* ${report.reason}\n*Date:* ${slackDate(report.timestamp)}`,
           }).accessory(
-            btn('Remove', 'remove_report', {
-              style: 'danger',
-              value: JSON.stringify({ userId, reportId: report.id }),
-            })
+            Button({ text: 'Remove', actionId: 'remove_report' })
+              .danger()
+              .value(JSON.stringify({ userId, reportId: report.id }))
           )
         )
       );
@@ -76,8 +48,12 @@ export function userReportBlocks(
       Divider(),
       Actions().elements(
         isBanned
-          ? btn('Unban User', 'unban_user', { style: 'primary', value: userId })
-          : btn('Ban User', 'ban_user', { style: 'danger', value: userId })
+          ? Button({ text: 'Unban User', actionId: 'unban_user' })
+              .primary()
+              .value(userId)
+          : Button({ text: 'Ban User', actionId: 'ban_user' })
+              .danger()
+              .value(userId)
       )
     )
   );

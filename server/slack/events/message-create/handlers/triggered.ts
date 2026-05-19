@@ -1,9 +1,9 @@
 import { env } from '~/env';
 import { isUserAllowed } from '~/lib/allowed-users';
 import type { ResponseMode } from '~/lib/kv';
+import { isUserBanned } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
-import { isUserBanned } from '~/lib/reports';
 import type { SlackMessageContext } from '~/types';
 import { buildChatContext } from '~/utils/context';
 import { logReply } from '~/utils/log';

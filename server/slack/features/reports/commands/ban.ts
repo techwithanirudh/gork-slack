@@ -4,9 +4,24 @@ import type {
 } from '@slack/bolt';
 import { Input, UserSelect } from 'slack-block-builder';
 import { isAdmin } from '~/lib/permissions';
+import type { CommandHelp } from '~/types';
+
+export const help: CommandHelp = {
+  name: 'ban',
+  description: 'Ban a user from interacting with Gork.',
+  subcommands: [
+    {
+      usage: 'ban [@user ...]',
+      description:
+        'Ban one or more users. Opens a picker modal if no users specified.',
+      permissions: ['admin'],
+    },
+  ],
+};
+
 import { asBlocks } from '~/lib/slack/blocks';
 import { respondWithPermissionError } from '~/lib/slack/errors';
-import { executeBan } from '~/lib/slack/reports/bans';
+import { executeBan } from '~/slack/features/reports/utils/bans';
 import { parseUserList } from '~/utils/users';
 
 export const name = 'ban';

@@ -4,9 +4,10 @@ import type {
   ViewSubmitAction,
 } from '@slack/bolt';
 import { Section } from 'slack-block-builder';
+import { getUserReports, isUserBanned } from '~/lib/kv';
 import logger from '~/lib/logger';
-import { getUserReports, isUserBanned, userReportBlocks } from '~/lib/reports';
 import { asBlocks } from '~/lib/slack/blocks';
+import { reportBlocks } from '~/slack/features/reports/blocks';
 import { isViewOwner } from '~/slack/views/metadata';
 
 export const name = 'view_reports_modal';
@@ -50,7 +51,7 @@ export async function execute({
         callback_id: 'view_reports_result',
         title: { type: 'plain_text', text: 'User Reports' },
         close: { type: 'plain_text', text: 'Close' },
-        blocks: userReportBlocks(userId, userReports, isBanned),
+        blocks: reportBlocks(userId, userReports, isBanned),
       },
     });
   } catch (error) {

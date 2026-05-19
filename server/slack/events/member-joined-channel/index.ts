@@ -1,7 +1,7 @@
 import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
-import { mode as modeHelp } from '~/constants/help';
 import { env } from '~/env';
 import logger from '~/lib/logger';
+import { help as modeHelp } from '~/slack/features/mode/commands';
 import { countChannelMembers, resolveMode } from './utils/mode';
 
 export const name = 'member_joined_channel';

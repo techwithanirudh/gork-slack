@@ -7,7 +7,7 @@ import { restrictedChannels } from '~/config';
 import { isResponseMode, type ModeScope, setMode } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { isNonEmptyString, parseViewMetadata } from '~/slack/views/metadata';
-import { sendModeChangeNotification } from '../commands/notifications';
+import { sendModeChangeNotification } from '../notifications';
 
 export const name = 'set_mode_modal';
 

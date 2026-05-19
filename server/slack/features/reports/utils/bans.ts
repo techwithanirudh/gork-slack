@@ -5,7 +5,7 @@ import {
   sendBanNotification,
   sendUnbanLog,
   sendUnbanNotification,
-} from './notifications';
+} from '../notifications';
 
 export async function executeBan(
   context: AllMiddlewareArgs,

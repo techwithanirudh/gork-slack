@@ -1,30 +1,8 @@
 import { generateText, Output } from 'ai';
 import { contentFilterPrompt } from '~/lib/ai/prompts/tasks';
 import { provider } from '~/lib/ai/providers';
+import logger from '~/lib/logger';
 import { contentFilterSchema } from '~/lib/validators';
-import logger from './logger';
-
-export {
-  addReport,
-  banUser,
-  getReportCount,
-  getUserReports,
-  isUserBanned,
-  type Report,
-  removeReport,
-  unbanUser,
-} from '~/lib/kv';
-
-export { userReportBlocks } from './slack/reports/blocks';
-
-export {
-  sendBanLog,
-  sendBanNotification,
-  sendReportNotification,
-  sendStrikeLog,
-  sendUnbanLog,
-  sendUnbanNotification,
-} from './slack/reports/notifications';
 
 export async function validateReport(
   messageContent: string

@@ -4,9 +4,24 @@ import type {
 } from '@slack/bolt';
 import { Input, UserSelect } from 'slack-block-builder';
 import { isAdmin } from '~/lib/permissions';
+import type { CommandHelp } from '~/types';
+
+export const help: CommandHelp = {
+  name: 'unban',
+  description: 'Unban a previously banned user.',
+  subcommands: [
+    {
+      usage: 'unban [@user ...]',
+      description:
+        'Unban one or more users. Opens a picker modal if no users specified.',
+      permissions: ['admin'],
+    },
+  ],
+};
+
 import { asBlocks } from '~/lib/slack/blocks';
 import { respondWithPermissionError } from '~/lib/slack/errors';
-import { executeUnban } from '~/lib/slack/reports/bans';
+import { executeUnban } from '~/slack/features/reports/utils/bans';
 import { parseUserList } from '~/utils/users';
 
 export const name = 'unban';

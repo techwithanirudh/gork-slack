@@ -2,12 +2,12 @@ import type { RespondFn } from '@slack/bolt';
 import type { WebClient } from '@slack/web-api';
 import { Input, Option, Section, StaticSelect } from 'slack-block-builder';
 import { restrictedChannels } from '~/config';
-import { mode as modeHelp } from '~/constants/help';
 import { MODES, type ModeScope, type ResponseMode, setMode } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { isAdmin } from '~/lib/permissions';
 import { asBlocks } from '~/lib/slack/blocks';
-import { sendModeChangeNotification } from './notifications';
+import { sendModeChangeNotification } from '../notifications';
+import { help as modeHelp } from '.';
 
 interface SetArgs {
   channelId: string;

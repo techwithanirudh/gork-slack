@@ -3,8 +3,9 @@ import type {
   SlackViewMiddlewareArgs,
   ViewSubmitAction,
 } from '@slack/bolt';
+import { banUser, isUserBanned } from '~/lib/kv';
 import logger from '~/lib/logger';
-import { banUser, isUserBanned, sendBanNotification } from '~/lib/reports';
+import { sendBanNotification } from '~/slack/features/reports/notifications';
 import { isViewOwner } from '~/slack/views/metadata';
 
 export const name = 'ban_user_modal';

@@ -4,14 +4,10 @@ import type {
   ButtonAction,
   SlackActionMiddlewareArgs,
 } from '@slack/bolt';
+import { getUserReports, isUserBanned, removeReport } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { isAdmin } from '~/lib/permissions';
-import {
-  getUserReports,
-  isUserBanned,
-  removeReport,
-  userReportBlocks,
-} from '~/lib/reports';
+import { reportBlocks } from '~/slack/features/reports/blocks';
 
 export const name = 'remove_report';
 
@@ -67,7 +63,7 @@ export async function execute({
         callback_id: 'view_reports_result',
         title: { type: 'plain_text', text: 'User Reports' },
         close: { type: 'plain_text', text: 'Close' },
-        blocks: userReportBlocks(value.userId, userReports, isBanned),
+        blocks: reportBlocks(value.userId, userReports, isBanned),
       },
     });
   }

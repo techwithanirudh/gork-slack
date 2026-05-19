@@ -4,13 +4,15 @@ import type {
 } from '@slack/bolt';
 import { Context, Divider, Section } from 'slack-block-builder';
 import { z } from 'zod';
-import { ban, mode, ping, reports, unban } from '~/constants/help';
 import { asBlocks } from '~/lib/slack/blocks';
+import { mode } from '~/slack/features/mode';
+import { reports } from '~/slack/features/reports';
 import { parseCommandArgs } from '~/utils/args';
+import { help as ping } from './ping';
 
 export const name = 'help';
 
-const commands = [ban, unban, reports, mode, ping] as const;
+const commands = [...reports.help, ...mode.help, ping];
 
 function buildOverviewBlocks(cmd: string) {
   const commandList = commands

@@ -2,6 +2,20 @@ import type {
   AllMiddlewareArgs,
   SlackCommandMiddlewareArgs,
 } from '@slack/bolt';
+import type { CommandHelp } from '~/types';
+
+export const help: CommandHelp = {
+  name: 'reports',
+  description: 'View reports filed against a user.',
+  subcommands: [
+    {
+      usage: 'reports',
+      description: 'Opens a modal to view reports for a selected user.',
+      permissions: ['admin'],
+    },
+  ],
+};
+
 import { Input, UserSelect } from 'slack-block-builder';
 import { isAdmin } from '~/lib/permissions';
 import { asBlocks } from '~/lib/slack/blocks';
