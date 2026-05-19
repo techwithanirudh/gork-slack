@@ -1,11 +1,7 @@
 import type { ConversationsHistoryResponse, WebClient } from '@slack/web-api';
-import type { ModelMessage } from 'ai';
+import type { ModelMessage, UserContent } from 'ai';
 import logger from '~/lib/logger';
-import {
-  buildUserContent,
-  processSlackFiles,
-  type SlackFile,
-} from '~/utils/images';
+import { processSlackFiles, type SlackFile } from '~/utils/images';
 
 interface ConversationOptions {
   botUserId?: string;
@@ -126,7 +122,9 @@ export async function getConversationMessages({
         );
         return {
           role: 'user',
-          content: buildUserContent(formattedText, images),
+          content: (images.length
+            ? [{ type: 'text', text: formattedText }, ...images]
+            : formattedText) as UserContent,
         };
       })
     );

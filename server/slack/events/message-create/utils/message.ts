@@ -3,7 +3,13 @@ import { loadingMessages } from '~/config';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
 
-export function setThreadStatus({ ctx, active }: { ctx: SlackMessageContext; active: boolean }): void {
+export function setThreadStatus({
+  ctx,
+  active,
+}: {
+  ctx: SlackMessageContext;
+  active: boolean;
+}): void {
   const { channel, ts, thread_ts } = ctx.event;
   const threadTs = ts ? (thread_ts ?? ts) : undefined;
   if (!(channel && threadTs)) {

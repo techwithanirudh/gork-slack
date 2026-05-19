@@ -1,6 +1,6 @@
 import { webSearch } from '@exalabs/ai-sdk';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import type { ModelMessage } from 'ai';
+import type { ModelMessage, UserContent } from 'ai';
 import { generateText, stepCountIs } from 'ai';
 import { systemPrompt } from '~/lib/ai/prompts';
 import { provider } from '~/lib/ai/providers';
@@ -19,11 +19,7 @@ import type {
   RequestHints,
   SlackMessageContext,
 } from '~/types';
-import {
-  buildUserContent,
-  processSlackFiles,
-  type SlackFile,
-} from '~/utils/images';
+import { processSlackFiles, type SlackFile } from '~/utils/images';
 import { getSlackUserName } from '~/utils/users';
 
 export async function generateResponse(
@@ -52,7 +48,6 @@ export async function generateResponse(
 
     const images = await processSlackFiles(files);
     const replyPrompt = `You are replying to the following message from ${authorName} (${userId}): ${messageText}`;
-    const currentMessageContent = buildUserContent(replyPrompt, images);
 
     const { toolCalls } = await generateText({
       model: provider.languageModel('chat-model'),
@@ -60,7 +55,9 @@ export async function generateResponse(
         ...messages,
         {
           role: 'user',
-          content: currentMessageContent,
+          content: (images.length
+            ? [{ type: 'text', text: replyPrompt }, ...images]
+            : replyPrompt) as UserContent,
         },
       ],
       providerOptions: {

@@ -1,5 +1,5 @@
 import type { UploadedFile } from '@slack/bolt';
-import type { ImagePart, UserContent } from 'ai';
+import type { ImagePart } from 'ai';
 import { env } from '~/env';
 import logger from '~/lib/logger';
 import { toLogError } from '~/utils/error';
@@ -65,14 +65,4 @@ export async function processSlackFiles(
   );
 
   return results.filter((r): r is ImagePart => r !== null);
-}
-
-export function buildUserContent(
-  text: string,
-  images: ImagePart[]
-): UserContent {
-  if (!images.length) {
-    return text;
-  }
-  return [{ type: 'text', text }, ...images];
 }

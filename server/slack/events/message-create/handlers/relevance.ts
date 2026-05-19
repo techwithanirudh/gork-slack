@@ -11,7 +11,7 @@ import {
   checkMessageQuota,
   handleMessageCount,
 } from '~/utils/message-rate-limiter';
-import { getAuthorName, getContextId } from '../utils/message';
+import { getAuthorName, getContextId, setThreadStatus } from '../utils/message';
 import { assessRelevance } from '../utils/relevance';
 import { generateResponse } from '../utils/respond';
 
@@ -93,25 +93,8 @@ export async function handleRelevance({
     return;
   }
 
-  const { channel, ts, thread_ts } = messageContext.event;
-  const threadTs = ts ? (thread_ts ?? ts) : undefined;
-  if (channel && threadTs) {
-    messageContext.client.assistant.threads
-      .setStatus({
-        channel_id: channel,
-        thread_ts: threadTs,
-        status: 'cooking...',
-        loading_messages: [
-          'cooking...',
-          'thinking rn...',
-          'give me a sec...',
-          'on it...',
-        ],
-      })
-      .catch(() => undefined);
-  }
-
   logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
+  setThreadStatus({ ctx: messageContext, active: true });
   try {
     const result = await generateResponse(
       messageContext,
@@ -119,7 +102,7 @@ export async function handleRelevance({
       chatContext.hints,
       chatContext.memories
     );
-    logReply(ctxId, authorName, result, 'relevance');
+    logReply({ ctxId, author: authorName, result, reason: 'relevance' });
     if (result.success && result.toolCalls) {
       await saveChatMemory(messageContext, {
         channelName: chatContext.hints.channel,
@@ -127,14 +110,6 @@ export async function handleRelevance({
       });
     }
   } finally {
-    if (channel && threadTs) {
-      messageContext.client.assistant.threads
-        .setStatus({
-          channel_id: channel,
-          thread_ts: threadTs,
-          status: '',
-        })
-        .catch(() => undefined);
-    }
+    setThreadStatus({ ctx: messageContext, active: false });
   }
 }

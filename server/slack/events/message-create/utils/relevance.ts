@@ -1,5 +1,5 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
-import { generateText, type ModelMessage, Output } from 'ai';
+import { generateText, type ModelMessage, Output, type UserContent } from 'ai';
 import { systemPrompt } from '~/lib/ai/prompts';
 import { provider } from '~/lib/ai/providers';
 import logger from '~/lib/logger';
@@ -9,11 +9,7 @@ import type {
   RequestHints,
   SlackMessageContext,
 } from '~/types';
-import {
-  buildUserContent,
-  processSlackFiles,
-  type SlackFile,
-} from '~/utils/images';
+import { processSlackFiles, type SlackFile } from '~/utils/images';
 import { getSlackUserName } from '~/utils/users';
 
 export async function assessRelevance(
@@ -36,7 +32,10 @@ export async function assessRelevance(
         ...messages,
         {
           role: 'user',
-          content: buildUserContent(`${authorName}: ${messageText}`, images),
+          content: [
+            { type: 'text', text: `${authorName}: ${messageText}` },
+            ...images,
+          ] as UserContent,
         },
       ];
     }

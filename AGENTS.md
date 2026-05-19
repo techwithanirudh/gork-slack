@@ -55,10 +55,62 @@ Always use **bun**. Never use npm, yarn, or pnpm.
 
 When adding a new subcommand (e.g. `/gork foo`), you must update **all** of the following or the command will be invisible in help:
 
-1. **Implementation** — add `server/slack/commands/foo.ts` (or `server/slack/features/<feature>/commands/foo.ts` if part of a feature)
-2. **Help constant** — add `server/constants/help/foo.ts` and re-export it from `server/constants/help/index.ts`
-3. **Help command** — in `server/slack/commands/help.ts`, add the constant to the `commands` array and to the `z.enum([...])` in `parseCommandArgs`
-4. **Router** — in `server/slack/commands/handler.ts`, import and add the handler to the `subcommands` array
+1. **Implementation** — add `server/slack/commands/foo.ts` (or `server/slack/features/<feature>/commands/foo.ts` if part of a feature). Export `name`, `help: CommandHelp`, and `execute`.
+2. **Registry** — add it to `server/slack/commands/subcommands.ts`. Both routing (`handler.ts`) and help (`help.ts`) derive from this single array — no other files need touching.
+
+## Coding Guidelines
+
+### Inline over extract
+Prefer inlining over creating utility functions. Only extract to a named function when the logic is called in **multiple places** or is genuinely complex. A helper called exactly once is worse than the code it replaced.
+
+```ts
+// bad — one-shot helper
+function getFileExtension(mime: string) { return MAP[mime] ?? 'png'; }
+const ext = getFileExtension(image.mediaType);
+
+// good — just inline it
+const ext = EXTENSION[image.mediaType] ?? 'png';
+```
+
+### Dict params
+Functions with more than one parameter should take a single options object. Prefer this even for one-param functions when that parameter is logically a "config" rather than a plain value.
+
+```ts
+// bad
+logReply(ctxId, author, result, reason);
+
+// good
+logReply({ ctxId, author, result, reason });
+```
+
+### No `as const` on type discriminants
+When building objects that need a literal type for a discriminant field (e.g. `type: 'text'`), cast the whole expression to the SDK type instead of using `as const` on the property.
+
+```ts
+// bad
+{ type: 'text' as const, text }
+
+// good — use the SDK's UserContent type
+[{ type: 'text', text }, ...images] as UserContent
+```
+
+### No comments explaining what code does
+Only add a comment when the **why** is non-obvious — a hidden constraint, a workaround for a specific bug, or behaviour that would genuinely surprise a reader. Never describe what the code already says.
+
+### No JSDoc / docstrings
+No multi-line block comments on functions. Self-documenting names are enough.
+
+### Config for tuneable values
+Anything that could reasonably change per deployment (thresholds, message lists, locale) belongs in `server/config.ts`, not hardcoded at the call site.
+
+### Feature-enclosed architecture
+Features live under `server/slack/features/<name>/`. Each feature exports `{ actions, views, commands }` from its `index.ts`. Each command file exports `name`, `help: CommandHelp`, and `execute`. The single registry is `server/slack/commands/subcommands.ts`.
+
+### Notification helpers
+Use `sendLog(client, text, blocks?)` and `sendReport(client, text, blocks?)` from `~/slack/features/reports/notifications/shared` for posting to log/report channels. They guard against unconfigured channels and swallow errors with a `logger.warn`.
+
+### Thread status
+Use `setThreadStatus({ ctx, active })` from `../utils/message` to show/clear the Slack assistant loading indicator. Call it fire-and-forget (no await); it catches its own errors.
 
 ## How Gork Works
 

@@ -111,7 +111,7 @@ export async function handleTriggered({
       chatContext.hints,
       chatContext.memories
     );
-    logReply(ctxId, authorName, result, 'trigger');
+    logReply({ ctxId, author: authorName, result, reason: 'trigger' });
     if (result.success && result.toolCalls) {
       await saveChatMemory(messageContext, {
         channelName: chatContext.hints.channel,
