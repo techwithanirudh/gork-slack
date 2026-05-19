@@ -133,8 +133,6 @@ export async function buildChatContext(
       : 'unknown';
     const currentMessage = `${authorName}: ${text}`;
 
-    const ONE_HOUR_MS = 1000 * 60 * 60;
-
     const [
       byText,
       byHistory,
@@ -155,7 +153,7 @@ export async function buildChatContext(
       queryMemories(historySnippet, {
         namespace: 'default',
         limit: memoriesConfig.eachLimit,
-        ageLimit: ONE_HOUR_MS,
+        ageLimit: memoriesConfig.recentAgeMs,
       }),
       queryMemories(currentMessage, {
         namespace: 'default',
@@ -164,7 +162,7 @@ export async function buildChatContext(
       queryMemories(currentMessage, {
         namespace: 'default',
         limit: memoriesConfig.eachLimit,
-        ageLimit: ONE_HOUR_MS,
+        ageLimit: memoriesConfig.recentAgeMs,
       }),
       queryMemories(historySnippet, {
         namespace: 'default',
@@ -177,7 +175,7 @@ export async function buildChatContext(
         limit: memoriesConfig.eachLimit,
         ignoreRecent: false,
         onlyTools: true,
-        ageLimit: ONE_HOUR_MS,
+        ageLimit: memoriesConfig.recentAgeMs,
       }),
     ]);
 

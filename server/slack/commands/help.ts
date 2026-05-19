@@ -12,42 +12,6 @@ export const name = 'help';
 
 const commandNames = subcommands.map((c) => c.name) as [string, ...string[]];
 
-function buildCommandBlocks(commandName: string, cmd: string) {
-  const entry = subcommands.find((c) => c.name === commandName);
-  if (!entry) {
-    return [];
-  }
-
-  const { help } = entry;
-
-  const subcommandText = help.subcommands
-    .map((s) => {
-      const permLabel = s.permissions?.length
-        ? ` _(${s.permissions.join(', ')} only)_`
-        : '';
-      return `• \`${cmd} ${s.usage}\`${permLabel}: ${s.description}`;
-    })
-    .join('\n');
-
-  const blocks = asBlocks(
-    Section({ text: `*Command: ${help.name}*\n${help.description}` }),
-    Divider(),
-    Section({ text: `*Usage:*\n${subcommandText}` })
-  );
-
-  if (help.modes?.length) {
-    blocks.push(
-      ...asBlocks(
-        Section({
-          text: `*Modes:*\n${help.modes.map((m) => `• *${m.name}:* ${m.description}`).join('\n')}`,
-        })
-      )
-    );
-  }
-
-  return blocks;
-}
-
 export async function execute(
   ctx: SlackCommandMiddlewareArgs & AllMiddlewareArgs
 ) {
@@ -69,23 +33,50 @@ export async function execute(
   const commandName = result.data.command ?? null;
 
   if (commandName) {
-    await respond({
-      text: `Help: ${commandName}`,
-      blocks: buildCommandBlocks(commandName, command.command),
-      response_type: 'ephemeral',
-    });
+    const entry = subcommands.find((c) => c.name === commandName);
+    if (entry) {
+      const { help } = entry;
+      const subcommandText = help.subcommands
+        .map((s) => {
+          const permLabel = s.permissions?.length
+            ? ` _(${s.permissions.join(', ')} only)_`
+            : '';
+          return `• \`${command.command} ${s.usage}\`${permLabel}: ${s.description}`;
+        })
+        .join('\n');
+      const blocks = asBlocks(
+        Section({ text: `*Command: ${help.name}*\n${help.description}` }),
+        Divider(),
+        Section({ text: `*Usage:*\n${subcommandText}` })
+      );
+      if (help.modes?.length) {
+        blocks.push(
+          ...asBlocks(
+            Section({
+              text: `*Modes:*\n${help.modes.map((m) => `• *${m.name}:* ${m.description}`).join('\n')}`,
+            })
+          )
+        );
+      }
+      await respond({
+        text: `Help: ${commandName}`,
+        blocks,
+        response_type: 'ephemeral',
+      });
+    }
     return;
   }
 
-  const commandList = subcommands
-    .map((c) => `*${c.help.name}:* ${c.help.description}`)
-    .join('\n');
   await respond({
     text: 'Gork - available commands',
     blocks: asBlocks(
       Section({ text: '*Gork*\navailable commands' }),
       Divider(),
-      Section({ text: commandList }),
+      Section({
+        text: subcommands
+          .map((c) => `*${c.help.name}:* ${c.help.description}`)
+          .join('\n'),
+      }),
       Divider(),
       Section({
         text: 'Use `!stop` to silence Gork in a thread.\nUse `!leave` to make Gork leave the channel.',

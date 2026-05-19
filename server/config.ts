@@ -18,7 +18,15 @@ export const messageThreshold = 25;
 export const memories = {
   eachLimit: 2,
   maxMemories: 4,
+  recentAgeMs: 1000 * 60 * 60,
 };
+
+export const rateLimit = {
+  windowSeconds: 30,
+  windowLimit: 56,
+};
+
+export const silenceTtlSeconds = 60 * 60 * 24 * 7;
 
 export const restrictedChannels = [
   { id: 'C09P6S7H725', name: 'gork' },

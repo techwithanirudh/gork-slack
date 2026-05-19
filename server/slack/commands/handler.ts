@@ -6,23 +6,11 @@ type CommandContext = Parameters<(typeof subcommands)[0]['execute']>[0];
 
 const allCommands = [...subcommands, { name: helpName, execute: helpExecute }];
 
-function parseSubcommand(text: string): {
-  subcommand: string | null;
-  args: string;
-} {
-  const parts = splitArgs(text);
-  if (!parts.length) {
-    return { subcommand: null, args: '' };
-  }
-  return {
-    subcommand: parts[0]?.toLowerCase() ?? null,
-    args: parts.slice(1).join(' '),
-  };
-}
-
 export async function handleCommand(context: CommandContext): Promise<void> {
   const { command, respond } = context;
-  const { subcommand, args } = parseSubcommand(command.text);
+  const parts = splitArgs(command.text);
+  const subcommand = parts[0]?.toLowerCase() ?? null;
+  const args = parts.slice(1).join(' ');
 
   if (!subcommand) {
     await helpExecute(context);
