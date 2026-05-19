@@ -19,7 +19,7 @@ export function getMessageText(message: ModelMessage): string {
           'text' in part &&
           typeof part.text === 'string'
         ) {
-          return (part.text);
+          return part.text;
         }
         return '';
       })

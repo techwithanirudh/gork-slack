@@ -3,6 +3,7 @@ import type { ModelMessage, UserContent } from 'ai';
 import logger from '~/lib/logger';
 import { slackErrorCode } from '~/utils/error';
 import { processSlackFiles } from '~/utils/images';
+import { getSlackUserName } from '~/utils/users';
 
 interface ConversationOptions {
   botUserId?: string;
@@ -69,18 +70,8 @@ export async function getConversationMessages({
     const userNameCache = new Map<string, string>();
     await Promise.all(
       Array.from(userIds).map(async (userId) => {
-        try {
-          const info = await client.users.info({ user: userId });
-          const name =
-            info.user?.profile?.display_name ||
-            info.user?.real_name ||
-            info.user?.name ||
-            userId;
-          userNameCache.set(userId, name);
-        } catch (error) {
-          logger.warn({ error, userId }, 'Failed to fetch Slack user info');
-          userNameCache.set(userId, userId);
-        }
+        const name = await getSlackUserName({ client, userId });
+        userNameCache.set(userId, name);
       })
     );
 

@@ -20,11 +20,15 @@ export interface Trigger {
   type: TriggerType;
 }
 
-export async function getTrigger(
-  message: SlackMessageContext,
-  keywords: string[],
-  botId?: string
-): Promise<Trigger> {
+export async function getTrigger({
+  message,
+  keywords,
+  botId,
+}: {
+  message: SlackMessageContext;
+  keywords: string[];
+  botId?: string;
+}): Promise<Trigger> {
   const { event, client } = message;
 
   if (!isPlainMessage(event)) {
@@ -39,7 +43,7 @@ export async function getTrigger(
       const displayName =
         info.user?.profile?.display_name || info.user?.name || null;
       if (displayName) {
-        primeSlackUserName(botId, displayName);
+        primeSlackUserName({ userId: botId, name: displayName });
       }
       return { type: 'ping', info: displayName ?? botId };
     } catch {

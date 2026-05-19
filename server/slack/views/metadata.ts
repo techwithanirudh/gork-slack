@@ -16,6 +16,12 @@ export function parseViewMetadata(raw: string): ViewMetadata | null {
   }
 }
 
-export function isViewOwner(raw: string, userId: string): boolean {
+export function isViewOwner({
+  raw,
+  userId,
+}: {
+  raw: string;
+  userId: string;
+}): boolean {
   return parseViewMetadata(raw)?.openedBy === userId;
 }

@@ -7,12 +7,6 @@ import { commands } from './commands';
 import { registerEvents } from './events';
 import { views } from './views';
 
-export interface SlackApp {
-  app: App;
-  receiver?: ExpressReceiver;
-  socketMode: boolean;
-}
-
 function registerApp(app: App) {
   buildCache(app);
 
@@ -31,7 +25,7 @@ function registerApp(app: App) {
   }
 }
 
-export function createSlackApp(): SlackApp {
+export function createSlackApp() {
   if (env.SLACK_SOCKET_MODE) {
     if (!env.SLACK_APP_TOKEN) {
       throw new Error(

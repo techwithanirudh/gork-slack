@@ -1,8 +1,10 @@
 import { tool } from 'ai';
+import { Context, Section } from 'slack-block-builder';
 import { z } from 'zod';
 import { moderation } from '~/config';
 import { addReport } from '~/lib/kv';
 import logger from '~/lib/logger';
+import { asBlocks } from '~/lib/slack/blocks';
 import { getConversationMessages } from '~/slack/conversations';
 import {
   sendReportNotification,
@@ -89,39 +91,25 @@ export const report = ({ context }: { context: SlackMessageContext }) =>
           channel: channelId,
           text: 'Warning: You have been reported for inappropriate content.',
           thread_ts: threadTs,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: isBanned
-                  ? ':no_entry: *You have been banned from Gork*'
-                  : ':warning: *Content Warning*',
-              },
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `You have been reported for inappropriate content.\n\n*Reason:* ${reason}`,
-              },
-            },
-            {
-              type: 'context',
-              elements: [
-                {
-                  type: 'mrkdwn',
-                  text: isBanned
-                    ? `You have ${reportCount} report(s) in the last 30 days. You are now banned from using Gork.`
-                    : `You have ${reportCount} report(s) in the last 30 days. ${moderation.banThreshold - reportCount} more will result in a ban.`,
-                },
-              ],
-            },
-          ],
+          blocks: asBlocks(
+            Section({
+              text: isBanned
+                ? ':no_entry: *You have been banned from Gork*'
+                : ':warning: *Content Warning*',
+            }),
+            Section({
+              text: `You have been reported for inappropriate content.\n\n*Reason:* ${reason}`,
+            }),
+            Context().elements(
+              isBanned
+                ? `You have ${reportCount} report(s) in the last 30 days. You are now banned from using Gork.`
+                : `You have ${reportCount} report(s) in the last 30 days. ${moderation.banThreshold - reportCount} more will result in a ban.`
+            )
+          ),
         });
 
         const messageContext = userMessages
-          .slice(-3)
+          .slice(-moderation.contextMessages)
           .map((msg) => getMessageText(msg))
           .filter(Boolean);
 

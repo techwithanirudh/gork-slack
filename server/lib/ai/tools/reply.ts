@@ -117,7 +117,7 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
         }
 
         const authorName = userId
-          ? await getSlackUserName(context.client, userId)
+          ? await getSlackUserName({ client: context.client, userId })
           : 'unknown';
 
         logger.info(

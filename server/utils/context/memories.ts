@@ -19,7 +19,7 @@ export async function buildContextMemories({
 }): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> {
   const historySnippet = buildHistorySnippet({ messages, limit: 3 });
   const authorName = userId
-    ? await getSlackUserName(ctx.client, userId)
+    ? await getSlackUserName({ client: ctx.client, userId })
     : 'unknown';
   const currentMessage = `${authorName}: ${text}`;
 

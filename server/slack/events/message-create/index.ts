@@ -97,11 +97,11 @@ export async function execute(args: MessageEventArgs) {
     return;
   }
 
-  const trigger = await getTrigger(
-    messageContext,
+  const trigger = await getTrigger({
+    message: messageContext,
     keywords,
-    messageContext.botUserId
-  );
+    botId: messageContext.botUserId,
+  });
 
   if (trigger.type === 'ping') {
     const raw = messageContext.event.text ?? '';

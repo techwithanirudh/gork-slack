@@ -34,7 +34,7 @@ export async function generateResponse(
     const files =
       context.event.subtype === 'file_share' ? context.event.files : undefined;
     const authorName = userId
-      ? await getSlackUserName(context.client, userId)
+      ? await getSlackUserName({ client: context.client, userId })
       : 'user';
 
     const system = systemPrompt({
