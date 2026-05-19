@@ -5,10 +5,6 @@ import { env } from '~/env';
 import logger from '~/lib/logger';
 import { asBlock } from '~/lib/slack/blocks';
 
-export function slackDate(ms = Date.now()): string {
-  return `<!date^${Math.floor(ms / 1000)}^{date_short_pretty} at {time}|${new Date(ms).toISOString()}>`;
-}
-
 export function infoButton(value: string) {
   return asBlock(
     Actions().elements(

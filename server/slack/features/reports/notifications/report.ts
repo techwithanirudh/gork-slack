@@ -14,8 +14,8 @@ import {
   infoButton,
   sendLog,
   sendReport,
-  slackDate,
 } from './shared';
+import { slackDate } from '~/lib/slack/blocks';
 
 export async function sendStrikeLog({
   client,

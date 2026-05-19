@@ -2,10 +2,7 @@ import type { KnownBlock } from '@slack/types';
 import { Actions, Button, Divider, Section } from 'slack-block-builder';
 import type { Report } from '~/lib/kv';
 import { asBlock, asBlocks } from '~/lib/slack/blocks';
-
-function slackDate(ms: number): string {
-  return `<!date^${Math.floor(ms / 1000)}^{date_short_pretty} at {time}|${new Date(ms).toISOString()}>`;
-}
+import { slackDate } from '~/lib/slack/blocks';
 
 export function reportBlocks(
   userId: string,
