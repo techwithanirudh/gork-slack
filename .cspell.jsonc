@@ -50,6 +50,9 @@
     "retryables",
     "Usergroup",
     "usergroup",
-    "usergroups"
+    "usergroups",
+    "behaviour",
+    "docstrings",
+    "unconfigured"
   ]
 }
