@@ -1,11 +1,6 @@
-import type {
-  AllMiddlewareArgs,
-  BlockAction,
-  ButtonAction,
-  SlackActionMiddlewareArgs,
-} from '@slack/bolt';
 import { Section } from 'slack-block-builder';
 import { asBlocks } from '~/lib/slack/blocks';
+import type { SlackButtonActionContext } from '~/types';
 
 export const name = 'moderation_info';
 
@@ -33,7 +28,7 @@ export async function execute({
   action,
   body,
   client,
-}: SlackActionMiddlewareArgs<BlockAction<ButtonAction>> & AllMiddlewareArgs) {
+}: SlackButtonActionContext) {
   await ack();
 
   const info = MODAL_CONTENT[action.value ?? ''];

@@ -1,4 +1,10 @@
-import type { SlackEventMiddlewareArgs } from '@slack/bolt';
+import type {
+  AllMiddlewareArgs,
+  BlockAction,
+  ButtonAction,
+  SlackActionMiddlewareArgs,
+  SlackEventMiddlewareArgs,
+} from '@slack/bolt';
 import type {
   FileShareMessageEvent,
   GenericMessageEvent,
@@ -18,3 +24,8 @@ export interface SlackMessageContext {
   event: ProcessableSlackMessageEvent;
   teamId?: string;
 }
+
+export type SlackButtonActionContext = SlackActionMiddlewareArgs<
+  BlockAction<ButtonAction>
+> &
+  AllMiddlewareArgs;

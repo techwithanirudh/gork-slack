@@ -1,7 +1,10 @@
 import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
 import { loadingMessages } from '~/config';
 import logger from '~/lib/logger';
-import type { ProcessableSlackMessageEvent, SlackMessageContext } from '~/types';
+import type {
+  ProcessableSlackMessageEvent,
+  SlackMessageContext,
+} from '~/types';
 
 export function setThreadStatus({
   ctx,
