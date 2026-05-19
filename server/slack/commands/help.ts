@@ -10,37 +10,17 @@ import { subcommands } from './subcommands';
 
 export const name = 'help';
 
-const allCommands = subcommands;
-
-const commandNames = allCommands.map((c) => c.name) as [string, ...string[]];
-
-function buildOverviewBlocks(cmd: string) {
-  const commandList = allCommands
-    .map((c) => `*${c.help.name}:* ${c.help.description}`)
-    .join('\n');
-  return asBlocks(
-    Section({ text: '*Gork*\navailable commands' }),
-    Divider(),
-    Section({ text: commandList }),
-    Divider(),
-    Section({
-      text: 'Use `!stop` to silence Gork in a thread.\nUse `!leave` to make Gork leave the channel.',
-    }),
-    Context().elements(
-      `Run \`${cmd} help <command>\` for detailed usage. Made with :heart: by <https://devarsh.me/|Devarsh> & <https://techwithanirudh.com|Anirudh>`
-    )
-  );
-}
+const commandNames = subcommands.map((c) => c.name) as [string, ...string[]];
 
 function buildCommandBlocks(commandName: string, cmd: string) {
-  const entry = allCommands.find((c) => c.name === commandName);
+  const entry = subcommands.find((c) => c.name === commandName);
   if (!entry) {
     return [];
   }
 
-  const { help: command } = entry;
+  const { help } = entry;
 
-  const subcommandText = command.subcommands
+  const subcommandText = help.subcommands
     .map((s) => {
       const permLabel = s.permissions?.length
         ? ` _(${s.permissions.join(', ')} only)_`
@@ -50,16 +30,19 @@ function buildCommandBlocks(commandName: string, cmd: string) {
     .join('\n');
 
   const blocks = asBlocks(
-    Section({ text: `*Command: ${command.name}*\n${command.description}` }),
+    Section({ text: `*Command: ${help.name}*\n${help.description}` }),
     Divider(),
     Section({ text: `*Usage:*\n${subcommandText}` })
   );
 
-  if (command.modes?.length) {
-    const modeText = command.modes
-      .map((m) => `• *${m.name}:* ${m.description}`)
-      .join('\n');
-    blocks.push(...asBlocks(Section({ text: `*Modes:*\n${modeText}` })));
+  if (help.modes?.length) {
+    blocks.push(
+      ...asBlocks(
+        Section({
+          text: `*Modes:*\n${help.modes.map((m) => `• *${m.name}:* ${m.description}`).join('\n')}`,
+        })
+      )
+    );
   }
 
   return blocks;
@@ -94,9 +77,23 @@ export async function execute(
     return;
   }
 
+  const commandList = subcommands
+    .map((c) => `*${c.help.name}:* ${c.help.description}`)
+    .join('\n');
   await respond({
     text: 'Gork - available commands',
-    blocks: buildOverviewBlocks(command.command),
+    blocks: asBlocks(
+      Section({ text: '*Gork*\navailable commands' }),
+      Divider(),
+      Section({ text: commandList }),
+      Divider(),
+      Section({
+        text: 'Use `!stop` to silence Gork in a thread.\nUse `!leave` to make Gork leave the channel.',
+      }),
+      Context().elements(
+        `Run \`${command.command} help <command>\` for detailed usage. Made with :heart: by <https://devarsh.me/|Devarsh> & <https://techwithanirudh.com|Anirudh>`
+      )
+    ),
     response_type: 'ephemeral',
   });
 }
