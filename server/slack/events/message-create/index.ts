@@ -20,14 +20,6 @@ import {
 
 export const name = 'message';
 
-async function canReply(ctxId: string): Promise<boolean> {
-  const { success } = await ratelimit(keys.channelCount(ctxId));
-  if (!success) {
-    logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
-  }
-  return success;
-}
-
 async function handleMessage(
   args: MessageEventArgs,
   trigger: Trigger
@@ -99,7 +91,9 @@ export async function execute(args: MessageEventArgs) {
   }
 
   const ctxId = getContextId(messageContext);
-  if (!(await canReply(ctxId))) {
+  const { success } = await ratelimit(keys.channelCount(ctxId));
+  if (!success) {
+    logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
     return;
   }
 

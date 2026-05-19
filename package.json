@@ -9,7 +9,7 @@
     "start": "bun run server/index.ts",
     "check": "ultracite check .",
     "check:spelling": "cspell -c .cspell.jsonc --no-progress --no-summary --no-must-find-files --unique --cache",
-    "check:unsafe": "ultracite fix --unsafe true .",
+    "check:unsafe": "ultracite fix --unsafe .",
     "check:write": "ultracite fix .",
     "typecheck": "tsc --noEmit",
     "prepare": "lefthook install"

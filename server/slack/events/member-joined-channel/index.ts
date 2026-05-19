@@ -44,7 +44,7 @@ export async function execute({
     await client.chat.postEphemeral({
       channel: channelId,
       user: userId,
-      text: `Gork is now in *${modeLabel}* mode in this channel ${reason}.\n\nTo change it: \`/gork mode set channel <mode>\`\n\nAvailable modes:\n${modeList}`,
+      text: `ok i'm here. this channel is on *${modeLabel}* mode ${reason}.\n\nchange it with \`/gork mode set channel <mode>\` if you must\n\navailable modes:\n${modeList}`,
     });
   } catch (error) {
     logger.warn(
