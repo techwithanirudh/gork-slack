@@ -31,25 +31,42 @@ async function handleStop({
     );
 }
 
-async function handleLeave(context: SlackMessageContext): Promise<void> {
+async function handleLeave({
+  context,
+  ctxId,
+}: {
+  context: SlackMessageContext;
+  ctxId: string;
+}): Promise<void> {
   const channelId = context.event.channel;
+
   if (restrictedChannels.some((c) => c.id === channelId)) {
+    await context.client.chat
+      .postMessage({
+        channel: channelId,
+        text: "can't leave this one, it's protected",
+      })
+      .catch((error) =>
+        logger.warn({ error, ctxId }, 'Failed to send leave message')
+      );
     return;
   }
+
   await context.client.chat
-    .postMessage({ channel: channelId, text: 'leaving now, later' })
+    .postMessage({ channel: channelId, text: 'aight, dipping. later' })
     .catch((error) =>
-      logger.warn({ error, channelId }, 'Failed to send leave message')
+      logger.warn({ error, ctxId }, 'Failed to send leave message')
     );
+
   const left = await context.client.conversations
     .leave({ channel: channelId })
     .then(() => true)
     .catch((error) => {
-      logger.error({ error, channelId }, 'Failed to leave channel');
+      logger.error({ error, ctxId }, 'Failed to leave channel');
       return false;
     });
   if (left) {
-    logger.info({ channelId }, 'Left channel via !leave');
+    logger.info({ ctxId, channelId }, 'Left channel via !leave');
   }
 }
 

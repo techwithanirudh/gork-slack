@@ -42,7 +42,7 @@ async function handleMessage(
       await args.client.chat.postMessage({
         channel: event.channel,
         thread_ts: event.thread_ts ?? event.ts,
-        text: "can't talk here, find me in another channel",
+        text: "nah can't talk here, find me somewhere else",
       });
     }
     return;
@@ -93,7 +93,7 @@ export async function execute(args: MessageEventArgs) {
   const ctxId = getContextId(messageContext);
   const { success } = await ratelimit(keys.channelCount(ctxId));
   if (!success) {
-    logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
+    logger.debug(`[${ctxId}] Rate limit hit. Skipping reply.`);
     return;
   }
 
