@@ -3,9 +3,8 @@ import { provider } from '~/lib/ai/providers';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
 import { toLogError } from '~/utils/error';
-import type { SlackFile } from '~/utils/images';
+import { processSlackFiles, type SlackFile } from '~/utils/images';
 import { imageInputSchema } from './schema';
-import { sourceImagesFromFiles } from './source-images';
 
 const EXTENSION: Record<string, string> = {
   'image/gif': 'gif',
@@ -52,7 +51,16 @@ export const generateImageTool = ({
           );
         }
 
-        const sourceImages = await sourceImagesFromFiles(files);
+        const inputImages = await processSlackFiles(files);
+        const sourceImages = inputImages
+          .map((item) => item.image)
+          .filter(
+            (image): image is string | Uint8Array | ArrayBuffer | Buffer =>
+              typeof image === 'string' ||
+              image instanceof Uint8Array ||
+              image instanceof ArrayBuffer ||
+              image instanceof Buffer
+          );
         const imagePrompt =
           sourceImages.length > 0
             ? { text: prompt, images: sourceImages }
