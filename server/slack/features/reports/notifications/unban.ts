@@ -1,10 +1,15 @@
 import type { KnownBlock } from '@slack/types';
 import type { WebClient } from '@slack/web-api';
 import { Actions, Button, Context, Header, Section } from 'slack-block-builder';
-import { env } from '~/env';
 import logger from '~/lib/logger';
 import { asBlocks } from '~/lib/slack/blocks';
-import { footerBlock, infoButton, postLog, slackDate } from './shared';
+import {
+  footerBlock,
+  infoButton,
+  sendLog,
+  sendReport,
+  slackDate,
+} from './shared';
 
 function unbanNotificationBlocks(
   userId: string,
@@ -33,7 +38,7 @@ export async function sendUnbanLog({
   userId,
 }: UnbanLogParams): Promise<void> {
   const ts = Math.floor(Date.now() / 1000);
-  await postLog(client, `${userId} was unbanned`, [
+  await sendLog(client, `${userId} was unbanned`, [
     ...asBlocks(
       Header({ text: 'Unban' }),
       Section({ text: 'A user has been unbanned and can use Gork again.' }),
@@ -55,16 +60,10 @@ export async function sendUnbanNotification({
   userId,
   unbannedBy,
 }: UnbanNotificationParams): Promise<void> {
-  if (!env.REPORTS_CHANNEL) {
-    logger.warn(
-      'Unban notification not sent because REPORTS_CHANNEL is not configured'
-    );
-    return;
-  }
-  await client.chat.postMessage({
-    channel: env.REPORTS_CHANNEL,
-    text: `User <@${userId}> has been unbanned`,
-    blocks: unbanNotificationBlocks(userId, unbannedBy),
-  });
+  await sendReport(
+    client,
+    `User <@${userId}> has been unbanned`,
+    unbanNotificationBlocks(userId, unbannedBy)
+  );
   logger.info({ userId, unbannedBy }, 'Unban notification sent');
 }

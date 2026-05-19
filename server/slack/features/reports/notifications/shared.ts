@@ -25,17 +25,38 @@ export function footerBlock(ts: number) {
   );
 }
 
-export async function postLog(
+export async function sendLog(
   client: WebClient,
   text: string,
   blocks?: KnownBlock[]
 ): Promise<void> {
   if (!env.LOGS_CHANNEL) {
+    logger.warn('Log not sent: LOGS_CHANNEL is not configured');
     return;
   }
   try {
     await client.chat.postMessage({ channel: env.LOGS_CHANNEL, text, blocks });
   } catch (error) {
     logger.warn({ error }, 'Failed to post to logs channel');
+  }
+}
+
+export async function sendReport(
+  client: WebClient,
+  text: string,
+  blocks?: KnownBlock[]
+): Promise<void> {
+  if (!env.REPORTS_CHANNEL) {
+    logger.warn('Report not sent: REPORTS_CHANNEL is not configured');
+    return;
+  }
+  try {
+    await client.chat.postMessage({
+      channel: env.REPORTS_CHANNEL,
+      text,
+      blocks,
+    });
+  } catch (error) {
+    logger.warn({ error }, 'Failed to post to reports channel');
   }
 }

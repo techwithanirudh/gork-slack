@@ -1,10 +1,15 @@
 import type { KnownBlock } from '@slack/types';
 import type { WebClient } from '@slack/web-api';
 import { Actions, Button, Context, Header, Section } from 'slack-block-builder';
-import { env } from '~/env';
 import logger from '~/lib/logger';
 import { asBlocks } from '~/lib/slack/blocks';
-import { footerBlock, infoButton, postLog, slackDate } from './shared';
+import {
+  footerBlock,
+  infoButton,
+  sendLog,
+  sendReport,
+  slackDate,
+} from './shared';
 
 function banNotificationBlocks(userId: string, bannedBy: string): KnownBlock[] {
   return asBlocks(
@@ -32,7 +37,7 @@ export async function sendBanLog({
   userId,
 }: BanLogParams): Promise<void> {
   const ts = Math.floor(Date.now() / 1000);
-  await postLog(client, `${userId} was manually banned`, [
+  await sendLog(client, `${userId} was manually banned`, [
     ...asBlocks(
       Header({ text: 'Manual Ban' }),
       Section({ text: 'A user has been manually banned from Gork.' }),
@@ -54,16 +59,10 @@ export async function sendBanNotification({
   userId,
   bannedBy,
 }: BanNotificationParams): Promise<void> {
-  if (!env.REPORTS_CHANNEL) {
-    logger.warn(
-      'Ban notification not sent because REPORTS_CHANNEL is not configured'
-    );
-    return;
-  }
-  await client.chat.postMessage({
-    channel: env.REPORTS_CHANNEL,
-    text: `User <@${userId}> has been banned`,
-    blocks: banNotificationBlocks(userId, bannedBy),
-  });
+  await sendReport(
+    client,
+    `User <@${userId}> has been banned`,
+    banNotificationBlocks(userId, bannedBy)
+  );
   logger.info({ userId, bannedBy }, 'Ban notification sent');
 }

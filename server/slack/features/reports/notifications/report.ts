@@ -8,10 +8,15 @@ import {
   Header,
   Section,
 } from 'slack-block-builder';
-import { env } from '~/env';
 import logger from '~/lib/logger';
 import { asBlocks } from '~/lib/slack/blocks';
-import { footerBlock, infoButton, postLog, slackDate } from './shared';
+import {
+  footerBlock,
+  infoButton,
+  sendLog,
+  sendReport,
+  slackDate,
+} from './shared';
 
 function reportNotificationBlocks(
   userId: string,
@@ -107,7 +112,7 @@ export async function sendStrikeLog({
 }: StrikeLogParams): Promise<void> {
   const ts = Math.floor(Date.now() / 1000);
   if (isBanned) {
-    await postLog(
+    await sendLog(
       client,
       `${userId} auto-banned after ${reportCount} strikes`,
       [
@@ -127,7 +132,7 @@ export async function sendStrikeLog({
       ]
     );
   } else {
-    await postLog(
+    await sendLog(
       client,
       `${userId} received a strike (${reportCount}/${banThreshold})`,
       [
@@ -166,13 +171,6 @@ export async function sendReportNotification({
   isBanned,
   messageContext,
 }: ReportNotificationParams): Promise<void> {
-  if (!env.REPORTS_CHANNEL) {
-    logger.warn(
-      'Report notification not sent because REPORTS_CHANNEL is not configured'
-    );
-    return;
-  }
-
   let isPrivateChannel = false;
   try {
     const channelInfo = await client.conversations.info({ channel: channelId });
@@ -199,10 +197,10 @@ export async function sendReportNotification({
     );
   }
 
-  await client.chat.postMessage({
-    channel: env.REPORTS_CHANNEL,
-    text: `User <@${userId}> has been reported`,
-    blocks: reportNotificationBlocks(
+  await sendReport(
+    client,
+    `User <@${userId}> has been reported`,
+    reportNotificationBlocks(
       userId,
       channelId,
       reason,
@@ -211,8 +209,8 @@ export async function sendReportNotification({
       permalink,
       messageContext,
       isPrivateChannel
-    ),
-  });
+    )
+  );
 
   logger.info(
     { userId, channelId, reportCount, isBanned },
