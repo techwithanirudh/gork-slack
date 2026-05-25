@@ -108,7 +108,13 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
             ? resolveThreadTs(target, currentThread ?? messageTs)
             : undefined;
 
-        for (const text of content) {
+        for (const raw of content) {
+          // Strip Slack broadcast/group mentions so the bot can't ping user groups, @here, @channel, or @everyone.
+          const text = raw
+            .replace(/<!subteam\^[^>]+>/g, '')
+            .replace(/<!here\|?[^>]*>/g, '')
+            .replace(/<!channel\|?[^>]*>/g, '')
+            .replace(/<!everyone>/g, '');
           await context.client.chat.postMessage({
             channel: channelId,
             text,
