@@ -7,10 +7,13 @@ const userNameCache = new Map<string, string>();
 const USER_ID_PATTERN = /^[UW][A-Z0-9]+$/;
 const USER_MENTION_RE = /^<@([A-Z0-9]+)(?:\|[^>]+)?>$/;
 
-export async function getSlackUserName(
-  client: WebClient,
-  userId: string
-): Promise<string> {
+export async function getSlackUserName({
+  client,
+  userId,
+}: {
+  client: WebClient;
+  userId: string;
+}): Promise<string> {
   if (!userId) {
     return 'unknown';
   }
@@ -36,7 +39,13 @@ export async function getSlackUserName(
   }
 }
 
-export function primeSlackUserName(userId: string, name: string) {
+export function primeSlackUserName({
+  userId,
+  name,
+}: {
+  userId: string;
+  name: string;
+}) {
   if (!userId) {
     return;
   }

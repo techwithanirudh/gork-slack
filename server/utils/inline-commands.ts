@@ -6,10 +6,13 @@ import type { SlackMessageContext } from '~/types';
 
 const INLINE_COMMAND_RE = /^!(\w+)/i;
 
-async function handleStop(
-  context: SlackMessageContext,
-  ctxId: string
-): Promise<void> {
+async function handleStop({
+  context,
+  ctxId,
+}: {
+  context: SlackMessageContext;
+  ctxId: string;
+}): Promise<void> {
   const { thread_ts: threadTs } = context.event;
   if (!threadTs) {
     return;
@@ -28,33 +31,54 @@ async function handleStop(
     );
 }
 
-async function handleLeave(context: SlackMessageContext): Promise<void> {
+async function handleLeave({
+  context,
+  ctxId,
+}: {
+  context: SlackMessageContext;
+  ctxId: string;
+}): Promise<void> {
   const channelId = context.event.channel;
+
   if (restrictedChannels.some((c) => c.id === channelId)) {
+    await context.client.chat
+      .postMessage({
+        channel: channelId,
+        text: "can't leave this one, it's protected",
+      })
+      .catch((error) =>
+        logger.warn({ error, ctxId }, 'Failed to send leave message')
+      );
     return;
   }
+
   await context.client.chat
-    .postMessage({ channel: channelId, text: 'leaving now, later' })
+    .postMessage({ channel: channelId, text: 'aight, dipping. later' })
     .catch((error) =>
-      logger.warn({ error, channelId }, 'Failed to send leave message')
+      logger.warn({ error, ctxId }, 'Failed to send leave message')
     );
+
   const left = await context.client.conversations
     .leave({ channel: channelId })
     .then(() => true)
     .catch((error) => {
-      logger.error({ error, channelId }, 'Failed to leave channel');
+      logger.error({ error, ctxId }, 'Failed to leave channel');
       return false;
     });
   if (left) {
-    logger.info({ channelId }, 'Left channel via !leave');
+    logger.info({ ctxId, channelId }, 'Left channel via !leave');
   }
 }
 
-export async function handleInlineCommand(
-  context: SlackMessageContext,
-  ctxId: string,
-  text: string
-): Promise<'handled' | 'not-handled'> {
+export async function handleInlineCommand({
+  context,
+  ctxId,
+  text,
+}: {
+  context: SlackMessageContext;
+  ctxId: string;
+  text: string;
+}): Promise<'handled' | 'not-handled'> {
   const command = INLINE_COMMAND_RE.exec(text)?.[1]?.toLowerCase();
   if (!command) {
     return 'not-handled';
@@ -62,10 +86,10 @@ export async function handleInlineCommand(
 
   switch (command) {
     case 'stop':
-      await handleStop(context, ctxId);
+      await handleStop({ context, ctxId });
       return 'handled';
     case 'leave':
-      await handleLeave(context);
+      await handleLeave({ context, ctxId });
       return 'handled';
     default:
       return 'not-handled';

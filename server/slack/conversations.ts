@@ -1,7 +1,9 @@
-import type { ConversationsHistoryResponse, WebClient } from '@slack/web-api';
+import type { WebClient } from '@slack/web-api';
 import type { ModelMessage, UserContent } from 'ai';
 import logger from '~/lib/logger';
-import { processSlackFiles, type SlackFile } from '~/utils/images';
+import { slackErrorCode } from '~/utils/error';
+import { processSlackFiles } from '~/utils/images';
+import { getSlackUserName } from '~/utils/users';
 
 interface ConversationOptions {
   botUserId?: string;
@@ -13,10 +15,6 @@ interface ConversationOptions {
   oldest?: string;
   threadTs?: string;
 }
-
-type SlackMessage = NonNullable<
-  ConversationsHistoryResponse['messages']
->[number];
 
 export async function getConversationMessages({
   client,
@@ -46,7 +44,7 @@ export async function getConversationMessages({
           inclusive,
         });
 
-    const messages = (response.messages as SlackMessage[] | undefined) ?? [];
+    const messages = response.messages ?? [];
 
     const filteredMessages = latest
       ? messages.filter((message) => {
@@ -72,25 +70,17 @@ export async function getConversationMessages({
     const userNameCache = new Map<string, string>();
     await Promise.all(
       Array.from(userIds).map(async (userId) => {
-        try {
-          const info = await client.users.info({ user: userId });
-          const name =
-            info.user?.profile?.display_name ||
-            info.user?.real_name ||
-            info.user?.name ||
-            userId;
-          userNameCache.set(userId, name);
-        } catch (error) {
-          logger.warn({ error, userId }, 'Failed to fetch Slack user info');
-          userNameCache.set(userId, userId);
-        }
+        const name = await getSlackUserName({ client, userId });
+        userNameCache.set(userId, name);
       })
     );
 
     const mentionRegex = botUserId ? new RegExp(`<@${botUserId}>`, 'gi') : null;
 
     const sortedMessages = filteredMessages
-      .filter((message) => !message.subtype || message.subtype === 'file_share')
+      .filter(
+        (message) => !('subtype' in message) || message.subtype === 'file_share'
+      )
       .sort((a, b) => {
         const aTs = Number(a.ts ?? '0');
         const bTs = Number(b.ts ?? '0');
@@ -117,9 +107,7 @@ export async function getConversationMessages({
           return { role: 'assistant', content: formattedText };
         }
 
-        const images = await processSlackFiles(
-          message.files as SlackFile[] | undefined
-        );
+        const images = await processSlackFiles(message.files);
         return {
           role: 'user',
           content: (images.length
@@ -131,12 +119,7 @@ export async function getConversationMessages({
 
     return modelMessages;
   } catch (error) {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'data' in error &&
-      (error as { data?: { error?: string } }).data?.error === 'not_in_channel'
-    ) {
+    if (slackErrorCode(error) === 'not_in_channel') {
       throw error;
     }
     logger.error(

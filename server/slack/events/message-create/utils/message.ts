@@ -1,8 +1,10 @@
 import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
 import { loadingMessages } from '~/config';
 import logger from '~/lib/logger';
-import type { SlackMessageContext } from '~/types';
-
+import type {
+  ProcessableSlackMessageEvent,
+  SlackMessageContext,
+} from '~/types';
 export function setThreadStatus({
   ctx,
   active,
@@ -19,29 +21,42 @@ export function setThreadStatus({
     .setStatus({
       channel_id: channel,
       thread_ts: threadTs,
-      status: active ? 'cooking...' : '',
+      status: active ? (loadingMessages[0] ?? '') : '',
       ...(active && { loading_messages: loadingMessages }),
     })
-    .catch(() => undefined);
+    // Slack may reject status updates outside assistant-managed threads.
+    .catch((error) =>
+      logger.debug({ error, channel, threadTs }, 'Failed to set thread status')
+    );
 }
 
 export type MessageEventArgs = SlackEventMiddlewareArgs<'message'> &
   AllMiddlewareArgs;
+
+function isProcessableEvent(
+  event: MessageEventArgs['event']
+): event is ProcessableSlackMessageEvent {
+  if (
+    event.subtype &&
+    event.subtype !== 'thread_broadcast' &&
+    event.subtype !== 'file_share'
+  ) {
+    return false;
+  }
+
+  if ('bot_id' in event && event.bot_id) {
+    return false;
+  }
+
+  return 'text' in event;
+}
 
 export function isProcessableMessage(
   args: MessageEventArgs
 ): SlackMessageContext | null {
   const { event, context, client, body } = args;
 
-  if (
-    event.subtype &&
-    event.subtype !== 'thread_broadcast' &&
-    event.subtype !== 'file_share'
-  ) {
-    return null;
-  }
-
-  if ('bot_id' in event && event.bot_id) {
+  if (!isProcessableEvent(event)) {
     return null;
   }
 
@@ -49,39 +64,12 @@ export function isProcessableMessage(
     return null;
   }
 
-  if (!('text' in event)) {
-    return null;
-  }
-
   return {
-    event: event as SlackMessageContext['event'],
+    event,
     client,
     botUserId: context.botUserId,
-    teamId:
-      context.teamId ??
-      (typeof body === 'object' && body
-        ? (body as { team_id?: string }).team_id
-        : undefined),
+    teamId: context.teamId ?? body.team_id,
   } satisfies SlackMessageContext;
-}
-
-export async function getAuthorName(ctx: SlackMessageContext): Promise<string> {
-  const { user: userId } = ctx.event;
-  if (!userId) {
-    return 'unknown';
-  }
-  try {
-    const info = await ctx.client.users.info({ user: userId });
-    return (
-      info.user?.profile?.display_name ||
-      info.user?.real_name ||
-      info.user?.name ||
-      userId
-    );
-  } catch (error) {
-    logger.warn({ error, userId }, 'Failed to fetch user info for logging');
-    return userId;
-  }
 }
 
 export function getContextId(ctx: SlackMessageContext): string {

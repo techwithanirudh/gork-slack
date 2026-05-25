@@ -6,10 +6,12 @@ import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
 import type { SlackMessageContext } from '~/types';
 import { buildChatContext } from '~/utils/context';
+import { slackErrorCode } from '~/utils/error';
 import { logReply } from '~/utils/log';
 import { resetMessageCount } from '~/utils/message-rate-limiter';
 import type { TriggerType } from '~/utils/triggers';
-import { getAuthorName, getContextId, setThreadStatus } from '../utils/message';
+import { getSlackUserName } from '~/utils/users';
+import { getContextId, setThreadStatus } from '../utils/message';
 import { generateResponse } from '../utils/respond';
 
 interface TriggeredArgs {
@@ -73,10 +75,7 @@ export async function handleTriggered({
       });
       logger.info(`Added ${userId} to channel ${env.AUTO_ADD_CHANNEL}`);
     } catch (error) {
-      const code = (error as { data?: { error?: string }; code?: string }).data
-        ?.error;
-      const errorCode =
-        code ?? (error as { data?: { error?: string }; code?: string }).code;
+      const errorCode = slackErrorCode(error);
       if (
         errorCode === 'already_in_channel' ||
         errorCode === 'cant_invite_self'
@@ -93,7 +92,7 @@ export async function handleTriggered({
 
   const { text: content = '' } = messageContext.event;
   const [authorName, chatContext] = await Promise.all([
-    getAuthorName(messageContext),
+    getSlackUserName({ client: messageContext.client, userId: userId ?? '' }),
     buildChatContext(messageContext),
   ]);
 

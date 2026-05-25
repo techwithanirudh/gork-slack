@@ -1,10 +1,15 @@
-import type { UploadedFile } from '@slack/bolt';
+import type { FileShareMessageEvent } from '@slack/types';
+import type { ConversationsHistoryResponse } from '@slack/web-api';
 import type { ImagePart } from 'ai';
 import { env } from '~/env';
 import logger from '~/lib/logger';
 import { toLogError } from '~/utils/error';
 
-export type SlackFile = UploadedFile;
+export type SlackFile =
+  | NonNullable<
+      NonNullable<ConversationsHistoryResponse['messages']>[number]['files']
+    >[number]
+  | NonNullable<FileShareMessageEvent['files']>[number];
 
 const SUPPORTED_MIME_TYPES = [
   'image/jpeg',

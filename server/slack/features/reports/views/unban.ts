@@ -19,7 +19,7 @@ export async function execute({
   AllMiddlewareArgs): Promise<void> {
   const adminId = body.user.id;
 
-  if (!isViewOwner(view.private_metadata, adminId)) {
+  if (!isViewOwner({ raw: view.private_metadata, userId: adminId })) {
     await ack({
       response_action: 'errors',
       errors: { user_select: 'You do not have permission to unban users.' },

@@ -1,21 +1,13 @@
-import type {
-  AllMiddlewareArgs,
-  BlockAction,
-  ButtonAction,
-  SlackActionMiddlewareArgs,
-} from '@slack/bolt';
 import { getUserReports, isUserBanned } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { isAdmin } from '~/lib/permissions';
 import { reportBlocks } from '~/slack/features/reports/blocks';
 import { executeBan } from '~/slack/features/reports/utils/bans';
+import type { SlackButtonActionContext } from '~/types';
 
 export const name = 'ban_user';
 
-export async function execute(
-  context: SlackActionMiddlewareArgs<BlockAction<ButtonAction>> &
-    AllMiddlewareArgs
-) {
+export async function execute(context: SlackButtonActionContext) {
   const { ack, action, body, client } = context;
 
   await ack();

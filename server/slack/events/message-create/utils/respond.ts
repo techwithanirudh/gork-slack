@@ -19,7 +19,8 @@ import type {
   RequestHints,
   SlackMessageContext,
 } from '~/types';
-import { processSlackFiles, type SlackFile } from '~/utils/images';
+import { errorMessage } from '~/utils/error';
+import { processSlackFiles } from '~/utils/images';
 import { getSlackUserName } from '~/utils/users';
 
 export async function generateResponse(
@@ -30,9 +31,10 @@ export async function generateResponse(
 ) {
   try {
     const { user: userId, text: messageText = '' } = context.event;
-    const files = (context.event as { files?: SlackFile[] }).files;
+    const files =
+      context.event.subtype === 'file_share' ? context.event.files : undefined;
     const authorName = userId
-      ? await getSlackUserName(context.client, userId)
+      ? await getSlackUserName({ client: context.client, userId })
       : 'user';
 
     const system = systemPrompt({
@@ -108,7 +110,7 @@ export async function generateResponse(
   } catch (e) {
     return {
       success: false,
-      error: (e as Error)?.message,
+      error: errorMessage(e),
     };
   }
 }

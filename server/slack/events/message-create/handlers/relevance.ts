@@ -6,12 +6,14 @@ import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
 import type { SlackMessageContext } from '~/types';
 import { buildChatContext } from '~/utils/context';
+import { slackErrorCode } from '~/utils/error';
 import { logReply } from '~/utils/log';
 import {
   checkMessageQuota,
   handleMessageCount,
 } from '~/utils/message-rate-limiter';
-import { getAuthorName, getContextId, setThreadStatus } from '../utils/message';
+import { getSlackUserName } from '~/utils/users';
+import { getContextId, setThreadStatus } from '../utils/message';
 import { assessRelevance } from '../utils/relevance';
 import { generateResponse } from '../utils/respond';
 
@@ -53,17 +55,12 @@ export async function handleRelevance({
   }
 
   const [authorName, chatContext] = await Promise.all([
-    getAuthorName(messageContext),
+    getSlackUserName({ client: messageContext.client, userId: userId ?? '' }),
     buildChatContext(messageContext),
   ]).catch((error) => {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'data' in error &&
-      (error as { data?: { error?: string } }).data?.error === 'not_in_channel'
-    ) {
-      logger.info(`[${ctxId}] Bot is not in channel, skipping relevance`);
-      return [null, null] as const;
+    if (slackErrorCode(error) === 'not_in_channel') {
+      logger.debug(`[${ctxId}] Bot is not in channel, skipping relevance`);
+      return [null, null] satisfies [null, null];
     }
     throw error;
   });

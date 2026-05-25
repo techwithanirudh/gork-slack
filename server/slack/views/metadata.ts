@@ -1,4 +1,7 @@
+import { z } from 'zod';
+
 type ViewMetadata = Record<string, unknown>;
+const viewMetadataSchema = z.record(z.string(), z.unknown());
 
 export function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0;
@@ -6,16 +9,19 @@ export function isNonEmptyString(value: unknown): value is string {
 
 export function parseViewMetadata(raw: string): ViewMetadata | null {
   try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return null;
-    }
-    return parsed as ViewMetadata;
+    const result = viewMetadataSchema.safeParse(JSON.parse(raw));
+    return result.success ? result.data : null;
   } catch {
     return null;
   }
 }
 
-export function isViewOwner(raw: string, userId: string): boolean {
+export function isViewOwner({
+  raw,
+  userId,
+}: {
+  raw: string;
+  userId: string;
+}): boolean {
   return parseViewMetadata(raw)?.openedBy === userId;
 }

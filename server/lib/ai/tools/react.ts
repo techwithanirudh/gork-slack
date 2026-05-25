@@ -3,7 +3,6 @@ import { z } from 'zod';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
 
-// TODO: Add offset or timestamp support so that the bot can react to previous messages?
 export const react = ({ context }: { context: SlackMessageContext }) =>
   tool({
     description:

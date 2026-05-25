@@ -42,7 +42,7 @@ async function handleMessage(
       await args.client.chat.postMessage({
         channel: event.channel,
         thread_ts: event.thread_ts ?? event.ts,
-        text: "can't talk here, find me in another channel",
+        text: "nah can't talk here, find me somewhere else",
       });
     }
     return;
@@ -64,7 +64,7 @@ async function handleMessage(
     channelId: event.channel,
   });
 
-  if (trigger.type != null) {
+  if (trigger.type !== null) {
     await handleTriggered({
       messageContext,
       channelMode,
@@ -93,20 +93,24 @@ export async function execute(args: MessageEventArgs) {
   const ctxId = getContextId(messageContext);
   const { success } = await ratelimit(keys.channelCount(ctxId));
   if (!success) {
-    logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
+    logger.debug(`[${ctxId}] Rate limit hit. Skipping reply.`);
     return;
   }
 
-  const trigger = await getTrigger(
-    messageContext,
+  const trigger = await getTrigger({
+    message: messageContext,
     keywords,
-    messageContext.botUserId
-  );
+    botId: messageContext.botUserId,
+  });
 
   if (trigger.type === 'ping') {
     const raw = messageContext.event.text ?? '';
     const text = raw.replace(/<@[A-Z0-9]+>/gi, '').trimStart();
-    const inlineResult = await handleInlineCommand(messageContext, ctxId, text);
+    const inlineResult = await handleInlineCommand({
+      context: messageContext,
+      ctxId,
+      text,
+    });
     if (inlineResult === 'handled') {
       return;
     }

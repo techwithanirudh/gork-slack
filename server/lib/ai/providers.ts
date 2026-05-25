@@ -1,9 +1,15 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { customProvider, wrapProvider } from 'ai';
-import { createRetryable } from 'ai-retry';
+import {
+  createRetryable,
+  isErrorAttempt,
+  type LanguageModel,
+  type RetryContext,
+} from 'ai-retry';
 import { requestNotRetryable } from 'ai-retry/retryables';
 import { env } from '~/env';
 import logger from '~/lib/logger';
+import { errorMessage } from '~/utils/error';
 
 const hackclubBase = createOpenRouter({
   apiKey: env.HACKCLUB_API_KEY,
@@ -27,14 +33,14 @@ const hackclub = wrapProvider({
   },
 });
 
-const onModelError = (context: {
-  current: { model: { provider: string; modelId: string } };
-}) => {
+const onModelError = (context: RetryContext<LanguageModel>) => {
   const { model } = context.current;
-  const error = (context.current as { error?: { data?: { error?: unknown } } })
-    .error;
   logger.error(
-    { error: error?.data?.error },
+    {
+      error: isErrorAttempt(context.current)
+        ? errorMessage(context.current.error)
+        : undefined,
+    },
     `error with model ${model.provider}/${model.modelId}, switching to next model`
   );
 };

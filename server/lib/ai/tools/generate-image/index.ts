@@ -1,10 +1,10 @@
 import { generateImage, tool } from 'ai';
-import { z } from 'zod';
 import { provider } from '~/lib/ai/providers';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
 import { toLogError } from '~/utils/error';
 import { processSlackFiles, type SlackFile } from '~/utils/images';
+import { imageInputSchema } from './schema';
 
 const EXTENSION: Record<string, string> = {
   'image/gif': 'gif',
@@ -12,8 +12,6 @@ const EXTENSION: Record<string, string> = {
   'image/png': 'png',
   'image/webp': 'webp',
 };
-const SIZE_PATTERN = /^\d+x\d+$/;
-const ASPECT_RATIO_PATTERN = /^\d+:\d+$/;
 
 export const generateImageTool = ({
   context,
@@ -25,47 +23,7 @@ export const generateImageTool = ({
   tool({
     description:
       'Generate one or more AI images and upload them directly to the current Slack thread. If image attachments are present, use them as source images for editing or transformation. A temporary status message is shown in Slack while generation is running and deleted after the images finish or fail.',
-    inputSchema: z
-      .object({
-        prompt: z
-          .string()
-          .min(1)
-          .max(1500)
-          .describe('Image prompt with the visual details to generate'),
-        status: z
-          .string()
-          .min(1)
-          .max(160)
-          .describe(
-            'Temporary status message shown in Slack while the image is generating. It should match your personality and will be deleted after generation finishes.'
-          ),
-        n: z
-          .number()
-          .int()
-          .min(1)
-          .max(4)
-          .default(1)
-          .describe('Number of images to generate'),
-        size: z
-          .string()
-          .regex(SIZE_PATTERN)
-          .optional()
-          .describe('Optional image size in {width}x{height} format'),
-        aspectRatio: z
-          .string()
-          .regex(ASPECT_RATIO_PATTERN)
-          .optional()
-          .describe('Optional aspect ratio in {width}:{height} format'),
-        seed: z
-          .number()
-          .int()
-          .optional()
-          .describe('Optional seed for reproducible generations'),
-      })
-      .refine((input) => !(input.size && input.aspectRatio), {
-        message: 'Provide either size or aspectRatio, not both',
-        path: ['size'],
-      }),
+    inputSchema: imageInputSchema,
     execute: async ({ prompt, status, n, size, aspectRatio, seed }) => {
       const { channel: channelId, ts: messageTs, thread_ts } = context.event;
       const threadTs = thread_ts ?? messageTs;
@@ -103,7 +61,6 @@ export const generateImageTool = ({
               image instanceof ArrayBuffer ||
               image instanceof Buffer
           );
-
         const imagePrompt =
           sourceImages.length > 0
             ? { text: prompt, images: sourceImages }

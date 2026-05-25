@@ -9,7 +9,7 @@ import type {
   RequestHints,
   SlackMessageContext,
 } from '~/types';
-import { processSlackFiles, type SlackFile } from '~/utils/images';
+import { processSlackFiles } from '~/utils/images';
 import { getSlackUserName } from '~/utils/users';
 
 export async function assessRelevance(
@@ -20,9 +20,10 @@ export async function assessRelevance(
 ): Promise<Probability> {
   try {
     const { user: userId, text: messageText = '' } = context.event;
-    const files = (context.event as { files?: SlackFile[] }).files;
+    const files =
+      context.event.subtype === 'file_share' ? context.event.files : undefined;
     const authorName = userId
-      ? await getSlackUserName(context.client, userId)
+      ? await getSlackUserName({ client: context.client, userId })
       : 'user';
 
     const images = await processSlackFiles(files);

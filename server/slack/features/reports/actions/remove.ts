@@ -1,13 +1,8 @@
-import type {
-  AllMiddlewareArgs,
-  BlockAction,
-  ButtonAction,
-  SlackActionMiddlewareArgs,
-} from '@slack/bolt';
 import { getUserReports, isUserBanned, removeReport } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { isAdmin } from '~/lib/permissions';
 import { reportBlocks } from '~/slack/features/reports/blocks';
+import type { SlackButtonActionContext } from '~/types';
 
 export const name = 'remove_report';
 
@@ -21,7 +16,7 @@ export async function execute({
   action,
   body,
   client,
-}: SlackActionMiddlewareArgs<BlockAction<ButtonAction>> & AllMiddlewareArgs) {
+}: SlackButtonActionContext) {
   await ack();
 
   if (!(await isAdmin(client, body.user.id))) {

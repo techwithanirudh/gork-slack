@@ -1,15 +1,15 @@
 import type {
-  KnownBlock,
+  AnyBlock,
   RichTextBlock,
   RichTextSection,
   RichTextUsergroupMention,
 } from '@slack/types';
 
-export function getGroupMentions(blocks: unknown): string[] {
-  if (!Array.isArray(blocks)) {
+export function getGroupMentions(blocks?: AnyBlock[]): string[] {
+  if (!blocks) {
     return [];
   }
-  return (blocks as KnownBlock[])
+  return blocks
     .filter((b): b is RichTextBlock => b.type === 'rich_text')
     .flatMap((b) => b.elements)
     .filter((s): s is RichTextSection => s.type === 'rich_text_section')
