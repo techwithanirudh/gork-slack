@@ -1,5 +1,5 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { customProvider, wrapProvider } from 'ai';
+import { APICallError, customProvider, wrapProvider } from 'ai';
 import { createRetryable, type LanguageModel, type Retry } from 'ai-retry';
 import { env } from '~/env';
 import logger from '~/lib/logger';
@@ -27,14 +27,15 @@ const hackclub = wrapProvider({
 });
 
 const onModelError = (context: {
-  current: { model: { provider: string; modelId: string } };
+  current: { model: { provider: string; modelId: string }; error?: unknown };
 }) => {
-  const { model } = context.current;
-  const error = (context.current as { error?: { data?: { error?: unknown } } })
-    .error;
-  logger.error(
-    { error: error?.data?.error },
-    `error with model ${model.provider}/${model.modelId}, switching to next model`
+  const { model, error } = context.current;
+  const err = APICallError.isInstance(error)
+    ? { status: error.statusCode, message: error.message, url: error.url }
+    : { message: error instanceof Error ? error.message : String(error) };
+  logger.warn(
+    { provider: model.provider, modelId: model.modelId, err },
+    'model error, switching to next'
   );
 };
 
