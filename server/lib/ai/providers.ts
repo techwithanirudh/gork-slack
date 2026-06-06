@@ -41,6 +41,8 @@ const onModelError = (context: {
 
 const retry = (model: LanguageModel): Retry<LanguageModel> => ({
   model,
+  backoffFactor: 2,
+  delay: 250,
   maxAttempts: 2,
 });
 
