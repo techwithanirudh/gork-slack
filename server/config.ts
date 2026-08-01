@@ -46,7 +46,7 @@ export const channelMode = {
 };
 
 export const moderation = {
-  banThreshold: 15,
+  banThreshold: 3,
   // Number of recent messages attached to automated report context.
   contextMessages: 3,
   reports: {
