@@ -2,6 +2,7 @@ import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from '@slack/bolt';
 import { loadingMessages } from '~/config';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
+import { getSlackUserName } from '~/utils/users';
 
 export function setThreadStatus({
   ctx,
@@ -70,18 +71,7 @@ export async function getAuthorName(ctx: SlackMessageContext): Promise<string> {
   if (!userId) {
     return 'unknown';
   }
-  try {
-    const info = await ctx.client.users.info({ user: userId });
-    return (
-      info.user?.profile?.display_name ||
-      info.user?.real_name ||
-      info.user?.name ||
-      userId
-    );
-  } catch (error) {
-    logger.warn({ error, userId }, 'Failed to fetch user info for logging');
-    return userId;
-  }
+  return getSlackUserName(ctx.client, userId);
 }
 
 export function getContextId(ctx: SlackMessageContext): string {

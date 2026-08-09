@@ -36,13 +36,6 @@ export async function getSlackUserName(
   }
 }
 
-export function primeSlackUserName(userId: string, name: string) {
-  if (!userId) {
-    return;
-  }
-  userNameCache.set(userId, name);
-}
-
 export function normalizeSlackUserId(raw: string): string {
   const match = USER_MENTION_RE.exec(raw);
   return match?.[1] ?? raw.trim();

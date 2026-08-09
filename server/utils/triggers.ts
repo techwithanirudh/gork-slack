@@ -1,6 +1,6 @@
 import type { SlackMessageContext } from '~/types';
 import { getGroupMentions } from '~/utils/blocks';
-import { primeSlackUserName } from '~/utils/users';
+import { getSlackUserName } from '~/utils/users';
 
 export type TriggerType = 'ping' | 'keyword' | 'dm' | null;
 
@@ -34,17 +34,8 @@ export async function getTrigger(
   const content = event.text.trim();
 
   if (botId && content.includes(`<@${botId}>`)) {
-    try {
-      const info = await client.users.info({ user: botId });
-      const displayName =
-        info.user?.profile?.display_name || info.user?.name || null;
-      if (displayName) {
-        primeSlackUserName(botId, displayName);
-      }
-      return { type: 'ping', info: displayName ?? botId };
-    } catch {
-      return { type: 'ping', info: botId };
-    }
+    const displayName = await getSlackUserName(client, botId);
+    return { type: 'ping', info: displayName };
   }
 
   if (botId) {

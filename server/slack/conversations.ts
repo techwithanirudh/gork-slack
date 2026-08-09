@@ -2,6 +2,7 @@ import type { ConversationsHistoryResponse, WebClient } from '@slack/web-api';
 import type { ModelMessage, UserContent } from 'ai';
 import logger from '~/lib/logger';
 import { processSlackFiles, type SlackFile } from '~/utils/images';
+import { getSlackUserName } from '~/utils/users';
 
 interface ConversationOptions {
   botUserId?: string;
@@ -62,31 +63,6 @@ export async function getConversationMessages({
         })
       : messages;
 
-    const userIds = new Set<string>();
-    for (const message of filteredMessages) {
-      if (message.user) {
-        userIds.add(message.user);
-      }
-    }
-
-    const userNameCache = new Map<string, string>();
-    await Promise.all(
-      Array.from(userIds).map(async (userId) => {
-        try {
-          const info = await client.users.info({ user: userId });
-          const name =
-            info.user?.profile?.display_name ||
-            info.user?.real_name ||
-            info.user?.name ||
-            userId;
-          userNameCache.set(userId, name);
-        } catch (error) {
-          logger.warn({ error, userId }, 'Failed to fetch Slack user info');
-          userNameCache.set(userId, userId);
-        }
-      })
-    );
-
     const mentionRegex = botUserId ? new RegExp(`<@${botUserId}>`, 'gi') : null;
 
     const sortedMessages = filteredMessages
@@ -97,37 +73,36 @@ export async function getConversationMessages({
         return aTs - bTs;
       });
 
-    const modelMessages: ModelMessage[] = await Promise.all(
-      sortedMessages.map(async (message): Promise<ModelMessage> => {
-        const isBot = message.user === botUserId || Boolean(message.bot_id);
-        const original = message.text ?? '';
-        const cleaned = mentionRegex
-          ? original.replace(mentionRegex, '').trim()
-          : original.trim();
+    const modelMessages: ModelMessage[] = [];
+    for (const message of sortedMessages) {
+      const isBot = message.user === botUserId || Boolean(message.bot_id);
+      const original = message.text ?? '';
+      const cleaned = mentionRegex
+        ? original.replace(mentionRegex, '').trim()
+        : original.trim();
 
-        const textContent = cleaned.length > 0 ? cleaned : original;
+      const textContent = cleaned.length > 0 ? cleaned : original;
 
-        const author = message.user
-          ? (userNameCache.get(message.user) ?? message.user)
-          : (message.bot_id ?? 'unknown');
+      const author = message.user
+        ? await getSlackUserName(client, message.user)
+        : (message.bot_id ?? 'unknown');
 
-        const formattedText = `${author} (${message.user}): ${textContent}`;
+      const formattedText = `${author} (${message.user}): ${textContent}`;
 
-        if (isBot) {
-          return { role: 'assistant', content: formattedText };
-        }
-
+      if (isBot) {
+        modelMessages.push({ role: 'assistant', content: formattedText });
+      } else {
         const images = await processSlackFiles(
           message.files as SlackFile[] | undefined
         );
-        return {
+        modelMessages.push({
           role: 'user',
           content: (images.length
             ? [{ type: 'text', text: formattedText }, ...images]
             : formattedText) as UserContent,
-        };
-      })
-    );
+        });
+      }
+    }
 
     return modelMessages;
   } catch (error) {
