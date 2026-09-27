@@ -72,3 +72,31 @@ export const blockedChannels = [
   { id: 'C0AU8AWD5BN', name: 'macondo-help' },
   { id: 'C0AUZ1P2DEC', name: 'macondo-bulletin' },
 ];
+
+export const dj = {
+  // Capabilities requested from the huddle host. clear and end-session are left
+  // out on purpose so nobody can talk Gork into nuking someone's session.
+  permissions: [
+    'add',
+    'add-bulk',
+    'remove-own',
+    'manage-queue',
+    'skip',
+    'pause',
+    'volume',
+  ],
+  // `session` is required so Gork notices when a huddle ends and drops the grant.
+  events: ['session'],
+  // Seconds to wait for HuddleFM to answer a command.
+  replyTimeout: 20,
+  // request_control only replies straight away on failure, so after this many
+  // seconds of silence the request is assumed to be waiting on the host.
+  requestGrace: 4,
+  messages: {
+    accepted: 'dj gork is in the booth. tell me what to queue',
+    declined: 'host said no to dj gork. their loss honestly',
+    expired: 'host never let me in the dj booth so im going home',
+    revoked: 'just got kicked out the dj booth. rude',
+    ended: 'huddle is over, dj gork signing off',
+  },
+};

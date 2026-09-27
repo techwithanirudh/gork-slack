@@ -6,4 +6,5 @@ export const keys = {
   silenced: (contextId: string) => `ctx:silenced:${contextId}`,
   channelMode: (channelId: string) => `ctx:mode:${channelId}`,
   workspaceMode: (workspaceId: string) => `ws:mode:${workspaceId}`,
+  djSessions: () => 'dj:sessions',
 };
