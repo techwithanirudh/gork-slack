@@ -2,6 +2,8 @@ import { redis } from '../client';
 import { keys } from '../keys';
 
 export interface DjSession {
+  // Present while Gork keeps the queue topped up on its own.
+  autoDj?: { vibe?: string; picks: string[] };
   // Where the DJ request was made, so grant updates can be announced there.
   origin: { channel: string; threadTs?: string };
   requestedBy?: string;

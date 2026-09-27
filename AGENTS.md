@@ -146,15 +146,17 @@ Gork responds to messages based on triggers:
 | `search-memories` | Search past conversations in Pinecone |
 | `djMode` | Turn gork dj mode on/off (requests HuddleFM control from the huddle host) |
 | `dj` | Control HuddleFM once dj mode is on (status, add, skip, pause, volume, queue) |
+| `autoDj` | Let Gork pick songs itself and keep the queue topped up (off by default) |
 
 ### Gork DJ (HuddleFM)
 
 When `HUDDLEFM_USER_ID` is set, Gork can control music in huddles via the [HuddleFM bot API](https://github.com/ingoau/huddlefm/blob/main/docs/bot-api.md). HuddleFM must list Gork's bot user ID in its `INTEGRATION_USER_IDS`.
 
-- `server/lib/huddlefm.ts` sends JSON commands as DMs to the HuddleFM user and resolves the threaded replies. Every message from the HuddleFM user is intercepted at the top of the message handler, so it never reaches the chat pipeline.
+- `server/lib/huddlefm/client.ts` sends JSON commands as DMs to the HuddleFM user and resolves the threaded replies. Every message from the HuddleFM user is intercepted at the top of the message handler, so it never reaches the chat pipeline.
 - The model only reaches HuddleFM through the `djMode` / `dj` tools; it never DMs HuddleFM directly.
-- Grant state lives in the Redis hash `dj:sessions`, keyed by huddle channel. Grant replies (`grant_accepted`, `grant_declined`, …) and `session.ended` / `session.suspended` events update it and post an announcement in the thread where dj mode was requested.
-- Requested permissions, events, timeouts, and announcement text live in `dj` in `server/config.ts`.
+- Grant state lives in the Redis hash `dj:sessions`, keyed by huddle channel. `server/lib/huddlefm/inbound.ts` handles grant replies (`grant_accepted`, `grant_declined`, …) and `session.ended` / `session.suspended` events, updates the state, and has the chat model write an update for the thread where dj mode was requested. DJ messages are never hardcoded.
+- Auto dj (`server/lib/huddlefm/auto-dj.ts`) is off until someone asks. While on, `track.*` events and grant approval trigger a top-up: when fewer than `dj.auto.minQueue` requested songs are queued, the chat model picks songs (with the request thread and Pinecone memories as context, via `context.ts`) and Gork queues them.
+- Requested permissions, events, timeouts, and auto dj tuning live in `dj` in `server/config.ts`.
 
 ### AI Model Configuration
 

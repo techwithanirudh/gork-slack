@@ -1,9 +1,17 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { dj as djConfig } from '~/config';
-import { sendHuddleFmCommand } from '~/lib/huddlefm';
+import {
+  addSong,
+  type HuddleFmReply,
+  LOST_GRANT,
+  runDjCommand,
+  sendHuddleFmCommand,
+  topUpQueue,
+} from '~/lib/huddlefm';
 import {
   clearDjSession,
+  type DjSession,
   getDjSession,
   listDjSessions,
   setDjSession,
@@ -13,19 +21,34 @@ import type { SlackMessageContext } from '~/types';
 
 const CHANNEL_ID = /[CG][A-Z0-9]{6,}/;
 
-// HuddleFM errors meaning the grant no longer exists on its side.
-const LOST_GRANT = new Set([
-  'not_granted',
-  'session_not_found',
-  'session_inactive',
-]);
-
 const channelInput = z
   .string()
   .optional()
   .describe(
     'Slack channel ID (e.g. C123) of the channel the huddle is in. Omit to use the current channel.'
   );
+
+// An explicit channel wins, then a session in the current channel, then the
+// only session Gork holds.
+async function resolveSession({
+  context,
+  channelArg,
+}: {
+  context: SlackMessageContext;
+  channelArg?: string;
+}): Promise<{ channel: string; session: DjSession } | null> {
+  const explicit = channelArg?.match(CHANNEL_ID)?.[0];
+  if (explicit) {
+    const session = await getDjSession(explicit);
+    return session ? { channel: explicit, session } : null;
+  }
+  const sessions = await listDjSessions();
+  return (
+    sessions.find((s) => s.channel === context.event.channel) ??
+    (sessions.length === 1 ? sessions[0] : undefined) ??
+    null
+  );
+}
 
 const toolError = (error: unknown) => ({
   success: false,
@@ -201,22 +224,15 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
       ...rest
     }) => {
       try {
-        let channel = channelArg?.match(CHANNEL_ID)?.[0];
-        if (!channel) {
-          const sessions = await listDjSessions();
-          channel = (
-            sessions.find((s) => s.channel === context.event.channel) ??
-            (sessions.length === 1 ? sessions[0] : undefined)
-          )?.channel;
-        }
-        const session = channel ? await getDjSession(channel) : null;
-        if (!(channel && session)) {
+        const found = await resolveSession({ context, channelArg });
+        if (!found) {
           return {
             success: false,
             error:
               'DJ mode is not on for this huddle. Turn it on with djMode first (or pass the huddle channel).',
           };
         }
+        const { channel, session } = found;
         if (session.status === 'pending') {
           return {
             success: false,
@@ -224,46 +240,28 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
           };
         }
 
-        const run = async (
-          payload: Record<string, unknown> & { type: string }
-        ) => {
-          const reply = await sendHuddleFmCommand({
-            client: context.client,
-            command: { ...payload, channel },
-          });
-          if (reply?.error && LOST_GRANT.has(reply.error)) {
-            await clearDjSession(channel);
-          }
-          return reply;
-        };
-
-        let resolvedReference = reference;
+        let reply: HuddleFmReply | null;
         let matched: string | undefined;
         if (command === 'add' && !reference) {
           if (!query) {
             return { success: false, error: 'add needs a query or reference' };
           }
-          const search = await run({ type: 'search', query });
-          const top = (
-            search?.results as
-              | { label: string; reference: string }[]
-              | undefined
-          )?.[0];
-          if (!top) {
-            return {
-              success: false,
-              error: search?.error ?? `No results for "${query}"`,
-            };
-          }
-          resolvedReference = top.reference;
-          matched = top.label;
+          ({ reply, matched } = await addSong({
+            client: context.client,
+            channel,
+            query,
+          }));
+        } else {
+          reply = await runDjCommand({
+            client: context.client,
+            channel,
+            command: {
+              type: command,
+              ...(command === 'add' ? { reference } : { query }),
+              ...rest,
+            },
+          });
         }
-
-        const reply = await run({
-          type: command,
-          ...(command === 'add' ? { reference: resolvedReference } : { query }),
-          ...rest,
-        });
         logger.info({ channel, command, reply }, 'Ran DJ command');
 
         if (!reply) {
@@ -281,6 +279,63 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
         return { success: true, data: matched ? { matched, ...data } : data };
       } catch (error) {
         logger.error({ error, command }, 'Failed to run DJ command');
+        return toolError(error);
+      }
+    },
+  });
+
+export const autoDj = ({ context }: { context: SlackMessageContext }) =>
+  tool({
+    description:
+      'Turn auto dj on or off: while on, you pick songs yourself and keep the huddle queue topped up without being asked. Needs dj mode (djMode) first.',
+    inputSchema: z.object({
+      enabled: z.boolean().describe('true to start picking songs yourself'),
+      vibe: z
+        .string()
+        .optional()
+        .describe('Optional mood or genre to stick to, e.g. "90s hip hop"'),
+      channel: channelInput,
+    }),
+    execute: async ({ enabled, vibe, channel: channelArg }) => {
+      try {
+        const found = await resolveSession({ context, channelArg });
+        if (!found) {
+          return {
+            success: false,
+            error: 'DJ mode is not on for this huddle. Call djMode first.',
+          };
+        }
+        const { channel, session } = found;
+        await setDjSession({
+          channel,
+          session: {
+            ...session,
+            autoDj: enabled
+              ? { vibe, picks: session.autoDj?.picks ?? [] }
+              : undefined,
+          },
+        });
+        logger.info({ channel, enabled, vibe }, 'Auto dj toggled');
+
+        if (!enabled) {
+          return { success: true, content: 'Auto dj is off' };
+        }
+        if (session.status === 'pending') {
+          return {
+            success: true,
+            content:
+              'Auto dj will start picking songs as soon as the host approves dj mode',
+          };
+        }
+        // Not awaited so the reply isn't held up by picking songs.
+        topUpQueue({ client: context.client, channel });
+        return {
+          success: true,
+          content:
+            'Auto dj is on. You are picking songs and will keep the queue topped up whenever it runs low.',
+        };
+      } catch (error) {
+        logger.error({ error }, 'Failed to toggle auto dj');
         return toolError(error);
       }
     },

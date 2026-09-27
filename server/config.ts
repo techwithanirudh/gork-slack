@@ -86,17 +86,22 @@ export const dj = {
     'volume',
   ],
   // `session` is required so Gork notices when a huddle ends and drops the grant.
-  events: ['session'],
+  // `track` drives auto dj top-ups.
+  events: ['session', 'track'],
   // Seconds to wait for HuddleFM to answer a command.
   replyTimeout: 20,
   // request_control only replies straight away on failure, so after this many
   // seconds of silence the request is assumed to be waiting on the host.
   requestGrace: 4,
-  messages: {
-    accepted: 'dj gork is in the booth. tell me what to queue',
-    declined: 'host said no to dj gork. their loss honestly',
-    expired: 'host never let me in the dj booth so im going home',
-    revoked: 'just got kicked out the dj booth. rude',
-    ended: 'huddle is over, dj gork signing off',
+  // Auto dj is off for every session until someone asks Gork to pick songs itself.
+  auto: {
+    // Top up once fewer than this many requested (non-autoplay) songs are queued.
+    minQueue: 2,
+    // Songs picked per top-up.
+    batchSize: 3,
+    // Recent picks remembered so auto dj doesn't repeat itself.
+    historySize: 40,
+    // Messages from the dj request thread given to the model as context.
+    contextMessages: 20,
   },
 };

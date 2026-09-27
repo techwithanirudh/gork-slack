@@ -1,12 +1,7 @@
 import type { WebClient } from '@slack/web-api';
 import { dj } from '~/config';
 import { env } from '~/env';
-import {
-  clearDjSession,
-  findDjSessionByRequest,
-  getDjSession,
-  setDjSession,
-} from '~/lib/kv';
+import { clearDjSession } from '~/lib/kv';
 import logger from '~/lib/logger';
 
 export interface HuddleFmReply {
@@ -35,7 +30,7 @@ const encode = (payload: Record<string, unknown>) =>
     )
     .replaceAll('/', '\\/');
 
-const decode = (text: string): HuddleFmReply | null => {
+export const decode = (text: string): HuddleFmReply | null => {
   try {
     const parsed = JSON.parse(
       text
@@ -107,93 +102,70 @@ export async function sendHuddleFmCommand({
   });
 }
 
-async function announce({
-  client,
-  origin,
-  text,
-}: {
-  client: WebClient;
-  origin: { channel: string; threadTs?: string };
-  text: string;
-}) {
-  await client.chat
-    .postMessage({ channel: origin.channel, thread_ts: origin.threadTs, text })
-    .catch((error) =>
-      logger.warn({ error, origin }, 'Failed to announce DJ mode update')
-    );
-}
-
-const GRANT_MESSAGES: Record<string, string> = {
-  grant_accepted: dj.messages.accepted,
-  grant_declined: dj.messages.declined,
-  grant_expired: dj.messages.expired,
-  grant_revoked: dj.messages.revoked,
-};
-
-export async function handleHuddleFmMessage({
-  client,
-  text,
-}: {
-  client: WebClient;
-  text: string;
-}): Promise<void> {
-  const reply = decode(text);
-  if (!reply) {
-    return;
-  }
-
-  if (reply.type === 'event') {
-    const channel = typeof reply.channel === 'string' ? reply.channel : null;
-    const session = channel ? await getDjSession(channel) : null;
-    if (
-      channel &&
-      session &&
-      (reply.event === 'session.ended' || reply.event === 'session.suspended')
-    ) {
-      await clearDjSession(channel);
-      logger.info({ channel, event: reply.event }, 'DJ session ended');
-      await announce({
-        client,
-        origin: session.origin,
-        text: dj.messages.ended,
-      });
-    }
-    return;
-  }
-
-  if (!reply.replyTo) {
-    return;
-  }
-
-  const grantMessage = reply.type ? GRANT_MESSAGES[reply.type] : undefined;
-  if (grantMessage) {
-    const found = await findDjSessionByRequest(reply.replyTo);
-    if (found) {
-      if (reply.type === 'grant_accepted') {
-        await setDjSession({
-          channel: found.channel,
-          session: { ...found.session, status: 'active' },
-        });
-      } else {
-        await clearDjSession(found.channel);
-      }
-      logger.info(
-        { channel: found.channel, type: reply.type },
-        'DJ grant updated'
-      );
-      await announce({
-        client,
-        origin: found.session.origin,
-        text: grantMessage,
-      });
-    }
-  }
-
+export function deliverReply(reply: HuddleFmReply & { replyTo: string }) {
   const waiter = waiters.get(reply.replyTo);
   if (waiter) {
     waiter(reply);
-  } else if (!grantMessage) {
-    earlyReplies.set(reply.replyTo, reply);
-    setTimeout(() => earlyReplies.delete(reply.replyTo ?? ''), 60_000);
+    return;
   }
+  earlyReplies.set(reply.replyTo, reply);
+  setTimeout(() => earlyReplies.delete(reply.replyTo), 60_000);
+}
+
+// HuddleFM errors meaning the grant no longer exists on its side.
+export const LOST_GRANT = new Set([
+  'not_granted',
+  'session_not_found',
+  'session_inactive',
+]);
+
+export async function runDjCommand({
+  client,
+  channel,
+  command,
+}: {
+  client: WebClient;
+  channel: string;
+  command: Record<string, unknown> & { type: string };
+}): Promise<HuddleFmReply | null> {
+  const reply = await sendHuddleFmCommand({
+    client,
+    command: { ...command, channel },
+  });
+  if (reply?.error && LOST_GRANT.has(reply.error)) {
+    await clearDjSession(channel);
+  }
+  return reply;
+}
+
+export async function addSong({
+  client,
+  channel,
+  query,
+}: {
+  client: WebClient;
+  channel: string;
+  query: string;
+}): Promise<{ reply: HuddleFmReply | null; matched?: string }> {
+  const search = await runDjCommand({
+    client,
+    channel,
+    command: { type: 'search', query },
+  });
+  const top = (
+    search?.results as { label: string; reference: string }[] | undefined
+  )?.[0];
+  if (!(search?.ok && top)) {
+    return {
+      reply: search?.ok
+        ? { v: 1, ok: false, error: `No results for "${query}"` }
+        : search,
+    };
+  }
+  const reply = await runDjCommand({
+    client,
+    channel,
+    command: { type: 'add', reference: top.reference },
+  });
+  return { reply, matched: top.label };
 }
