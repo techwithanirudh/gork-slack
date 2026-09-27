@@ -1,6 +1,9 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import { env } from '~/env';
+import type { DjSession } from '~/lib/kv';
 import type { PineconeMetadataOutput, RequestHints } from '~/types';
 import { corePrompt } from './core';
+import { djPrompt, djStatePrompt } from './dj';
 import { examplesPrompt } from './examples';
 import { memoriesPrompt } from './memories';
 import { personalityPrompt } from './personality';
@@ -25,12 +28,18 @@ export const systemPrompt = ({
   requestHints,
   memories,
   message,
+  djState,
 }: {
   selectedChatModel: string;
   requestHints?: RequestHints;
   memories: ScoredPineconeRecord<PineconeMetadataOutput>[];
   message?: { author?: string; authorSlackId?: string; content?: string };
+  djState?: {
+    sessions: { channel: string; session: DjSession }[];
+    channelId?: string;
+  };
 }) => {
+  const djStateText = djState ? djStatePrompt(djState) : undefined;
   const requestPrompt = requestHints
     ? getRequestPromptFromHints(requestHints)
     : undefined;
@@ -42,6 +51,8 @@ export const systemPrompt = ({
       examplesPrompt,
       requestPrompt,
       toolsPrompt,
+      env.HUDDLEFM_USER_ID ? djPrompt : undefined,
+      djStateText,
       memoriesPrompt(memories),
       replyPrompt,
     ]
@@ -55,6 +66,7 @@ export const systemPrompt = ({
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
+      djStateText,
       memoriesPrompt(memories),
       relevancePrompt(message),
     ]

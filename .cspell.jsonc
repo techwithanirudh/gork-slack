@@ -56,6 +56,12 @@
     "subteams",
     "behaviour",
     "docstrings",
-    "unconfigured"
+    "unconfigured",
+    "hget",
+    "hset",
+    "hdel",
+    "hgetall",
+    "huddlefm",
+    "HUDDLEFM"
   ]
 }

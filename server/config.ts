@@ -72,3 +72,49 @@ export const blockedChannels = [
   { id: 'C0AU8AWD5BN', name: 'macondo-help' },
   { id: 'C0AUZ1P2DEC', name: 'macondo-bulletin' },
 ];
+
+export type HuddleFmPermission =
+  | 'add'
+  | 'add-bulk'
+  | 'remove-own'
+  | 'manage-queue'
+  | 'skip'
+  | 'pause'
+  | 'volume'
+  | 'configure-settings'
+  | 'clear'
+  | 'end-session';
+
+export type HuddleFmEventSubscription =
+  | 'playback.state'
+  | 'track'
+  | 'queue'
+  | 'volume'
+  | 'session';
+
+export const dj = {
+  permissions: [
+    'add',
+    'add-bulk',
+    'remove-own',
+    'manage-queue',
+    'skip',
+    'pause',
+    'volume',
+  ] satisfies Exclude<HuddleFmPermission, 'clear' | 'end-session'>[],
+  events: ['session', 'track'] satisfies HuddleFmEventSubscription[],
+  replyTimeoutSeconds: 20,
+  // request_control only replies straight away on failure, so after this many
+  // seconds of silence the request is assumed to be waiting on the host.
+  requestGraceSeconds: 4,
+  // HuddleFM expires a pending request after 5 minutes but stays silent if Gork
+  // isn't allowlisted or it restarted, so pending rows older than this are dropped.
+  pendingTimeoutSeconds: 360,
+  auto: {
+    minQueue: 2,
+    batchSize: 3,
+    historySize: 40,
+    contextMessages: 20,
+    cooldownSeconds: 45,
+  },
+};

@@ -40,6 +40,8 @@ export const env = createEnv({
       }
       return val;
     }, z.array(z.string()).optional()),
+    // HuddleFM
+    HUDDLEFM_USER_ID: z.string().optional(),
     // Redis
     REDIS_URL: z.string().min(1),
     // AI

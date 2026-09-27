@@ -3,6 +3,7 @@ import { z } from 'zod';
 import logger from '~/lib/logger';
 import type { SlackMessageContext } from '~/types';
 import { getGroupMentions } from '~/utils/blocks';
+import { stripBroadcastMentions } from '~/utils/text';
 import { getSlackUserName } from '~/utils/users';
 
 interface SlackHistoryMessage {
@@ -109,15 +110,9 @@ export const reply = ({ context }: { context: SlackMessageContext }) =>
             : undefined;
 
         for (const raw of content) {
-          // Strip Slack broadcast/group mentions so the bot can't ping user groups, @here, @channel, or @everyone.
-          const text = raw
-            .replace(/<!subteam\^[^>]+>/g, '')
-            .replace(/<!here\|?[^>]*>/g, '')
-            .replace(/<!channel\|?[^>]*>/g, '')
-            .replace(/<!everyone>/g, '');
           await context.client.chat.postMessage({
             channel: channelId,
-            text,
+            text: stripBroadcastMentions(raw),
             thread_ts: threadTs,
           });
         }

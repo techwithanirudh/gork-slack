@@ -1,4 +1,6 @@
 import { blockedChannels, keywords } from '~/config';
+import { env } from '~/env';
+import { handleHuddleFmMessage } from '~/lib/huddlefm';
 import {
   clearSilenced,
   getEffectiveMode,
@@ -77,6 +79,24 @@ async function handleMessage(
 }
 
 export async function execute(args: MessageEventArgs) {
+  if (
+    env.HUDDLEFM_USER_ID &&
+    'user' in args.event &&
+    args.event.user === env.HUDDLEFM_USER_ID
+  ) {
+    if (
+      !args.event.subtype &&
+      args.event.channel_type === 'im' &&
+      args.event.text
+    ) {
+      await handleHuddleFmMessage({
+        client: args.client,
+        text: args.event.text,
+      });
+    }
+    return;
+  }
+
   if (
     args.event.subtype &&
     args.event.subtype !== 'thread_broadcast' &&
