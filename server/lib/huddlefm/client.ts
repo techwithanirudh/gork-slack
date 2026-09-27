@@ -167,5 +167,13 @@ export async function addSong({
     channel,
     command: { type: 'add', reference: top.reference },
   });
-  return { reply, matched: top.label };
+  const first = (
+    reply?.added as { title?: string; artist?: string }[] | undefined
+  )?.[0];
+  return {
+    reply,
+    matched: first?.title
+      ? [first.title, first.artist].filter(Boolean).join(' - ')
+      : top.label,
+  };
 }

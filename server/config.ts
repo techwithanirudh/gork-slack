@@ -93,6 +93,9 @@ export const dj = {
   // request_control only replies straight away on failure, so after this many
   // seconds of silence the request is assumed to be waiting on the host.
   requestGrace: 4,
+  // HuddleFM expires a pending request after 5 minutes but stays silent if Gork
+  // isn't allowlisted or it restarted, so pending rows older than this are dropped.
+  pendingTimeout: 360,
   // Auto dj is off for every session until someone asks Gork to pick songs itself.
   auto: {
     // Top up once fewer than this many requested (non-autoplay) songs are queued.
@@ -103,5 +106,7 @@ export const dj = {
     historySize: 40,
     // Messages from the dj request thread given to the model as context.
     contextMessages: 20,
+    // Minimum seconds between top-ups, so unplayable picks can't loop on track.failed.
+    cooldown: 45,
   },
 };

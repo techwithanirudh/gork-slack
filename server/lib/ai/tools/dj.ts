@@ -13,7 +13,7 @@ import {
   clearDjSession,
   type DjSession,
   getDjSession,
-  listDjSessions,
+  markDjRequestAbandoned,
   setDjSession,
 } from '~/lib/kv';
 import logger from '~/lib/logger';
@@ -28,8 +28,46 @@ const channelInput = z
     'Slack channel ID (e.g. C123) of the channel the huddle is in. Omit to use the current channel.'
   );
 
-// An explicit channel wins, then a session in the current channel, then the
-// only session Gork holds.
+const NOT_MEMBER = "You can only control the music in a channel you're in";
+
+// HuddleFM lets controllers act from anywhere, so Gork has to stop people from
+// driving the music in a channel they can't see.
+async function resolveChannel({
+  context,
+  channelArg,
+}: {
+  context: SlackMessageContext;
+  channelArg?: string;
+}): Promise<string | undefined> {
+  const { channel: current, channel_type, user } = context.event;
+  const channel =
+    channelArg?.match(CHANNEL_ID)?.[0] ??
+    (channel_type === 'im' ? undefined : current);
+  if (!channel || channel === current) {
+    return channel;
+  }
+  if (!user) {
+    throw new Error(NOT_MEMBER);
+  }
+  try {
+    let cursor: string | undefined;
+    do {
+      const res = await context.client.conversations.members({
+        channel,
+        limit: 1000,
+        cursor,
+      });
+      if (res.members?.includes(user)) {
+        return channel;
+      }
+      cursor = res.response_metadata?.next_cursor || undefined;
+    } while (cursor);
+  } catch (error) {
+    logger.warn({ error, channel, user }, 'Failed to check channel membership');
+  }
+  throw new Error(NOT_MEMBER);
+}
+
 async function resolveSession({
   context,
   channelArg,
@@ -37,18 +75,13 @@ async function resolveSession({
   context: SlackMessageContext;
   channelArg?: string;
 }): Promise<{ channel: string; session: DjSession } | null> {
-  const explicit = channelArg?.match(CHANNEL_ID)?.[0];
-  if (explicit) {
-    const session = await getDjSession(explicit);
-    return session ? { channel: explicit, session } : null;
-  }
-  const sessions = await listDjSessions();
-  return (
-    sessions.find((s) => s.channel === context.event.channel) ??
-    (sessions.length === 1 ? sessions[0] : undefined) ??
-    null
-  );
+  const channel = await resolveChannel({ context, channelArg });
+  const session = channel ? await getDjSession(channel) : null;
+  return channel && session ? { channel, session } : null;
 }
+
+const NO_SESSION =
+  'DJ mode is not on in this channel. If the huddle is in another channel, pass its channel ID (from <dj-state>) as channel; otherwise turn dj mode on with djMode first.';
 
 const toolError = (error: unknown) => ({
   success: false,
@@ -64,20 +97,16 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
       channel: channelInput,
     }),
     execute: async ({ enabled, channel: channelArg }) => {
-      const channel =
-        channelArg?.match(CHANNEL_ID)?.[0] ??
-        (context.event.channel_type === 'im'
-          ? undefined
-          : context.event.channel);
-      if (!channel) {
-        return {
-          success: false,
-          error:
-            'No huddle channel. Ask which channel the huddle is in, or tell them to ask from that channel.',
-        };
-      }
-
       try {
+        const channel = await resolveChannel({ context, channelArg });
+        if (!channel) {
+          return {
+            success: false,
+            error:
+              'No huddle channel. Ask which channel the huddle is in, or tell them to ask from that channel.',
+          };
+        }
+
         const existing = await getDjSession(channel);
 
         if (!enabled) {
@@ -88,6 +117,18 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
             };
           }
           await clearDjSession(channel);
+          if (existing.status === 'pending') {
+            await markDjRequestAbandoned({
+              requestTs: existing.requestTs,
+              channel,
+            });
+            logger.info({ channel }, 'DJ request cancelled');
+            return {
+              success: true,
+              content:
+                'DJ mode request cancelled. If the host approves it later, control is released right away.',
+            };
+          }
           const reply = await sendHuddleFmCommand({
             client: context.client,
             command: { type: 'release_control', channel },
@@ -133,12 +174,6 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
               'Request sent. The huddle host has to approve it in HuddleFM (expires in 5 minutes). An announcement is posted automatically when they answer, so just tell them you are waiting on the host.',
           };
         }
-        if (reply.type?.startsWith('grant_')) {
-          return {
-            success: true,
-            content: `Host already answered (${reply.type}) and it was announced. Do not repeat the announcement.`,
-          };
-        }
         await clearDjSession(channel);
         return {
           success: false,
@@ -150,7 +185,10 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
                 'HuddleFM refused the request'),
         };
       } catch (error) {
-        logger.error({ error, channel }, 'Failed to toggle DJ mode');
+        logger.error(
+          { error, channel: channelArg },
+          'Failed to toggle DJ mode'
+        );
         return toolError(error);
       }
     },
@@ -226,11 +264,7 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
       try {
         const found = await resolveSession({ context, channelArg });
         if (!found) {
-          return {
-            success: false,
-            error:
-              'DJ mode is not on for this huddle. Turn it on with djMode first (or pass the huddle channel).',
-          };
+          return { success: false, error: NO_SESSION };
         }
         const { channel, session } = found;
         if (session.status === 'pending') {
@@ -296,10 +330,7 @@ export const autoDj = ({ context }: { context: SlackMessageContext }) =>
       try {
         const found = await resolveSession({ context, channelArg });
         if (!found) {
-          return {
-            success: false,
-            error: 'DJ mode is not on for this huddle. Call djMode first.',
-          };
+          return { success: false, error: NO_SESSION };
         }
         const { channel, session } = found;
         await setDjSession({

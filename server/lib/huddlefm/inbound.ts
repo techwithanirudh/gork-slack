@@ -9,11 +9,12 @@ import {
   findDjSessionByRequest,
   getDjSession,
   setDjSession,
+  takeAbandonedDjRequest,
 } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { stripBroadcastMentions } from '~/utils/text';
 import { topUpQueue } from './auto-dj';
-import { decode, deliverReply } from './client';
+import { decode, deliverReply, sendHuddleFmCommand } from './client';
 import { getDjContext } from './context';
 
 async function announce({
@@ -134,6 +135,25 @@ export async function handleHuddleFmMessage({
 
   const found = await findDjSessionByRequest(replyTo);
   if (!found) {
+    if (reply.type !== 'grant_accepted') {
+      return;
+    }
+    // HuddleFM still thinks Gork is the dj for a request Gork already dropped.
+    const channel =
+      (await takeAbandonedDjRequest(replyTo)) ??
+      (typeof reply.channel === 'string' ? reply.channel : undefined);
+    if (!channel) {
+      return;
+    }
+    try {
+      await sendHuddleFmCommand({
+        client,
+        command: { type: 'release_control', channel },
+      });
+      logger.info({ channel }, 'Released orphaned DJ grant');
+    } catch (error) {
+      logger.warn({ error, channel }, 'Failed to release orphaned DJ grant');
+    }
     return;
   }
   const session: DjSession = { ...found.session, status: 'active' };

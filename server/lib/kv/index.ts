@@ -6,7 +6,9 @@ export {
   findDjSessionByRequest,
   getDjSession,
   listDjSessions,
+  markDjRequestAbandoned,
   setDjSession,
+  takeAbandonedDjRequest,
 } from './queries/dj';
 export {
   clearMode,

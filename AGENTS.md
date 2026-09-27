@@ -158,6 +158,7 @@ When `HUDDLEFM_USER_ID` is set, Gork can control music in huddles via the [Huddl
 - Auto dj (`server/lib/huddlefm/auto-dj.ts`) is off until someone asks. While on, `track.*` events and grant approval trigger a top-up: when fewer than `dj.auto.minQueue` requested songs are queued, the chat model picks songs (with the request thread and Pinecone memories as context, via `context.ts`) and Gork queues them.
 - The chat and relevance prompts get a `<dj-state>` block (from `dj:sessions`) listing the HuddleFM sessions Gork controls or is waiting on, so it knows where it's the dj without a tool call.
 - Requested permissions, events, timeouts, and auto dj tuning live in `dj` in `server/config.ts`.
+- HuddleFM reply waiters and auto dj state (in-flight top-ups, cooldowns) live in memory, so Gork must run as a single instance for dj mode.
 
 ### AI Model Configuration
 

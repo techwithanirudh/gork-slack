@@ -16,6 +16,7 @@ export interface QueueTrack {
 }
 
 const running = new Set<string>();
+const lastTopUp = new Map<string, number>();
 
 export async function topUpQueue({
   client,
@@ -24,7 +25,10 @@ export async function topUpQueue({
   client: WebClient;
   channel: string;
 }): Promise<void> {
-  if (running.has(channel)) {
+  if (
+    running.has(channel) ||
+    Date.now() - (lastTopUp.get(channel) ?? 0) < dj.auto.cooldown * 1000
+  ) {
     return;
   }
   running.add(channel);
@@ -56,6 +60,7 @@ export async function topUpQueue({
     ) {
       return;
     }
+    lastTopUp.set(channel, Date.now());
 
     const { picks } = session.autoDj;
     const describe = (track: QueueTrack) =>
