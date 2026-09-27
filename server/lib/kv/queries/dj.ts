@@ -3,9 +3,7 @@ import { redis } from '../client';
 import { keys } from '../keys';
 
 export interface DjSession {
-  // Present while Gork keeps the queue topped up on its own.
   autoDj?: { picks: string[] };
-  // Where the DJ request was made, so grant updates can be announced there.
   origin: { channel: string; threadTs?: string };
   requestedBy?: string;
   requestTs: string;
@@ -20,15 +18,15 @@ function parseDjSession({
   channel: string;
   raw: string;
 }): DjSession | null {
-  let session: DjSession | null = null;
+  let session: DjSession | null;
   try {
     session = JSON.parse(raw) as DjSession;
   } catch {
-    // Unparsable rows are dropped below instead of throwing on every message.
+    session = null;
   }
   const stale =
     session?.status === 'pending' &&
-    Date.now() - (session.updatedAt ?? 0) > dj.pendingTimeout * 1000;
+    Date.now() - (session.updatedAt ?? 0) > dj.pendingTimeoutSeconds * 1000;
   if (!session || stale) {
     redis.hdel(keys.djSessions(), channel).catch(() => undefined);
     return null;
@@ -67,6 +65,29 @@ export async function listDjSessions(): Promise<
   });
 }
 
+export async function appendAutoDjPicks({
+  channel,
+  picks,
+}: {
+  channel: string;
+  picks: string[];
+}): Promise<void> {
+  const session = await getDjSession(channel);
+  if (!session?.autoDj) {
+    return;
+  }
+  await setDjSession({
+    channel,
+    session: {
+      ...session,
+      autoDj: {
+        ...session.autoDj,
+        picks: [...session.autoDj.picks, ...picks].slice(-dj.auto.historySize),
+      },
+    },
+  });
+}
+
 export async function findDjSessionByRequest(
   requestTs: string
 ): Promise<{ channel: string; session: DjSession } | null> {
@@ -89,7 +110,7 @@ export async function markDjRequestAbandoned({
     keys.djAbandoned(requestTs),
     channel,
     'EX',
-    dj.pendingTimeout
+    dj.pendingTimeoutSeconds
   );
 }
 

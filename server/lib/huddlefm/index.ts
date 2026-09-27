@@ -1,4 +1,4 @@
-export { topUpQueue } from './auto-dj';
+export { scheduleTopUp } from './auto-dj';
 export {
   addSong,
   type HuddleFmReply,

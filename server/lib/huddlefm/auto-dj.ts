@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { dj } from '~/config';
 import { autoDjPrompt } from '~/lib/ai/prompts/dj';
 import { provider } from '~/lib/ai/providers';
-import { getDjSession, setDjSession } from '~/lib/kv';
+import { appendAutoDjPicks, getDjSession } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { addSong, LOST_GRANT, runDjCommand } from './client';
 import { getDjContext } from './context';
@@ -18,7 +18,14 @@ export interface QueueTrack {
 const running = new Set<string>();
 const lastTopUp = new Map<string, number>();
 
-export async function topUpQueue({
+export function scheduleTopUp(args: {
+  client: WebClient;
+  channel: string;
+}): void {
+  topUpQueue(args);
+}
+
+async function topUpQueue({
   client,
   channel,
 }: {
@@ -27,7 +34,7 @@ export async function topUpQueue({
 }): Promise<void> {
   if (
     running.has(channel) ||
-    Date.now() - (lastTopUp.get(channel) ?? 0) < dj.auto.cooldown * 1000
+    Date.now() - (lastTopUp.get(channel) ?? 0) < dj.auto.cooldownSeconds * 1000
   ) {
     return;
   }
@@ -117,21 +124,8 @@ export async function topUpQueue({
     }
     logger.info({ channel, picks: output.songs, added }, 'Auto dj topped up');
 
-    // Re-read so a toggle made while picking isn't overwritten.
-    const latest = await getDjSession(channel);
-    if (latest?.autoDj && added.length) {
-      await setDjSession({
-        channel,
-        session: {
-          ...latest,
-          autoDj: {
-            ...latest.autoDj,
-            picks: [...latest.autoDj.picks, ...added].slice(
-              -dj.auto.historySize
-            ),
-          },
-        },
-      });
+    if (added.length) {
+      await appendAutoDjPicks({ channel, picks: added });
     }
   } catch (error) {
     logger.error({ error, channel }, 'Auto dj top-up failed');

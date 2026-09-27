@@ -40,7 +40,7 @@ export const env = createEnv({
       }
       return val;
     }, z.array(z.string()).optional()),
-    // HuddleFM user account Gork DMs to control huddle music (enables DJ mode)
+    // HuddleFM
     HUDDLEFM_USER_ID: z.string().optional(),
     // Redis
     REDIS_URL: z.string().min(1),

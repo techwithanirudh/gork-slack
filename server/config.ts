@@ -73,9 +73,26 @@ export const blockedChannels = [
   { id: 'C0AUZ1P2DEC', name: 'macondo-bulletin' },
 ];
 
+export type HuddleFmPermission =
+  | 'add'
+  | 'add-bulk'
+  | 'remove-own'
+  | 'manage-queue'
+  | 'skip'
+  | 'pause'
+  | 'volume'
+  | 'configure-settings'
+  | 'clear'
+  | 'end-session';
+
+export type HuddleFmEventSubscription =
+  | 'playback.state'
+  | 'track'
+  | 'queue'
+  | 'volume'
+  | 'session';
+
 export const dj = {
-  // Capabilities requested from the huddle host. clear and end-session are left
-  // out on purpose so nobody can talk Gork into nuking someone's session.
   permissions: [
     'add',
     'add-bulk',
@@ -84,29 +101,20 @@ export const dj = {
     'skip',
     'pause',
     'volume',
-  ],
-  // `session` is required so Gork notices when a huddle ends and drops the grant.
-  // `track` drives auto dj top-ups.
-  events: ['session', 'track'],
-  // Seconds to wait for HuddleFM to answer a command.
-  replyTimeout: 20,
+  ] satisfies Exclude<HuddleFmPermission, 'clear' | 'end-session'>[],
+  events: ['session', 'track'] satisfies HuddleFmEventSubscription[],
+  replyTimeoutSeconds: 20,
   // request_control only replies straight away on failure, so after this many
   // seconds of silence the request is assumed to be waiting on the host.
-  requestGrace: 4,
+  requestGraceSeconds: 4,
   // HuddleFM expires a pending request after 5 minutes but stays silent if Gork
   // isn't allowlisted or it restarted, so pending rows older than this are dropped.
-  pendingTimeout: 360,
-  // Auto dj is off for every session until someone asks Gork to pick songs itself.
+  pendingTimeoutSeconds: 360,
   auto: {
-    // Top up once fewer than this many requested (non-autoplay) songs are queued.
     minQueue: 2,
-    // Songs picked per top-up.
     batchSize: 3,
-    // Recent picks remembered so auto dj doesn't repeat itself.
     historySize: 40,
-    // Messages from the dj request thread given to the model as context.
     contextMessages: 20,
-    // Minimum seconds between top-ups, so unplayable picks can't loop on track.failed.
-    cooldown: 45,
+    cooldownSeconds: 45,
   },
 };

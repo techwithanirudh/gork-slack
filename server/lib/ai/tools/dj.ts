@@ -6,8 +6,8 @@ import {
   type HuddleFmReply,
   LOST_GRANT,
   runDjCommand,
+  scheduleTopUp,
   sendHuddleFmCommand,
-  topUpQueue,
 } from '~/lib/huddlefm';
 import {
   clearDjSession,
@@ -30,21 +30,26 @@ const channelInput = z
 
 const NOT_MEMBER = "You can only control the music in a channel you're in";
 
-// HuddleFM lets controllers act from anywhere, so Gork has to stop people from
-// driving the music in a channel they can't see.
-async function resolveChannel({
+const resolveChannel = ({
   context,
   channelArg,
 }: {
   context: SlackMessageContext;
   channelArg?: string;
-}): Promise<string | undefined> {
-  const { channel: current, channel_type, user } = context.event;
-  const channel =
-    channelArg?.match(CHANNEL_ID)?.[0] ??
-    (channel_type === 'im' ? undefined : current);
-  if (!channel || channel === current) {
-    return channel;
+}) =>
+  channelArg?.match(CHANNEL_ID)?.[0] ??
+  (context.event.channel_type === 'im' ? undefined : context.event.channel);
+
+async function assertMember({
+  context,
+  channel,
+}: {
+  context: SlackMessageContext;
+  channel: string;
+}): Promise<void> {
+  const { channel: current, user } = context.event;
+  if (channel === current) {
+    return;
   }
   if (!user) {
     throw new Error(NOT_MEMBER);
@@ -58,7 +63,7 @@ async function resolveChannel({
         cursor,
       });
       if (res.members?.includes(user)) {
-        return channel;
+        return;
       }
       cursor = res.response_metadata?.next_cursor || undefined;
     } while (cursor);
@@ -75,9 +80,13 @@ async function resolveSession({
   context: SlackMessageContext;
   channelArg?: string;
 }): Promise<{ channel: string; session: DjSession } | null> {
-  const channel = await resolveChannel({ context, channelArg });
-  const session = channel ? await getDjSession(channel) : null;
-  return channel && session ? { channel, session } : null;
+  const channel = resolveChannel({ context, channelArg });
+  if (!channel) {
+    return null;
+  }
+  await assertMember({ context, channel });
+  const session = await getDjSession(channel);
+  return session ? { channel, session } : null;
 }
 
 const NO_SESSION =
@@ -98,7 +107,7 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
     }),
     execute: async ({ enabled, channel: channelArg }) => {
       try {
-        const channel = await resolveChannel({ context, channelArg });
+        const channel = resolveChannel({ context, channelArg });
         if (!channel) {
           return {
             success: false,
@@ -106,6 +115,7 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
               'No huddle channel. Ask which channel the huddle is in, or tell them to ask from that channel.',
           };
         }
+        await assertMember({ context, channel });
 
         const existing = await getDjSession(channel);
 
@@ -140,6 +150,13 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
         if (existing?.status === 'active') {
           return { success: true, content: 'DJ mode is already on here' };
         }
+        if (existing?.status === 'pending') {
+          return {
+            success: true,
+            content:
+              'Already waiting for the huddle host to approve dj mode. An announcement is posted when they answer.',
+          };
+        }
 
         const { ts, thread_ts, user } = context.event;
         const reply = await sendHuddleFmCommand({
@@ -150,7 +167,7 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
             permissions: djConfig.permissions,
             events: djConfig.events,
           },
-          timeoutSeconds: djConfig.requestGrace,
+          timeoutSeconds: djConfig.requestGraceSeconds,
           onSent: (requestTs) =>
             setDjSession({
               channel,
@@ -354,8 +371,7 @@ export const autoDj = ({ context }: { context: SlackMessageContext }) =>
               'Auto dj will start picking songs as soon as the host approves dj mode',
           };
         }
-        // Not awaited so the reply isn't held up by picking songs.
-        topUpQueue({ client: context.client, channel });
+        scheduleTopUp({ client: context.client, channel });
         return {
           success: true,
           content:

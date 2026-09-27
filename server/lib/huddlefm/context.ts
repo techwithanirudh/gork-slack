@@ -10,8 +10,6 @@ import { buildHistorySnippet } from '~/utils/messages';
 
 let botUserId: string | undefined;
 
-// DJ updates happen outside a user message, so the thread dj mode was started
-// in plus matching memories stand in for the usual chat context.
 export async function getDjContext({
   client,
   session,

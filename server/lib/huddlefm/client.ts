@@ -50,7 +50,7 @@ export const decode = (text: string): HuddleFmReply | null => {
 export async function sendHuddleFmCommand({
   client,
   command,
-  timeoutSeconds = dj.replyTimeout,
+  timeoutSeconds = dj.replyTimeoutSeconds,
   onSent,
 }: {
   client: WebClient;
@@ -112,7 +112,6 @@ export function deliverReply(reply: HuddleFmReply & { replyTo: string }) {
   setTimeout(() => earlyReplies.delete(reply.replyTo), 60_000);
 }
 
-// HuddleFM errors meaning the grant no longer exists on its side.
 export const LOST_GRANT = new Set([
   'not_granted',
   'session_not_found',

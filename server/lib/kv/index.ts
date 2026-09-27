@@ -1,6 +1,7 @@
 export { redis } from './client';
 export { keys } from './keys';
 export {
+  appendAutoDjPicks,
   clearDjSession,
   type DjSession,
   findDjSessionByRequest,

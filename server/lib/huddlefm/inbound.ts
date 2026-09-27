@@ -13,7 +13,7 @@ import {
 } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { stripBroadcastMentions } from '~/utils/text';
-import { topUpQueue } from './auto-dj';
+import { scheduleTopUp } from './auto-dj';
 import { decode, deliverReply, sendHuddleFmCommand } from './client';
 import { getDjContext } from './context';
 
@@ -64,7 +64,6 @@ async function announce({
   }
 }
 
-// Facts for the model to announce in its own words; never posted verbatim.
 const GRANT_SITUATIONS: Record<string, string> = {
   grant_accepted:
     'The huddle host approved your dj request. You now control the music.',
@@ -116,8 +115,7 @@ export async function handleHuddleFmMessage({
       typeof reply.event === 'string' &&
       TOP_UP_EVENTS.has(reply.event)
     ) {
-      // Not awaited: topping up waits on HuddleFM replies that arrive as later events.
-      topUpQueue({ client, channel });
+      scheduleTopUp({ client, channel });
     }
     return;
   }
@@ -138,7 +136,6 @@ export async function handleHuddleFmMessage({
     if (reply.type !== 'grant_accepted') {
       return;
     }
-    // HuddleFM still thinks Gork is the dj for a request Gork already dropped.
     const channel =
       (await takeAbandonedDjRequest(replyTo)) ??
       (typeof reply.channel === 'string' ? reply.channel : undefined);
@@ -170,6 +167,6 @@ export async function handleHuddleFmMessage({
     situation,
   });
   if (reply.type === 'grant_accepted') {
-    topUpQueue({ client, channel: found.channel });
+    scheduleTopUp({ client, channel: found.channel });
   }
 }
