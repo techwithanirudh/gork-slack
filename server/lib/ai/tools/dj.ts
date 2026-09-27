@@ -290,13 +290,9 @@ export const autoDj = ({ context }: { context: SlackMessageContext }) =>
       'Turn auto dj on or off: while on, you pick songs yourself and keep the huddle queue topped up without being asked. Needs dj mode (djMode) first.',
     inputSchema: z.object({
       enabled: z.boolean().describe('true to start picking songs yourself'),
-      vibe: z
-        .string()
-        .optional()
-        .describe('Optional mood or genre to stick to, e.g. "90s hip hop"'),
       channel: channelInput,
     }),
-    execute: async ({ enabled, vibe, channel: channelArg }) => {
+    execute: async ({ enabled, channel: channelArg }) => {
       try {
         const found = await resolveSession({ context, channelArg });
         if (!found) {
@@ -311,11 +307,11 @@ export const autoDj = ({ context }: { context: SlackMessageContext }) =>
           session: {
             ...session,
             autoDj: enabled
-              ? { vibe, picks: session.autoDj?.picks ?? [] }
+              ? { picks: session.autoDj?.picks ?? [] }
               : undefined,
           },
         });
-        logger.info({ channel, enabled, vibe }, 'Auto dj toggled');
+        logger.info({ channel, enabled }, 'Auto dj toggled');
 
         if (!enabled) {
           return { success: true, content: 'Auto dj is off' };

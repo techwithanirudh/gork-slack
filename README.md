@@ -87,7 +87,7 @@ We use the `llama-text-embed-v2` integrated embedding option for our instances.
 
 Gork can DJ in Slack huddles through [HuddleFM][huddlefm]. Set `HUDDLEFM_USER_ID` to the Slack user ID of the HuddleFM account, and add Gork's bot user ID to HuddleFM's `INTEGRATION_USER_IDS`.
 
-Then ask Gork to turn on dj mode in the channel where HuddleFM is running. The huddle host approves the request, and after that you can ask Gork to queue songs, skip, pause, change the volume, and so on. Ask Gork to pick the music itself and it will keep the queue topped up on its own (optionally sticking to a vibe you give it) until you tell it to stop.
+Then ask Gork to turn on dj mode in the channel where HuddleFM is running. The huddle host approves the request, and after that you can ask Gork to queue songs, skip, pause, change the volume, and so on. Ask Gork to pick the music itself and it will keep the queue topped up on its own until you tell it to stop.
 
 ## <a name="license">📝 License</a>
 

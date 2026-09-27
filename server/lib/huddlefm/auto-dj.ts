@@ -57,7 +57,7 @@ export async function topUpQueue({
       return;
     }
 
-    const { vibe, picks } = session.autoDj;
+    const { picks } = session.autoDj;
     const describe = (track: QueueTrack) =>
       `${track.title ?? 'unknown'} - ${track.artist ?? 'unknown'}`;
     const playing = nowPlaying ? describe(nowPlaying) : '';
@@ -65,7 +65,6 @@ export async function topUpQueue({
       client,
       session,
       queries: [
-        vibe,
         playing && `music ${playing}`,
         'favorite songs artists music taste',
       ],
@@ -74,7 +73,6 @@ export async function topUpQueue({
     const { output } = await generateText({
       model: provider.languageModel('chat-model'),
       system: autoDjPrompt({
-        vibe,
         nowPlaying: playing,
         queue: queue.map(describe),
         recentPicks: picks,
