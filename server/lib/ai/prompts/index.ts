@@ -1,6 +1,8 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import { env } from '~/env';
 import type { PineconeMetadataOutput, RequestHints } from '~/types';
 import { corePrompt } from './core';
+import { djPrompt } from './dj';
 import { examplesPrompt } from './examples';
 import { memoriesPrompt } from './memories';
 import { personalityPrompt } from './personality';
@@ -42,6 +44,7 @@ export const systemPrompt = ({
       examplesPrompt,
       requestPrompt,
       toolsPrompt,
+      env.HUDDLEFM_USER_ID ? djPrompt : undefined,
       memoriesPrompt(memories),
       replyPrompt,
     ]

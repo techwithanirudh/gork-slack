@@ -25,7 +25,7 @@ const earlyReplies = new Map<string, HuddleFmReply>();
 
 let dmChannelId: string | undefined;
 
-// Slack linkifies URLs and entity-escapes &, < and > in message text, which
+// Slack turns URLs into links and entity-escapes &, < and > in message text, which
 // HuddleFM would read verbatim. JSON escapes keep the payload untouched.
 const encode = (payload: Record<string, unknown>) =>
   JSON.stringify({ v: 1, ...payload })
@@ -56,10 +56,12 @@ export async function sendHuddleFmCommand({
   client,
   command,
   timeoutSeconds = dj.replyTimeout,
+  onSent,
 }: {
   client: WebClient;
   command: Record<string, unknown> & { type: string };
   timeoutSeconds?: number;
+  onSent?: (ts: string) => Promise<void>;
 }): Promise<HuddleFmReply | null> {
   if (!env.HUDDLEFM_USER_ID) {
     throw new Error('HuddleFM is not configured');
@@ -84,6 +86,7 @@ export async function sendHuddleFmCommand({
     throw new Error('Slack did not return a message timestamp');
   }
   logger.debug({ command, ts }, 'Sent HuddleFM command');
+  await onSent?.(ts);
 
   const early = earlyReplies.get(ts);
   if (early) {

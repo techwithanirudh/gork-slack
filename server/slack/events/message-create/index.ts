@@ -80,7 +80,7 @@ async function handleMessage(
 
 export async function execute(args: MessageEventArgs) {
   // HuddleFM is a user account speaking JSON to Gork; it must never reach the
-  // chat pipeline or Gork would start freestyling into its DMs.
+  // chat pipeline or Gork would start chatting back in its DMs.
   if (
     env.HUDDLEFM_USER_ID &&
     'user' in args.event &&

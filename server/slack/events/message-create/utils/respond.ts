@@ -2,8 +2,10 @@ import { webSearch } from '@exalabs/ai-sdk';
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage, UserContent } from 'ai';
 import { generateText, stepCountIs } from 'ai';
+import { env } from '~/env';
 import { systemPrompt } from '~/lib/ai/prompts';
 import { provider } from '~/lib/ai/providers';
+import { dj, djMode } from '~/lib/ai/tools/dj';
 import { generateImageTool } from '~/lib/ai/tools/generate-image';
 import { getUserInfo } from '~/lib/ai/tools/get-user-info';
 import { getWeather } from '~/lib/ai/tools/get-weather';
@@ -49,6 +51,24 @@ export async function generateResponse(
     const images = await processSlackFiles(files);
     const replyPrompt = `You are replying to the following message from ${authorName} (${userId}): ${messageText}`;
 
+    const tools = {
+      getWeather,
+      searchWeb: webSearch({
+        numResults: 10,
+        type: 'auto',
+      }),
+      generateImage: generateImageTool({ context, files }),
+      getUserInfo: getUserInfo({ context }),
+      searchMemories: searchMemories(),
+      leaveChannel: leaveChannel({ context }),
+      react: react({ context }),
+      reply: reply({ context }),
+      report: report({ context }),
+      skip: skip({ context }),
+      djMode: djMode({ context }),
+      dj: dj({ context }),
+    };
+
     const { toolCalls } = await generateText({
       model: provider.languageModel('chat-model'),
       messages: [
@@ -72,21 +92,12 @@ export async function generateResponse(
       maxOutputTokens: 16_384,
       temperature: 1.1,
       toolChoice: 'required',
-      tools: {
-        getWeather,
-        searchWeb: webSearch({
-          numResults: 10,
-          type: 'auto',
-        }),
-        generateImage: generateImageTool({ context, files }),
-        getUserInfo: getUserInfo({ context }),
-        searchMemories: searchMemories(),
-        leaveChannel: leaveChannel({ context }),
-        react: react({ context }),
-        reply: reply({ context }),
-        report: report({ context }),
-        skip: skip({ context }),
-      },
+      tools,
+      activeTools: env.HUDDLEFM_USER_ID
+        ? undefined
+        : (Object.keys(tools) as (keyof typeof tools)[]).filter(
+            (name) => name !== 'djMode' && name !== 'dj'
+          ),
       system,
       stopWhen: [
         stepCountIs(10),
