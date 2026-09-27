@@ -49,6 +49,7 @@ Always use **bun**. Never use npm, yarn, or pnpm.
 | `LANGFUSE_BASEURL` | No | Langfuse endpoint URL |
 | `LOG_LEVEL` | No | debug / info / warn / error (default: info) |
 | `LOG_DIRECTORY` | No | Directory for log files (default: logs) |
+| `HUDDLEFM_USER_ID` | No | Slack user ID of the HuddleFM account; enables gork dj mode |
 
 
 ## Adding a New `/gork` Subcommand
@@ -143,6 +144,17 @@ Gork responds to messages based on triggers:
 | `get-weather` | Get weather information |
 | `get-user-info` | Get Slack user profile info |
 | `search-memories` | Search past conversations in Pinecone |
+| `djMode` | Turn gork dj mode on/off (requests HuddleFM control from the huddle host) |
+| `dj` | Control HuddleFM once dj mode is on (status, add, skip, pause, volume, queue) |
+
+### Gork DJ (HuddleFM)
+
+When `HUDDLEFM_USER_ID` is set, Gork can control music in huddles via the [HuddleFM bot API](https://github.com/ingoau/huddlefm/blob/main/docs/bot-api.md). HuddleFM must list Gork's bot user ID in its `INTEGRATION_USER_IDS`.
+
+- `server/lib/huddlefm.ts` sends JSON commands as DMs to the HuddleFM user and resolves the threaded replies. Every message from the HuddleFM user is intercepted at the top of the message handler, so it never reaches the chat pipeline.
+- The model only reaches HuddleFM through the `djMode` / `dj` tools; it never DMs HuddleFM directly.
+- Grant state lives in the Redis hash `dj:sessions`, keyed by huddle channel. Grant replies (`grant_accepted`, `grant_declined`, …) and `session.ended` / `session.suspended` events update it and post an announcement in the thread where dj mode was requested.
+- Requested permissions, events, timeouts, and announcement text live in `dj` in `server/config.ts`.
 
 ### AI Model Configuration
 

@@ -7,7 +7,8 @@
 3. 📚 [Getting Started](#getting-started)
 4. 🐳 [Running with Docker](#running-with-docker)
 5. 🧠 [Memory](#memory)
-6. 📝 [License](#license)
+6. 🎧 [Gork DJ](#gork-dj)
+7. 📝 [License](#license)
 
 ## <a name="introduction">🤖 Introduction</a>
 
@@ -82,6 +83,12 @@ Then, create a Pinecone index and set the `PINECONE_INDEX` environment variable 
 
 We use the `llama-text-embed-v2` integrated embedding option for our instances.
 
+## <a name="gork-dj">🎧 Gork DJ</a>
+
+Gork can DJ in Slack huddles through [HuddleFM][huddlefm]. Set `HUDDLEFM_USER_ID` to the Slack user ID of the HuddleFM account, and add Gork's bot user ID to HuddleFM's `INTEGRATION_USER_IDS`.
+
+Then ask Gork to turn on dj mode in the channel where HuddleFM is running. The huddle host approves the request, and after that you can ask Gork to queue songs, skip, pause, change the volume, and so on.
+
 ## <a name="license">📝 License</a>
 
 This project is under the MIT license. See the [LICENSE](LICENSE) for details.
@@ -95,3 +102,4 @@ This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 [exa]: https://exa.ai/
 [pinecone]: https://www.pinecone.io/
 [redis]: https://redis.io/
+[huddlefm]: https://github.com/ingoau/huddlefm
