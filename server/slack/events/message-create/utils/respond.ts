@@ -16,6 +16,7 @@ import { report } from '~/lib/ai/tools/report';
 import { searchMemories } from '~/lib/ai/tools/search-memories';
 import { skip } from '~/lib/ai/tools/skip';
 import { successToolCall } from '~/lib/ai/utils';
+import { listDjSessions } from '~/lib/kv';
 import type {
   PineconeMetadataOutput,
   RequestHints,
@@ -46,6 +47,9 @@ export async function generateResponse(
         authorSlackId: userId,
         content: messageText,
       },
+      djState: env.HUDDLEFM_USER_ID
+        ? { sessions: await listDjSessions(), channelId: context.event.channel }
+        : undefined,
     });
 
     const images = await processSlackFiles(files);

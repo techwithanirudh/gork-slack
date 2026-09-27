@@ -1,4 +1,5 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { DjSession } from '~/lib/kv';
 import type { PineconeMetadataOutput } from '~/types';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
@@ -92,3 +93,27 @@ Write 1-2 short lines in your usual style reacting to it, like a person would. U
   ]
     .filter(Boolean)
     .join('\n\n');
+
+export const djStatePrompt = ({
+  sessions,
+  channelId,
+}: {
+  sessions: { channel: string; session: DjSession }[];
+  channelId?: string;
+}) => {
+  const lines = sessions.map(({ channel, session }) => {
+    const where =
+      channel === channelId ? `<#${channel}> (this channel)` : `<#${channel}>`;
+    return session.status === 'pending'
+      ? `- ${where}: you asked to dj, waiting for the huddle host to approve`
+      : `- ${where}: HuddleFM session running and you control it (you're the dj). auto dj ${session.autoDj ? 'on, you pick the songs yourself' : 'off'}`;
+  });
+  return `\
+<dj-state>
+${
+  lines.length
+    ? `Your HuddleFM dj sessions right now:\n${lines.join('\n')}\nMessages about the music in these channels (skip this, turn it up, play something else) are aimed at you. Use dj status to see what's playing.`
+    : "You don't control any HuddleFM session right now. Anything you know about huddles elsewhere comes only from the conversation."
+}
+</dj-state>`;
+};

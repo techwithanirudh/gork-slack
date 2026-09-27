@@ -1,7 +1,9 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { generateText, type ModelMessage, Output, type UserContent } from 'ai';
+import { env } from '~/env';
 import { systemPrompt } from '~/lib/ai/prompts';
 import { provider } from '~/lib/ai/providers';
+import { listDjSessions } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { type Probability, probabilitySchema } from '~/lib/validators';
 import type {
@@ -53,6 +55,12 @@ export async function assessRelevance(
         requestHints: hints,
         memories,
         message: { author: authorName, content: messageText },
+        djState: env.HUDDLEFM_USER_ID
+          ? {
+              sessions: await listDjSessions(),
+              channelId: context.event.channel,
+            }
+          : undefined,
       }),
       experimental_telemetry: {
         isEnabled: true,

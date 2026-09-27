@@ -156,6 +156,7 @@ When `HUDDLEFM_USER_ID` is set, Gork can control music in huddles via the [Huddl
 - The model only reaches HuddleFM through the `djMode` / `dj` tools; it never DMs HuddleFM directly.
 - Grant state lives in the Redis hash `dj:sessions`, keyed by huddle channel. `server/lib/huddlefm/inbound.ts` handles grant replies (`grant_accepted`, `grant_declined`, …) and `session.ended` / `session.suspended` events, updates the state, and has the chat model write an update for the thread where dj mode was requested. DJ messages are never hardcoded.
 - Auto dj (`server/lib/huddlefm/auto-dj.ts`) is off until someone asks. While on, `track.*` events and grant approval trigger a top-up: when fewer than `dj.auto.minQueue` requested songs are queued, the chat model picks songs (with the request thread and Pinecone memories as context, via `context.ts`) and Gork queues them.
+- The chat and relevance prompts get a `<dj-state>` block (from `dj:sessions`) listing the HuddleFM sessions Gork controls or is waiting on, so it knows where it's the dj without a tool call.
 - Requested permissions, events, timeouts, and auto dj tuning live in `dj` in `server/config.ts`.
 
 ### AI Model Configuration
