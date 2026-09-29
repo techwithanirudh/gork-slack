@@ -3,11 +3,13 @@ export { keys } from './keys';
 export {
   appendAutoDjPicks,
   clearDjSession,
+  type DjPlayback,
   type DjSession,
   findDjSessionByRequest,
   getDjSession,
   listDjSessions,
   markDjRequestAbandoned,
+  setDjPlayback,
   setDjSession,
   takeAbandonedDjRequest,
 } from './queries/dj';

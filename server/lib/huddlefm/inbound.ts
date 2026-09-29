@@ -1,6 +1,7 @@
 import type { WebClient } from '@slack/web-api';
 import { generateText, Output } from 'ai';
 import { z } from 'zod';
+import { dj } from '~/config';
 import { djAnnouncementPrompt } from '~/lib/ai/prompts/dj';
 import { provider } from '~/lib/ai/providers';
 import {
@@ -14,8 +15,14 @@ import {
 import logger from '~/lib/logger';
 import { stripBroadcastMentions } from '~/utils/text';
 import { scheduleTopUp } from './auto-dj';
-import { decode, deliverReply, sendHuddleFmCommand } from './client';
+import { decode, deliverReply, pickLabel, sendHuddleFmCommand } from './client';
 import { getDjContext } from './context';
+import {
+  describeTrack,
+  type QueueTrack,
+  savePlayback,
+  schedulePlaybackRefresh,
+} from './playback';
 
 async function announce({
   client,
@@ -77,7 +84,58 @@ const TOP_UP_EVENTS = new Set([
   'track.started',
   'track.finished',
   'track.failed',
+  'queue.removed',
+  'queue.cleared',
 ]);
+
+const nowPlayingMentionedAt = new Map<string, number>();
+
+function handleEvent({
+  client,
+  channel,
+  session,
+  event,
+  payload,
+}: {
+  client: WebClient;
+  channel: string;
+  session: DjSession;
+  event: string;
+  payload: QueueTrack & { reason?: string };
+}) {
+  if (event.startsWith('track.') || event.startsWith('queue.')) {
+    schedulePlaybackRefresh({ client, channel });
+  }
+  if (session.autoDj && TOP_UP_EVENTS.has(event)) {
+    scheduleTopUp({ client, channel });
+  }
+
+  const ownPick =
+    payload.title && session.autoDj?.picks.includes(pickLabel(payload));
+  if (event === 'queue.removed' && payload.reason === 'failed' && !ownPick) {
+    announce({
+      client,
+      channel,
+      session,
+      situation: `"${describeTrack(payload)}" failed to download, so HuddleFM dropped it from the queue.`,
+    });
+  }
+
+  if (
+    event === 'track.started' &&
+    session.chatter &&
+    Date.now() - (nowPlayingMentionedAt.get(channel) ?? 0) >
+      dj.chatter.cooldownSeconds * 1000
+  ) {
+    nowPlayingMentionedAt.set(channel, Date.now());
+    announce({
+      client,
+      channel,
+      session,
+      situation: `A new song just started in the huddle: "${describeTrack(payload)}". Chime in with one quick line about it like a radio dj between songs.`,
+    });
+  }
+}
 
 export async function handleHuddleFmMessage({
   client,
@@ -110,12 +168,14 @@ export async function handleHuddleFmMessage({
         situation:
           'The HuddleFM session in the huddle ended, so dj mode is over.',
       });
-    } else if (
-      session.autoDj &&
-      typeof reply.event === 'string' &&
-      TOP_UP_EVENTS.has(reply.event)
-    ) {
-      scheduleTopUp({ client, channel });
+    } else if (typeof reply.event === 'string') {
+      handleEvent({
+        client,
+        channel,
+        session,
+        event: reply.event,
+        payload: (reply.payload ?? {}) as QueueTrack & { reason?: string },
+      });
     }
     return;
   }
@@ -156,6 +216,8 @@ export async function handleHuddleFmMessage({
   const session: DjSession = { ...found.session, status: 'active' };
   if (reply.type === 'grant_accepted') {
     await setDjSession({ channel: found.channel, session });
+    await savePlayback({ channel: found.channel, status: reply });
+    nowPlayingMentionedAt.set(found.channel, Date.now());
   } else {
     await clearDjSession(found.channel);
   }
@@ -164,7 +226,18 @@ export async function handleHuddleFmMessage({
     client,
     channel: found.channel,
     session: reply.type === 'grant_accepted' ? session : found.session,
-    situation,
+    situation:
+      reply.type === 'grant_accepted'
+        ? [
+            situation,
+            session.autoDj &&
+              "Auto dj is on, so you start picking songs yourself right away. Let them know they can tell you to turn auto dj off if they'd rather pick the songs.",
+            session.chatter &&
+              "You'll also chime in between songs now and then; they can tell you to shut up about it.",
+          ]
+            .filter(Boolean)
+            .join(' ')
+        : situation,
   });
   if (reply.type === 'grant_accepted') {
     scheduleTopUp({ client, channel: found.channel });

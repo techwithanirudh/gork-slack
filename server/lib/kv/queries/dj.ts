@@ -4,6 +4,7 @@ import { keys } from '../keys';
 
 export interface DjSession {
   autoDj?: { picks: string[] };
+  chatter?: boolean;
   origin: { channel: string; threadTs?: string };
   requestedBy?: string;
   requestTs: string;
@@ -52,16 +53,47 @@ export async function setDjSession({
 }
 
 export async function clearDjSession(channel: string): Promise<void> {
-  await redis.hdel(keys.djSessions(), channel);
+  await Promise.all([
+    redis.hdel(keys.djSessions(), channel),
+    redis.hdel(keys.djPlayback(), channel),
+  ]);
+}
+
+export interface DjPlayback {
+  nowPlaying?: string;
+  queue: string[];
+  queueLength: number;
+}
+
+export async function setDjPlayback({
+  channel,
+  playback,
+}: {
+  channel: string;
+  playback: DjPlayback;
+}): Promise<void> {
+  await redis.hset(keys.djPlayback(), { [channel]: JSON.stringify(playback) });
 }
 
 export async function listDjSessions(): Promise<
-  { channel: string; session: DjSession }[]
+  { channel: string; session: DjSession; playback?: DjPlayback }[]
 > {
-  const all = await redis.hgetall(keys.djSessions());
+  const [all, playback] = await Promise.all([
+    redis.hgetall(keys.djSessions()),
+    redis.hgetall(keys.djPlayback()),
+  ]);
   return Object.entries(all).flatMap(([channel, raw]) => {
     const session = parseDjSession({ channel, raw });
-    return session ? [{ channel, session }] : [];
+    if (!session) {
+      return [];
+    }
+    let parsed: DjPlayback | undefined;
+    try {
+      parsed = playback[channel] ? JSON.parse(playback[channel]) : undefined;
+    } catch {
+      parsed = undefined;
+    }
+    return [{ channel, session, playback: parsed }];
   });
 }
 

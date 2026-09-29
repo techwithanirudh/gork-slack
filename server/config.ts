@@ -101,8 +101,9 @@ export const dj = {
     'skip',
     'pause',
     'volume',
-  ] satisfies Exclude<HuddleFmPermission, 'clear' | 'end-session'>[],
-  events: ['session', 'track'] satisfies HuddleFmEventSubscription[],
+    'clear',
+  ] satisfies Exclude<HuddleFmPermission, 'end-session'>[],
+  events: ['session', 'track', 'queue'] satisfies HuddleFmEventSubscription[],
   replyTimeoutSeconds: 20,
   // request_control only replies straight away on failure, so after this many
   // seconds of silence the request is assumed to be waiting on the host.
@@ -110,7 +111,17 @@ export const dj = {
   // HuddleFM expires a pending request after 5 minutes but stays silent if Gork
   // isn't allowlisted or it restarted, so pending rows older than this are dropped.
   pendingTimeoutSeconds: 360,
+  maxSkip: 10,
+  maxBatch: 10,
+  maxCommands: 8,
+  stateQueueSize: 10,
+  playbackRefreshDebounceSeconds: 2,
+  chatter: {
+    enabledByDefault: true,
+    cooldownSeconds: 240,
+  },
   auto: {
+    enabledByDefault: true,
     minQueue: 2,
     batchSize: 3,
     historySize: 40,
