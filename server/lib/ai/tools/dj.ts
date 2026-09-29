@@ -258,6 +258,9 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
                   channel: context.event.channel ?? channel,
                   threadTs: thread_ts ?? ts,
                 },
+                ...(djConfig.auto.enabledByDefault && {
+                  autoDj: { picks: [] },
+                }),
               },
             }),
         });

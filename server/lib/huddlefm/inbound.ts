@@ -164,7 +164,10 @@ export async function handleHuddleFmMessage({
     client,
     channel: found.channel,
     session: reply.type === 'grant_accepted' ? session : found.session,
-    situation,
+    situation:
+      reply.type === 'grant_accepted' && session.autoDj
+        ? `${situation} Auto dj is on, so you start picking songs yourself right away. Let them know they can tell you to turn auto dj off if they'd rather pick the songs.`
+        : situation,
   });
   if (reply.type === 'grant_accepted') {
     scheduleTopUp({ client, channel: found.channel });

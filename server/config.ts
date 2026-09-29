@@ -114,6 +114,7 @@ export const dj = {
   maxSkip: 10,
   maxBatch: 10,
   auto: {
+    enabledByDefault: true,
     minQueue: 2,
     batchSize: 3,
     historySize: 40,
