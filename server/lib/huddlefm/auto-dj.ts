@@ -8,12 +8,7 @@ import { appendAutoDjPicks, getDjSession } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { addSong, LOST_GRANT, runDjCommand } from './client';
 import { getDjContext } from './context';
-
-export interface QueueTrack {
-  artist?: string;
-  automatic?: boolean;
-  title?: string;
-}
+import { describeTrack, type QueueTrack, savePlayback } from './playback';
 
 const running = new Set<string>();
 const lastTopUp = new Map<string, number>();
@@ -54,6 +49,7 @@ async function topUpQueue({
       logger.warn({ channel, status }, 'Auto dj could not read status');
       return;
     }
+    await savePlayback({ channel, status });
     const queue = (status.queue as QueueTrack[] | undefined) ?? [];
     const nowPlaying = (status.nowPlaying as QueueTrack | null) ?? null;
     const room = Math.min(
@@ -70,9 +66,7 @@ async function topUpQueue({
     lastTopUp.set(channel, Date.now());
 
     const { picks } = session.autoDj;
-    const describe = (track: QueueTrack) =>
-      `${track.title ?? 'unknown'} - ${track.artist ?? 'unknown'}`;
-    const playing = nowPlaying ? describe(nowPlaying) : '';
+    const playing = nowPlaying ? describeTrack(nowPlaying) : '';
     const { messages, memories } = await getDjContext({
       client,
       session,
@@ -86,7 +80,7 @@ async function topUpQueue({
       model: provider.languageModel('chat-model'),
       system: autoDjPrompt({
         nowPlaying: playing,
-        queue: queue.map(describe),
+        queue: queue.map(describeTrack),
         recentPicks: picks,
         count: room,
         memories,

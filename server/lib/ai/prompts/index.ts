@@ -1,6 +1,6 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { env } from '~/env';
-import type { DjSession } from '~/lib/kv';
+import type { DjPlayback, DjSession } from '~/lib/kv';
 import type { PineconeMetadataOutput, RequestHints } from '~/types';
 import { corePrompt } from './core';
 import { djPrompt, djStatePrompt } from './dj';
@@ -35,7 +35,7 @@ export const systemPrompt = ({
   memories: ScoredPineconeRecord<PineconeMetadataOutput>[];
   message?: { author?: string; authorSlackId?: string; content?: string };
   djState?: {
-    sessions: { channel: string; session: DjSession }[];
+    sessions: { channel: string; session: DjSession; playback?: DjPlayback }[];
     channelId?: string;
   };
 }) => {

@@ -103,7 +103,7 @@ export const dj = {
     'volume',
     'clear',
   ] satisfies Exclude<HuddleFmPermission, 'end-session'>[],
-  events: ['session', 'track'] satisfies HuddleFmEventSubscription[],
+  events: ['session', 'track', 'queue'] satisfies HuddleFmEventSubscription[],
   replyTimeoutSeconds: 20,
   // request_control only replies straight away on failure, so after this many
   // seconds of silence the request is assumed to be waiting on the host.
@@ -113,6 +113,16 @@ export const dj = {
   pendingTimeoutSeconds: 360,
   maxSkip: 10,
   maxBatch: 10,
+  maxCommands: 8,
+  // Queued songs listed in the <dj-state> prompt block.
+  stateQueueSize: 10,
+  // Events arrive in bursts (e.g. several skips), so playback is re-read once
+  // things settle.
+  playbackRefreshSeconds: 2,
+  chatter: {
+    enabledByDefault: true,
+    cooldownSeconds: 240,
+  },
   auto: {
     enabledByDefault: true,
     minQueue: 2,

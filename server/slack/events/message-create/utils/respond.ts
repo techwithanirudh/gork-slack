@@ -5,7 +5,7 @@ import { generateText, stepCountIs } from 'ai';
 import { env } from '~/env';
 import { systemPrompt } from '~/lib/ai/prompts';
 import { provider } from '~/lib/ai/providers';
-import { autoDj, dj, djMode } from '~/lib/ai/tools/dj';
+import { autoDj, dj, djChatter, djMode } from '~/lib/ai/tools/dj';
 import { generateImageTool } from '~/lib/ai/tools/generate-image';
 import { getUserInfo } from '~/lib/ai/tools/get-user-info';
 import { getWeather } from '~/lib/ai/tools/get-weather';
@@ -72,6 +72,7 @@ export async function generateResponse(
       djMode: djMode({ context }),
       dj: dj({ context }),
       autoDj: autoDj({ context }),
+      djChatter: djChatter({ context }),
     };
 
     const { toolCalls } = await generateText({
@@ -101,7 +102,7 @@ export async function generateResponse(
       activeTools: env.HUDDLEFM_USER_ID
         ? undefined
         : (Object.keys(tools) as (keyof typeof tools)[]).filter(
-            (name) => !['djMode', 'dj', 'autoDj'].includes(name)
+            (name) => !['djMode', 'dj', 'autoDj', 'djChatter'].includes(name)
           ),
       system,
       stopWhen: [

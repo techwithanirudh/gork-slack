@@ -7,6 +7,8 @@ import {
   type HuddleFmReply,
   LOST_GRANT,
   runDjCommand,
+  savePlayback,
+  schedulePlaybackRefresh,
   scheduleTopUp,
   sendHuddleFmCommand,
 } from '~/lib/huddlefm';
@@ -108,7 +110,7 @@ async function runQueries({
   channel: string;
   command: 'search' | 'add';
   queries: string[];
-}) {
+}): Promise<{ results: Record<string, unknown>[]; lost: boolean }> {
   const results: Record<string, unknown>[] = [];
   for (const query of queries) {
     const { reply, matched } =
@@ -127,7 +129,7 @@ async function runQueries({
         query,
         error: `${reply?.error}: dj mode is off now, it has to be turned on again`,
       });
-      break;
+      return { results, lost: true };
     }
     if (!reply?.ok) {
       results.push({
@@ -140,7 +142,7 @@ async function runQueries({
       command === 'add' ? { query, matched } : { query, results: reply.results }
     );
   }
-  return results;
+  return { results, lost: false };
 }
 
 // HuddleFM skips one song per command.
@@ -261,6 +263,7 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
                 ...(djConfig.auto.enabledByDefault && {
                   autoDj: { picks: [] },
                 }),
+                chatter: djConfig.chatter.enabledByDefault,
               },
             }),
         });
@@ -293,91 +296,150 @@ export const djMode = ({ context }: { context: SlackMessageContext }) =>
     },
   });
 
+const stepSchema = z.object({
+  command: z
+    .enum([
+      'status',
+      'search',
+      'add',
+      'remove',
+      'move',
+      'shuffle',
+      'clear',
+      'skip',
+      'previous',
+      'pause',
+      'resume',
+      'seek',
+      'volume',
+    ])
+    .describe(
+      'status: now playing + full queue. search: find songs. add: queue a song. remove/move: edit the queue by trackId. skip (optionally count songs)/previous/pause/resume. seek: jump by seconds. volume: set volume. shuffle: shuffle the queue. clear: empty the whole queue.'
+    ),
+  query: z
+    .string()
+    .optional()
+    .describe(
+      'For search, or for add without a reference: "song name artist". add with only a query queues the top search result.'
+    ),
+  queries: z
+    .array(z.string())
+    .min(1)
+    .max(djConfig.maxBatch)
+    .optional()
+    .describe(
+      'For search/add: several "song name artist" queries at once, instead of query. add queues the top result for each, in order.'
+    ),
+  reference: z
+    .string()
+    .optional()
+    .describe('For add: a reference from search results, or a media URL'),
+  trackId: z
+    .string()
+    .optional()
+    .describe('For remove/move: the track id from <dj-state> or status'),
+  direction: z
+    .enum(['up', 'down'])
+    .optional()
+    .describe('For move: shift one spot'),
+  playNext: z.boolean().optional().describe('For move: move to play next'),
+  position: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe('For move: 1-based queue position'),
+  count: z
+    .number()
+    .int()
+    .min(1)
+    .max(djConfig.maxSkip)
+    .optional()
+    .describe('For skip: how many songs to skip, default 1'),
+  seconds: z
+    .number()
+    .optional()
+    .describe('For seek: relative seconds, negative goes back'),
+  percent: z.number().min(0).max(100).optional().describe('For volume: 0-100'),
+});
+
+const READ_ONLY = new Set(['status', 'search']);
+
+async function runStep({
+  client,
+  channel,
+  step: { command, query, queries, reference, count = 1, ...rest },
+}: {
+  client: WebClient;
+  channel: string;
+  step: z.infer<typeof stepSchema>;
+}): Promise<Record<string, unknown> & { success: boolean; lost?: boolean }> {
+  if (queries && (command === 'search' || command === 'add')) {
+    const { results, lost } = await runQueries({
+      client,
+      channel,
+      command,
+      queries,
+    });
+    return { success: results.some((r) => !r.error), lost, results };
+  }
+
+  let reply: HuddleFmReply | null;
+  let matched: string | undefined;
+  if (command === 'skip' && count > 1) {
+    reply = await skipSongs({ client, channel, count });
+  } else if (command === 'add' && !reference) {
+    if (!query) {
+      return { success: false, error: 'add needs a query or reference' };
+    }
+    ({ reply, matched } = await addSong({ client, channel, query }));
+  } else {
+    reply = await runDjCommand({
+      client,
+      channel,
+      command: {
+        type: command,
+        ...(command === 'add' ? { reference } : { query }),
+        ...rest,
+      },
+    });
+  }
+
+  if (!reply) {
+    return { success: false, error: 'HuddleFM did not answer in time' };
+  }
+  const { v: _v, replyTo: _replyTo, ok, ...data } = reply;
+  if (!ok) {
+    const lost = LOST_GRANT.has(reply.error ?? '');
+    return {
+      success: false,
+      lost,
+      error: lost
+        ? `${reply.error}: dj mode is off now, it has to be turned on again`
+        : (reply.message ?? reply.error ?? 'Command failed'),
+    };
+  }
+  if (command === 'status') {
+    await savePlayback({ channel, status: reply });
+  }
+  return { success: true, data: matched ? { matched, ...data } : data };
+}
+
 export const dj = ({ context }: { context: SlackMessageContext }) =>
   tool({
     description:
-      'Control the music in a huddle once gork dj mode is on: see what is playing, add songs, skip, pause, volume, and manage the queue.',
+      'Control the music in a huddle once gork dj mode is on: add songs, skip, pause, volume, and manage the queue. Pass every step of a request as commands in ONE call; they run in order.',
     inputSchema: z.object({
-      command: z
-        .enum([
-          'status',
-          'search',
-          'add',
-          'remove',
-          'move',
-          'shuffle',
-          'clear',
-          'skip',
-          'previous',
-          'pause',
-          'resume',
-          'seek',
-          'volume',
-        ])
-        .describe(
-          'status: now playing + queue. search: find songs. add: queue a song. remove/move: edit the queue by trackId. skip (optionally count songs)/previous/pause/resume. seek: jump by seconds. volume: set volume. shuffle: shuffle the queue. clear: empty the whole queue.'
-        ),
       channel: channelInput,
-      query: z
-        .string()
-        .optional()
+      commands: z
+        .array(stepSchema)
+        .min(1)
+        .max(djConfig.maxCommands)
         .describe(
-          'For search, or for add without a reference: "song name artist". add with only a query queues the top search result.'
+          'Steps to run in order, e.g. [{command:"skip",count:2},{command:"add",queries:[...]},{command:"volume",percent:40}]'
         ),
-      queries: z
-        .array(z.string())
-        .min(1)
-        .max(djConfig.maxBatch)
-        .optional()
-        .describe(
-          'For search/add: several "song name artist" queries in one call, instead of query. add queues the top result for each, in order.'
-        ),
-      reference: z
-        .string()
-        .optional()
-        .describe('For add: a reference from search results, or a media URL'),
-      trackId: z
-        .string()
-        .optional()
-        .describe('For remove/move: the track id from status'),
-      direction: z
-        .enum(['up', 'down'])
-        .optional()
-        .describe('For move: shift one spot'),
-      playNext: z.boolean().optional().describe('For move: move to play next'),
-      position: z
-        .number()
-        .int()
-        .min(1)
-        .optional()
-        .describe('For move: 1-based queue position'),
-      count: z
-        .number()
-        .int()
-        .min(1)
-        .max(djConfig.maxSkip)
-        .optional()
-        .describe('For skip: how many songs to skip, default 1'),
-      seconds: z
-        .number()
-        .optional()
-        .describe('For seek: relative seconds, negative goes back'),
-      percent: z
-        .number()
-        .min(0)
-        .max(100)
-        .optional()
-        .describe('For volume: 0-100'),
     }),
-    execute: async ({
-      command,
-      channel: channelArg,
-      query,
-      queries,
-      reference,
-      count = 1,
-      ...rest
-    }) => {
+    execute: async ({ channel: channelArg, commands }) => {
       try {
         const found = await resolveSession({ context, channelArg });
         if (!found) {
@@ -391,58 +453,29 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
           };
         }
 
-        if (queries && (command === 'search' || command === 'add')) {
-          const results = await runQueries({
+        const results: Record<string, unknown>[] = [];
+        for (const step of commands) {
+          const { lost, ...result } = await runStep({
             client: context.client,
             channel,
-            command,
-            queries,
+            step,
           });
-          logger.info({ channel, command, results }, 'Ran batch DJ command');
-          return { success: results.some((r) => !r.error), results };
-        }
-
-        let reply: HuddleFmReply | null;
-        let matched: string | undefined;
-        if (command === 'skip' && count > 1) {
-          reply = await skipSongs({ client: context.client, channel, count });
-        } else if (command === 'add' && !reference) {
-          if (!query) {
-            return { success: false, error: 'add needs a query or reference' };
+          results.push({ command: step.command, ...result });
+          if (lost) {
+            break;
           }
-          ({ reply, matched } = await addSong({
-            client: context.client,
-            channel,
-            query,
-          }));
-        } else {
-          reply = await runDjCommand({
-            client: context.client,
-            channel,
-            command: {
-              type: command,
-              ...(command === 'add' ? { reference } : { query }),
-              ...rest,
-            },
-          });
         }
-        logger.info({ channel, command, reply }, 'Ran DJ command');
+        logger.info({ channel, commands, results }, 'Ran DJ commands');
 
-        if (!reply) {
-          return { success: false, error: 'HuddleFM did not answer in time' };
+        if (commands.some((step) => !READ_ONLY.has(step.command))) {
+          schedulePlaybackRefresh({ client: context.client, channel });
         }
-        const { v: _v, replyTo: _replyTo, ok, ...data } = reply;
-        if (!ok) {
-          return {
-            success: false,
-            error: LOST_GRANT.has(reply.error ?? '')
-              ? `${reply.error}: dj mode is off now, it has to be turned on again`
-              : (reply.message ?? reply.error ?? 'Command failed'),
-          };
-        }
-        return { success: true, data: matched ? { matched, ...data } : data };
+        return {
+          success: results.some((result) => result.success),
+          results,
+        };
       } catch (error) {
-        logger.error({ error, command }, 'Failed to run DJ command');
+        logger.error({ error, commands }, 'Failed to run DJ commands');
         return toolError(error);
       }
     },
@@ -492,6 +525,38 @@ export const autoDj = ({ context }: { context: SlackMessageContext }) =>
         };
       } catch (error) {
         logger.error({ error }, 'Failed to toggle auto dj');
+        return toolError(error);
+      }
+    },
+  });
+
+export const djChatter = ({ context }: { context: SlackMessageContext }) =>
+  tool({
+    description:
+      'Turn dj chatter on or off: while on, you chime in now and then when a new song starts. Turn it off when people tell you to shut up or stop commenting on songs.',
+    inputSchema: z.object({
+      enabled: z.boolean().describe('true to chime in between songs'),
+      channel: channelInput,
+    }),
+    execute: async ({ enabled, channel: channelArg }) => {
+      try {
+        const found = await resolveSession({ context, channelArg });
+        if (!found) {
+          return { success: false, error: NO_SESSION };
+        }
+        await setDjSession({
+          channel: found.channel,
+          session: { ...found.session, chatter: enabled },
+        });
+        logger.info({ channel: found.channel, enabled }, 'DJ chatter toggled');
+        return {
+          success: true,
+          content: enabled
+            ? 'Chatter is on, you chime in now and then when a song starts'
+            : 'Chatter is off, you stay quiet between songs',
+        };
+      } catch (error) {
+        logger.error({ error }, 'Failed to toggle dj chatter');
         return toolError(error);
       }
     },
