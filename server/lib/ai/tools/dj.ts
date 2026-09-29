@@ -1,3 +1,4 @@
+import type { WebClient } from '@slack/web-api';
 import { tool } from 'ai';
 import { z } from 'zod';
 import { dj as djConfig } from '~/config';
@@ -96,6 +97,84 @@ const toolError = (error: unknown) => ({
   success: false,
   error: error instanceof Error ? error.message : String(error),
 });
+
+async function runQueries({
+  client,
+  channel,
+  command,
+  queries,
+}: {
+  client: WebClient;
+  channel: string;
+  command: 'search' | 'add';
+  queries: string[];
+}) {
+  const results: Record<string, unknown>[] = [];
+  for (const query of queries) {
+    const { reply, matched } =
+      command === 'add'
+        ? await addSong({ client, channel, query })
+        : {
+            reply: await runDjCommand({
+              client,
+              channel,
+              command: { type: 'search', query },
+            }),
+            matched: undefined,
+          };
+    if (LOST_GRANT.has(reply?.error ?? '')) {
+      results.push({
+        query,
+        error: `${reply?.error}: dj mode is off now, it has to be turned on again`,
+      });
+      break;
+    }
+    if (!reply?.ok) {
+      results.push({
+        query,
+        error: reply?.message ?? reply?.error ?? 'no reply',
+      });
+      continue;
+    }
+    results.push(
+      command === 'add' ? { query, matched } : { query, results: reply.results }
+    );
+  }
+  return results;
+}
+
+// HuddleFM skips one song per command.
+async function skipSongs({
+  client,
+  channel,
+  count,
+}: {
+  client: WebClient;
+  channel: string;
+  count: number;
+}): Promise<HuddleFmReply | null> {
+  const skipped: unknown[] = [];
+  let lastOk: HuddleFmReply | undefined;
+  let last: HuddleFmReply | null = null;
+  for (let i = 0; i < count; i++) {
+    last = await runDjCommand({ client, channel, command: { type: 'skip' } });
+    if (!last?.ok) {
+      break;
+    }
+    lastOk = last;
+    skipped.push(last.skipped);
+  }
+  if (!lastOk) {
+    return last;
+  }
+  return {
+    ...lastOk,
+    skipped,
+    ...(skipped.length < count && {
+      stoppedEarly: last?.message ?? last?.error ?? 'no reply',
+    }),
+  };
+}
 
 export const djMode = ({ context }: { context: SlackMessageContext }) =>
   tool({
@@ -224,6 +303,7 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
           'remove',
           'move',
           'shuffle',
+          'clear',
           'skip',
           'previous',
           'pause',
@@ -232,7 +312,7 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
           'volume',
         ])
         .describe(
-          'status: now playing + queue. search: find songs. add: queue a song. remove/move: edit the queue by trackId. skip/previous/pause/resume. seek: jump by seconds. volume: set volume. shuffle: shuffle the queue.'
+          'status: now playing + queue. search: find songs. add: queue a song. remove/move: edit the queue by trackId. skip (optionally count songs)/previous/pause/resume. seek: jump by seconds. volume: set volume. shuffle: shuffle the queue. clear: empty the whole queue.'
         ),
       channel: channelInput,
       query: z
@@ -240,6 +320,14 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
         .optional()
         .describe(
           'For search, or for add without a reference: "song name artist". add with only a query queues the top search result.'
+        ),
+      queries: z
+        .array(z.string())
+        .min(1)
+        .max(djConfig.maxBatch)
+        .optional()
+        .describe(
+          'For search/add: several "song name artist" queries in one call, instead of query. add queues the top result for each, in order.'
         ),
       reference: z
         .string()
@@ -260,6 +348,13 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
         .min(1)
         .optional()
         .describe('For move: 1-based queue position'),
+      count: z
+        .number()
+        .int()
+        .min(1)
+        .max(djConfig.maxSkip)
+        .optional()
+        .describe('For skip: how many songs to skip, default 1'),
       seconds: z
         .number()
         .optional()
@@ -275,7 +370,9 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
       command,
       channel: channelArg,
       query,
+      queries,
       reference,
+      count = 1,
       ...rest
     }) => {
       try {
@@ -291,9 +388,22 @@ export const dj = ({ context }: { context: SlackMessageContext }) =>
           };
         }
 
+        if (queries && (command === 'search' || command === 'add')) {
+          const results = await runQueries({
+            client: context.client,
+            channel,
+            command,
+            queries,
+          });
+          logger.info({ channel, command, results }, 'Ran batch DJ command');
+          return { success: results.some((r) => !r.error), results };
+        }
+
         let reply: HuddleFmReply | null;
         let matched: string | undefined;
-        if (command === 'add' && !reference) {
+        if (command === 'skip' && count > 1) {
+          reply = await skipSongs({ client: context.client, channel, count });
+        } else if (command === 'add' && !reference) {
           if (!query) {
             return { success: false, error: 'add needs a query or reference' };
           }

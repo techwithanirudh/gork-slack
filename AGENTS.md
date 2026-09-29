@@ -145,7 +145,7 @@ Gork responds to messages based on triggers:
 | `get-user-info` | Get Slack user profile info |
 | `search-memories` | Search past conversations in Pinecone |
 | `djMode` | Turn gork dj mode on/off (requests HuddleFM control from the huddle host) |
-| `dj` | Control HuddleFM once dj mode is on (status, add, skip, pause, volume, queue) |
+| `dj` | Control HuddleFM once dj mode is on (status, add, skip / skip several, pause, volume, queue, clear) |
 | `autoDj` | Let Gork pick songs itself and keep the queue topped up (off by default) |
 
 ### Gork DJ (HuddleFM)
