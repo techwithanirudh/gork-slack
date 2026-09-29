@@ -64,6 +64,6 @@ export function schedulePlaybackRefresh({
       } catch (error) {
         logger.warn({ error, channel }, 'Failed to refresh DJ playback');
       }
-    }, dj.playbackRefreshSeconds * 1000)
+    }, dj.playbackRefreshDebounceSeconds * 1000)
   );
 }

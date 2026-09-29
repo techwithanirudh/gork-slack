@@ -59,8 +59,6 @@ export async function clearDjSession(channel: string): Promise<void> {
   ]);
 }
 
-// Kept apart from the session so frequent playback refreshes can't overwrite
-// session changes made at the same time.
 export interface DjPlayback {
   nowPlaying?: string;
   queue: string[];

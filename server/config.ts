@@ -114,11 +114,8 @@ export const dj = {
   maxSkip: 10,
   maxBatch: 10,
   maxCommands: 8,
-  // Queued songs listed in the <dj-state> prompt block.
   stateQueueSize: 10,
-  // Events arrive in bursts (e.g. several skips), so playback is re-read once
-  // things settle.
-  playbackRefreshSeconds: 2,
+  playbackRefreshDebounceSeconds: 2,
   chatter: {
     enabledByDefault: true,
     cooldownSeconds: 240,

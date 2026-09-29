@@ -88,7 +88,7 @@ const TOP_UP_EVENTS = new Set([
   'queue.cleared',
 ]);
 
-const lastChatter = new Map<string, number>();
+const nowPlayingMentionedAt = new Map<string, number>();
 
 function handleEvent({
   client,
@@ -126,10 +126,10 @@ function handleEvent({
   if (
     event === 'track.started' &&
     session.chatter &&
-    Date.now() - (lastChatter.get(channel) ?? 0) >
+    Date.now() - (nowPlayingMentionedAt.get(channel) ?? 0) >
       dj.chatter.cooldownSeconds * 1000
   ) {
-    lastChatter.set(channel, Date.now());
+    nowPlayingMentionedAt.set(channel, Date.now());
     announce({
       client,
       channel,
@@ -219,8 +219,7 @@ export async function handleHuddleFmMessage({
   if (reply.type === 'grant_accepted') {
     await setDjSession({ channel: found.channel, session });
     await savePlayback({ channel: found.channel, status: reply });
-    // The approval announcement already covers the song playing right now.
-    lastChatter.set(found.channel, Date.now());
+    nowPlayingMentionedAt.set(found.channel, Date.now());
   } else {
     await clearDjSession(found.channel);
   }
