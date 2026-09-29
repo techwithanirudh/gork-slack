@@ -1,6 +1,6 @@
 import type { WebClient } from '@slack/web-api';
 import { dj } from '~/config';
-import { setDjPlayback } from '~/lib/kv';
+import { getDjSession, setDjPlayback } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { type HuddleFmReply, runDjCommand } from './client';
 
@@ -53,6 +53,10 @@ export function schedulePlaybackRefresh({
     setTimeout(async () => {
       timers.delete(channel);
       try {
+        const session = await getDjSession(channel);
+        if (session?.status !== 'active') {
+          return;
+        }
         const status = await runDjCommand({
           client,
           channel,

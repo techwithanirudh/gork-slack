@@ -137,6 +137,9 @@ export async function runDjCommand({
   return reply;
 }
 
+export const pickLabel = (track: { title?: string; artist?: string }) =>
+  [track.title, track.artist].filter(Boolean).join(' - ');
+
 export async function addSong({
   client,
   channel,
@@ -171,8 +174,6 @@ export async function addSong({
   )?.[0];
   return {
     reply,
-    matched: first?.title
-      ? [first.title, first.artist].filter(Boolean).join(' - ')
-      : top.label,
+    matched: first?.title ? pickLabel(first) : top.label,
   };
 }

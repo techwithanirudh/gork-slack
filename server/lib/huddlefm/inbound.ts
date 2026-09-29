@@ -15,7 +15,7 @@ import {
 import logger from '~/lib/logger';
 import { stripBroadcastMentions } from '~/utils/text';
 import { scheduleTopUp } from './auto-dj';
-import { decode, deliverReply, sendHuddleFmCommand } from './client';
+import { decode, deliverReply, pickLabel, sendHuddleFmCommand } from './client';
 import { getDjContext } from './context';
 import {
   describeTrack,
@@ -110,10 +110,8 @@ function handleEvent({
     scheduleTopUp({ client, channel });
   }
 
-  const title = payload.title?.toLowerCase();
   const ownPick =
-    title &&
-    session.autoDj?.picks.some((pick) => pick.toLowerCase().startsWith(title));
+    payload.title && session.autoDj?.picks.includes(pickLabel(payload));
   if (event === 'queue.removed' && payload.reason === 'failed' && !ownPick) {
     announce({
       client,
