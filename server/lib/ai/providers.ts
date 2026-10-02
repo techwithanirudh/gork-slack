@@ -51,21 +51,21 @@ const chatModel = createRetryable({
   retries: [
     retry(hackclub.languageModel('google/gemini-3-flash-preview')),
     retry(openrouter.languageModel('google/gemini-3-flash-preview')),
-    retry(hackclub.languageModel('openai/gpt-5-mini')),
+    retry(hackclub.languageModel('openai/gpt-6-luna')),
     retry(openrouter.languageModel('google/gemini-3-flash-preview')),
-    retry(openrouter.languageModel('openai/gpt-5-mini')),
+    retry(openrouter.languageModel('openai/gpt-6-luna')),
   ],
   onError: onModelError,
 });
 
 const relevanceModel = createRetryable({
-  model: hackclub.languageModel('openai/gpt-5-mini'),
+  model: hackclub.languageModel('openai/gpt-6-luna'),
   retries: [
-    retry(hackclub.languageModel('openai/gpt-5-mini')),
-    retry(openrouter.languageModel('openai/gpt-5-mini')),
+    retry(hackclub.languageModel('openai/gpt-6-luna')),
+    retry(openrouter.languageModel('openai/gpt-6-luna')),
     retry(hackclub.languageModel('google/gemini-2.5-flash')),
     retry(openrouter.languageModel('google/gemini-2.5-flash-lite')),
-    retry(openrouter.languageModel('openai/gpt-5-mini')),
+    retry(openrouter.languageModel('openai/gpt-6-luna')),
   ],
   onError: onModelError,
 });
