@@ -19,7 +19,8 @@ export const help: CommandHelp = {
     },
     {
       usage: 'optout [@user ...]',
-      description: 'Opt one or more other people out.',
+      description:
+        'Opt one or more other people out. With no users, admins get a picker.',
       permissions: ['admin'],
     },
   ],

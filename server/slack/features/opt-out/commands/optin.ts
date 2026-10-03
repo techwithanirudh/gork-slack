@@ -14,7 +14,8 @@ export const help: CommandHelp = {
     { usage: 'optin', description: 'Opt yourself back in.' },
     {
       usage: 'optin [@user ...]',
-      description: 'Opt one or more other people back in.',
+      description:
+        'Opt one or more other people back in. With no users, admins get a picker.',
       permissions: ['admin'],
     },
   ],

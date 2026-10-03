@@ -22,6 +22,14 @@ const MODAL_CONTENT: Record<string, { title: string; text: string }> = {
     title: 'Strike System',
     text: "Gork has an automated moderation system to prevent abuse. When Gork detects content that violates community guidelines, it files a report and adds a strike to the user's record.\n\nStrikes expire after 30 days. Reach the strike threshold within that window and you will be automatically banned.",
   },
+  optout: {
+    title: 'Opt-Out',
+    text: "This user asked Gork not to read their messages. Gork won't reply to them, and their messages show up only as a hidden placeholder when anyone else talks to Gork, in every channel and thread.\n\nThis is a privacy choice, not a ban. They can undo it with `/gork optin`, and admins can opt them back in.",
+  },
+  optin: {
+    title: 'Opt-In',
+    text: 'This user undid an earlier opt-out. Gork can read their messages and reply to them again.',
+  },
   unban: {
     title: 'Unban',
     text: 'A moderator has reviewed this case and removed the ban. This user now has full access to Gork again.\n\nModerators can unban users at their discretion, for example if a ban was issued in error or after an appropriate cooldown period.',
