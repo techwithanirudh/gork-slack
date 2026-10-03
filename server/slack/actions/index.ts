@@ -1,3 +1,4 @@
+import { optOut } from '../features/opt-out';
 import { reports } from '../features/reports';
 import {
   execute as retryPingExecute,
@@ -6,5 +7,6 @@ import {
 
 export const actions = [
   ...reports.actions,
+  ...optOut.actions,
   { name: retryPingName, execute: retryPingExecute },
 ];

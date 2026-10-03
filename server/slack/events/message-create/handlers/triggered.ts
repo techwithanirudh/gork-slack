@@ -1,7 +1,7 @@
 import { env } from '~/env';
 import { isUserAllowed } from '~/lib/allowed-users';
 import type { ResponseMode } from '~/lib/kv';
-import { isUserBanned } from '~/lib/kv';
+import { isUserBanned, isUserOptedOut } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
 import type { SlackMessageContext } from '~/types';
@@ -37,6 +37,18 @@ export async function handleTriggered({
   }
 
   const { user: userId, thread_ts, ts } = messageContext.event;
+
+  if (userId && (await isUserOptedOut(userId))) {
+    if (triggerType === 'ping' || triggerType === 'dm') {
+      await messageContext.client.chat.postEphemeral({
+        channel: messageContext.event.channel,
+        user: userId,
+        thread_ts: thread_ts ?? ts,
+        text: "you opted out so i'm not reading your messages. run `/gork optin` if u want me back",
+      });
+    }
+    return;
+  }
 
   if (!isUserAllowed(userId ?? '')) {
     if (triggerType !== 'keyword') {

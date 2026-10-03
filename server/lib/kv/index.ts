@@ -23,6 +23,11 @@ export {
   type ResponseMode,
   setMode,
 } from './queries/mode';
+export {
+  getOptedOutUsers,
+  isUserOptedOut,
+  setOptedOut,
+} from './queries/opt-out';
 export { ratelimit } from './queries/ratelimit';
 export {
   addReport,

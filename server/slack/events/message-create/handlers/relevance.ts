@@ -1,7 +1,7 @@
 import { rateLimit } from '~/config';
 import { isUserAllowed } from '~/lib/allowed-users';
 import type { ResponseMode } from '~/lib/kv';
-import { isUserBanned } from '~/lib/kv';
+import { isUserBanned, isUserOptedOut } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { saveChatMemory } from '~/lib/memory';
 import type { SlackMessageContext } from '~/types';
@@ -36,6 +36,9 @@ export async function handleRelevance({
   }
 
   const { user: userId } = messageContext.event;
+  if (userId && (await isUserOptedOut(userId))) {
+    return;
+  }
   if (!isUserAllowed(userId ?? '')) {
     return;
   }
