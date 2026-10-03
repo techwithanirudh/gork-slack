@@ -2,6 +2,7 @@ import type { ConversationsHistoryResponse, WebClient } from '@slack/web-api';
 import type { ModelMessage, UserContent } from 'ai';
 import { getOptedOutUsers } from '~/lib/kv';
 import logger from '~/lib/logger';
+import { OPTED_OUT_TEXT } from '~/lib/opt-out';
 import { processSlackFiles, type SlackFile } from '~/utils/images';
 
 interface ConversationOptions {
@@ -18,12 +19,6 @@ interface ConversationOptions {
 type SlackMessage = NonNullable<
   ConversationsHistoryResponse['messages']
 >[number];
-
-// Stands in for a message from someone who ran `/gork optout`. Keeping a
-// placeholder instead of dropping it keeps the reply tool's offsets lined up
-// with the real channel history.
-const OPTED_OUT_TEXT =
-  '[message hidden: its author opted out of gork reading their messages]';
 
 export async function getConversationMessages({
   client,
@@ -110,6 +105,8 @@ export async function getConversationMessages({
 
     const modelMessages: ModelMessage[] = await Promise.all(
       sortedMessages.map(async (message): Promise<ModelMessage> => {
+        // A placeholder rather than dropping the message keeps the reply
+        // tool's offsets lined up with the real channel history.
         if (isHidden(message)) {
           return { role: 'user', content: OPTED_OUT_TEXT };
         }

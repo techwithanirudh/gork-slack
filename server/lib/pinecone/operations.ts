@@ -1,5 +1,7 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import { getOptedOutUsers } from '~/lib/kv';
 import logger from '~/lib/logger';
+import { redactMemoryContext } from '~/lib/opt-out';
 import type { PineconeMetadataOutput } from '~/types';
 import { getIndex } from './index';
 import { searchMemories } from './queries';
@@ -45,10 +47,24 @@ export const queryMemories = async (
   }
 
   try {
-    const results = await searchMemories(query, {
-      namespace,
-      topK: limit,
-      filter: Object.keys(filter).length ? filter : undefined,
+    const [matches, optedOut] = await Promise.all([
+      searchMemories(query, {
+        namespace,
+        topK: limit,
+        filter: Object.keys(filter).length ? filter : undefined,
+      }),
+      getOptedOutUsers(),
+    ]);
+    // Memories saved before someone opted out still hold their messages, so
+    // they are hidden here on the way out instead of deleted.
+    const results = matches.flatMap((match) => {
+      if (match.metadata?.type !== 'chat') {
+        return [match];
+      }
+      const context = redactMemoryContext(match.metadata.context, optedOut);
+      return context === null
+        ? []
+        : [{ ...match, metadata: { ...match.metadata, context } }];
     });
 
     const index = (await getIndex()).namespace(namespace);
