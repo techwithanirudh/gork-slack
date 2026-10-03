@@ -62,6 +62,12 @@
     "hdel",
     "hgetall",
     "huddlefm",
-    "HUDDLEFM"
+    "HUDDLEFM",
+    "optin",
+    "optout",
+    "sadd",
+    "sismember",
+    "smembers",
+    "srem"
   ]
 }

@@ -1,5 +1,6 @@
 import type { ConversationsHistoryResponse, WebClient } from '@slack/web-api';
 import type { ModelMessage, UserContent } from 'ai';
+import { getOptedOutUsers } from '~/lib/kv';
 import logger from '~/lib/logger';
 import { processSlackFiles, type SlackFile } from '~/utils/images';
 
@@ -17,6 +18,12 @@ interface ConversationOptions {
 type SlackMessage = NonNullable<
   ConversationsHistoryResponse['messages']
 >[number];
+
+// Stands in for a message from someone who ran `/gork optout`. Keeping a
+// placeholder instead of dropping it keeps the reply tool's offsets lined up
+// with the real channel history.
+const OPTED_OUT_TEXT =
+  '[message hidden: its author opted out of gork reading their messages]';
 
 export async function getConversationMessages({
   client,
@@ -62,9 +69,13 @@ export async function getConversationMessages({
         })
       : messages;
 
+    const optedOut = await getOptedOutUsers();
+    const isHidden = (message: SlackMessage) =>
+      Boolean(message.user && optedOut.has(message.user));
+
     const userIds = new Set<string>();
     for (const message of filteredMessages) {
-      if (message.user) {
+      if (message.user && !isHidden(message)) {
         userIds.add(message.user);
       }
     }
@@ -99,6 +110,9 @@ export async function getConversationMessages({
 
     const modelMessages: ModelMessage[] = await Promise.all(
       sortedMessages.map(async (message): Promise<ModelMessage> => {
+        if (isHidden(message)) {
+          return { role: 'user', content: OPTED_OUT_TEXT };
+        }
         const isBot = message.user === botUserId || Boolean(message.bot_id);
         const original = message.text ?? '';
         const cleaned = mentionRegex

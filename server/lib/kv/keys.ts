@@ -3,6 +3,7 @@ export const keys = {
   channelCount: (contextId: string) => `ctx:channelCount:${contextId}`,
   userReports: (userId: string) => `user:reports:${userId}`,
   userBanned: (userId: string) => `user:banned:${userId}`,
+  optedOutUsers: () => 'users:optedOut',
   silenced: (contextId: string) => `ctx:silenced:${contextId}`,
   channelMode: (channelId: string) => `ctx:mode:${channelId}`,
   workspaceMode: (workspaceId: string) => `ws:mode:${workspaceId}`,
